@@ -52,6 +52,7 @@ final class Client
     {
         $match = $this->matcher->match($url);
         if ($match === null) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Plain-text message; callers escape it when they display it.
             throw new EmbedException(EmbedException::NOT_ALLOWED, 'The URL is not a Framework artifact on an allowed host.');
         }
 
@@ -67,6 +68,7 @@ final class Client
     {
         $match = $this->matcher->match($embedUrl);
         if ($match === null || $match->type !== 'embed') {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Plain-text message; callers escape it when they display it.
             throw new EmbedException(EmbedException::NOT_ALLOWED, 'The URL is not an embed API URL on an allowed host.');
         }
 
@@ -98,6 +100,7 @@ final class Client
             $response = new Response((int) ($response['status'] ?? 0), (array) ($response['headers'] ?? []), (string) ($response['body'] ?? ''));
         }
         if (! $response instanceof Response) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Plain-text message; callers escape it when they display it.
             throw new EmbedException(EmbedException::HTTP, 'The fetcher returned no response.');
         }
         if ($response->status === 404 || $response->status === 410) {
@@ -106,10 +109,12 @@ final class Client
             return null;
         }
         if ($response->status !== 200) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Plain-text message; callers escape it when they display it.
             throw new EmbedException(EmbedException::HTTP, 'The embed request failed with status ' . $response->status . '.');
         }
         $doc = Document::decode($response->body);
         if ($doc === null) {
+            // phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- Plain-text message; callers escape it when they display it.
             throw new EmbedException(EmbedException::INVALID, 'The response is not a framework.embed/v1 document.');
         }
         $ttl = min($this->maxTtl, self::ttl($response));

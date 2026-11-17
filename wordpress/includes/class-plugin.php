@@ -84,12 +84,27 @@ final class Framework_Embed_Plugin {
 				'strategy'  => 'defer',
 			)
 		);
+		// Charts load the bundled vega, vega-lite, and vega-embed instead of the CDN defaults.
+		$vega = plugins_url( 'vendor-embed/vega/', FRAMEWORK_EMBED_FILE );
+		wp_add_inline_script(
+			'framework-embed',
+			'window.FrameworkEmbedConfig = Object.assign({}, window.FrameworkEmbedConfig, ' . wp_json_encode(
+				array(
+					'vegaScripts' => array(
+						$vega . 'vega.min.js',
+						$vega . 'vega-lite.min.js',
+						$vega . 'vega-embed.min.js',
+					),
+				)
+			) . ');',
+			'before'
+		);
 
 		register_block_type(
 			FRAMEWORK_EMBED_DIR . '/blocks/artifact',
 			array( 'render_callback' => array( $this, 'render_block' ) )
 		);
-		wp_set_script_translations( 'framework-artifact-editor-script', 'framework-embed', FRAMEWORK_EMBED_DIR . '/languages' );
+		wp_set_script_translations( 'framework-artifact-editor-script', 'framework-embed' );
 
 		add_shortcode( 'framework_artifact', array( $this, 'render_shortcode' ) );
 
@@ -225,7 +240,8 @@ final class Framework_Embed_Plugin {
 		}
 
 		if ( is_wp_error( $answer ) ) {
-			throw new EmbedException( EmbedException::HTTP, 'The embed request failed: ' . $answer->get_error_message() );
+			// phpcs:ignore WordPress.Security.EscapeOutput.ExceptionNotEscaped -- The message is escaped; EmbedException::HTTP is an error code.
+			throw new EmbedException( EmbedException::HTTP, esc_html( 'The embed request failed: ' . $answer->get_error_message() ) );
 		}
 
 		$headers = wp_remote_retrieve_headers( $answer );

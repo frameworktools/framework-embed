@@ -3,14 +3,13 @@
  * Plugin Name:       Framework Embeds
  * Plugin URI:        https://github.com/frameworktools/framework-embed
  * Description:       Embeds published Framework models, tables, hypothesis tests, figures, and charts from framework.pub and self-hosted Framework Cloud servers.
- * Version:           0.3.4
+ * Version:           0.3.5
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Framework
  * License:           MIT
  * License URI:       https://opensource.org/licenses/MIT
  * Text Domain:       framework-embed
- * Domain Path:       /languages
  *
  * @package FrameworkEmbed
  */
@@ -19,7 +18,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FRAMEWORK_EMBED_VERSION', '0.3.4' );
+define( 'FRAMEWORK_EMBED_VERSION', '0.3.5' );
 define( 'FRAMEWORK_EMBED_FILE', __FILE__ );
 define( 'FRAMEWORK_EMBED_DIR', __DIR__ );
 

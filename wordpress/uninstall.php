@@ -22,7 +22,9 @@ function framework_embed_uninstall_site() {
 	wp_clear_scheduled_hook( 'framework_embed_takedown' );
 	wp_unschedule_hook( 'framework_embed_refresh' );
 
-	// Transients may live in the options table; delete them by prefix.
+	// Transients may live in the options table; delete them by prefix. Core has no API
+	// to delete transients by prefix, and uninstall runs once, so nothing is cached.
+	// phpcs:ignore WordPress.DB.DirectDatabaseQuery.DirectQuery, WordPress.DB.DirectDatabaseQuery.NoCaching
 	$wpdb->query(
 		$wpdb->prepare(
 			"DELETE FROM {$wpdb->options} WHERE option_name LIKE %s OR option_name LIKE %s",
