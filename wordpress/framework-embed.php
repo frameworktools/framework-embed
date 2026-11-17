@@ -3,7 +3,7 @@
  * Plugin Name:       Framework Embeds
  * Plugin URI:        https://github.com/framework-cloud/framework-embed
  * Description:       Shows Framework artifacts (models, tables, tests, figures, and charts) from framework.pub and other Framework Cloud servers, without iframes.
- * Version:           0.3.0
+ * Version:           0.3.1
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Framework
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FRAMEWORK_EMBED_VERSION', '0.3.0' );
+define( 'FRAMEWORK_EMBED_VERSION', '0.3.1' );
 define( 'FRAMEWORK_EMBED_FILE', __FILE__ );
 define( 'FRAMEWORK_EMBED_DIR', __DIR__ );
 

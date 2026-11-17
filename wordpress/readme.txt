@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.3.0
+Stable tag: 0.3.1
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -82,6 +82,10 @@ Yes. The stylesheet uses custom properties such as `--fw-embed-font`, `--fw-embe
 A host name, such as `framework.example.org`, allows HTTPS only. An origin, such as `http://localhost:8000`, allows exactly that scheme, host, and port. IP addresses and paths are rejected.
 
 == Changelog ==
+
+= 0.3.1 =
+* No scientific notation: tiny values read "< 0.01".
+* Numbers set in JetBrains Mono.
 
 = 0.3.0 =
 * Models show estimates at two decimals; diagnostics sit under Model details.
