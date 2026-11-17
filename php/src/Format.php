@@ -147,20 +147,32 @@ final class Format
         return ($x < 0 ? '-' : '') . $mantissa . 'e' . ($exp < 0 ? '-' : '+') . abs($exp);
     }
 
-    public static function number(mixed $x, bool $decimal = false): string
+    /** Decimal places for data tables. */
+    public const DATA_PLACES = 3;
+
+    /** Decimal places for model and test results. */
+    public const RESULT_PLACES = 2;
+
+    private const SMALL = [2 => 0.01, 3 => 0.001];
+
+    /**
+     * A number in a table cell, statistic, or metric. $decimal forces $places decimals for whole numbers.
+     * Numbers below 10^-places or at least 1e15 use scientific notation with $places significant digits.
+     */
+    public static function number(mixed $x, bool $decimal = false, int $places = self::DATA_PLACES): string
     {
         if (! self::isNumber($x)) {
             return self::EMPTY;
         }
         $size = abs((float) $x);
-        if ($size >= 1e15 || ($size > 0 && $size < 0.001)) {
-            return self::scientific($x, 3);
+        if ($size >= 1e15 || ($size > 0 && $size < self::SMALL[$places])) {
+            return self::scientific($x, $places);
         }
         if (! $decimal && self::isInteger($x)) {
             return self::fixed($x, 0);
         }
 
-        return self::fixed($x, 3);
+        return self::fixed($x, $places);
     }
 
     public static function pValue(mixed $p): string
@@ -183,12 +195,12 @@ final class Format
         return is_finite($percent) ? preg_replace('/\.0$/', '', self::fixed($percent, 1)) . '%' : self::EMPTY;
     }
 
-    public static function value(mixed $value, bool $decimal = false): string
+    public static function value(mixed $value, bool $decimal = false, int $places = self::DATA_PLACES): string
     {
         return match (true) {
             $value === null => self::EMPTY,
             is_bool($value) => $value ? 'Yes' : 'No',
-            is_int($value), is_float($value) => self::number($value, $decimal),
+            is_int($value), is_float($value) => self::number($value, $decimal, $places),
             is_string($value) => $value,
             default => self::EMPTY,
         };

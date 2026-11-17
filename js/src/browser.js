@@ -424,3 +424,21 @@ export function defineElement(name = 'framework-artifact') {
     customElements.define(name, class extends FrameworkArtifactElement {});
     return true;
 }
+
+let printing = false;
+
+// Opens every closed .fw-embed__details for printing and closes them again afterward,
+// for browsers whose print styles cannot reveal closed <details> content.
+export function expandDetailsForPrint() {
+    if (printing || typeof window === 'undefined' || typeof window.addEventListener !== 'function') return;
+    printing = true;
+    let opened = [];
+    window.addEventListener('beforeprint', () => {
+        opened = [...document.querySelectorAll('details.fw-embed__details:not([open])')];
+        for (const details of opened) details.open = true;
+    });
+    window.addEventListener('afterprint', () => {
+        for (const details of opened) details.open = false;
+        opened = [];
+    });
+}

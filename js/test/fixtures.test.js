@@ -43,7 +43,11 @@ describe('trimmed rows', () => {
 
 describe('number formatting', () => {
     const cases = JSON.parse(readFileSync(join(spec, 'format-cases.json'), 'utf8'));
-    const formats = { number: (x) => formatNumber(x), decimal: (x) => formatNumber(x, true), p: formatPValue, percent: formatPercent };
+    const formats = {
+        number: (x) => formatNumber(x), decimal: (x) => formatNumber(x, true),
+        result: (x) => formatNumber(x, false, 2), 'result-decimal': (x) => formatNumber(x, true, 2),
+        p: formatPValue, percent: formatPercent,
+    };
     it('matches spec/format-cases.json', () => {
         const failures = cases.filter((c) => formats[c.format](c.value) !== c.expected);
         expect(failures).toEqual([]);

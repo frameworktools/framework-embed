@@ -1,8 +1,9 @@
 // framework.embed/v1 -> HTML. SPEC.md, "Renderer markup", defines the output;
 // php/src/Renderer.php must produce the same bytes for every document.
-import { EMPTY, asciiCapitalize, exp, formatNumber, formatPValue, formatPercent, formatValue, isNumber, isPValueName } from './format.js';
+import { DATA_PLACES, EMPTY, RESULT_PLACES, asciiCapitalize, exp, formatNumber, formatPValue, formatPercent, formatValue, isNumber, isPValueName } from './format.js';
 
 export const ROW_LIMIT = 25;
+export const FEATURE_LIMIT = 10;
 
 const KINDS = new Set(['model', 'table', 'test', 'image', 'vega-lite', 'page']);
 
@@ -31,7 +32,7 @@ const MODEL_TYPES = {
     quantile: 'Quantile regression', linear_ml: 'Linear model', tree_ensemble: 'Tree ensemble',
 };
 
-const ALTERNATIVES = { 'two.sided': 'Two-sided alternative', less: 'One-sided alternative (less)', greater: 'One-sided alternative (greater)' };
+const ALTERNATIVES = { 'two.sided': 'Two-sided', less: 'One-sided (less)', greater: 'One-sided (greater)' };
 
 const COEFFICIENT_COLUMNS = new Set(['term', 'estimate', 'std_error', 'statistic', 'p_value', 'conf_low', 'conf_high', 'df']);
 
@@ -94,6 +95,7 @@ function renderCaption(doc, kind) {
 }
 
 // --- data kinds -------------------------------------------------------------
+// Models and tests show their main results; the rest goes in a closed <details>.
 
 function usableTables(data) {
     return list(data.tables).filter((table) => isObject(table) && Array.isArray(table.rows)
@@ -103,6 +105,16 @@ function usableTables(data) {
 
 function usableMetrics(data) {
     return list(data.metrics).filter((metric) => isObject(metric) && text(metric.name) !== null);
+}
+
+function details(label, blocks) {
+    if (blocks.length === 0) return [];
+    return [`<details class="fw-embed__details">`, `<summary>${label}</summary>`, ...blocks, '</details>'];
+}
+
+function isCoefficientTable(table, index) {
+    return (table.role === 'coefficients' || ((table.role === null || table.role === undefined) && index === 0))
+        && columnIndex(table, 'term') >= 0 && columnIndex(table, 'estimate') >= 0;
 }
 
 function renderModel(doc) {
@@ -119,13 +131,22 @@ function renderModel(doc) {
     if (formula !== null) parts.push(`<p class="fw-embed__formula"><code>${escapeHtml(formula)}</code></p>`);
     let level = null;
     for (const metric of metrics) if (metric.name === 'confidence_level' && isNumber(metric.value)) { level = metric.value; break; }
+    const coefficients = tables.map((table, index) => isCoefficientTable(table, index));
+    const importance = coefficients.includes(true) ? -1 : tables.findIndex((table) => table.role === 'importance');
+    const summary = [];
+    const rest = [];
     tables.forEach((table, index) => {
-        const coefficients = (table.role === 'coefficients' || ((table.role === null || table.role === undefined) && index === 0))
-            && columnIndex(table, 'term') >= 0 && columnIndex(table, 'estimate') >= 0;
-        parts.push(coefficients ? renderCoefficients(table, model, level, doc) : renderTable(table, true, true, doc));
+        if (coefficients[index]) {
+            summary.push(renderEstimates(table, model, level, doc));
+            rest.push(renderCoefficients(table, level, doc));
+        } else {
+            if (index === importance) summary.push(renderTable(table, true, true, doc, RESULT_PLACES, FEATURE_LIMIT, 'Model details'));
+            rest.push(renderTable(table, true, true, doc, RESULT_PLACES, ROW_LIMIT, null));
+        }
     });
-    if (metrics.length > 0) parts.push(renderMetrics(metrics));
-    return parts.join('\n');
+    if (metrics.length > 0) rest.push(renderMetrics(metrics));
+    if (summary.length === 0) return [...parts, ...rest].join('\n');
+    return [...parts, ...summary, ...details('Model details', rest)].join('\n');
 }
 
 function renderTableKind(doc) {
@@ -133,36 +154,45 @@ function renderTableKind(doc) {
     if (!isObject(data)) return null;
     const tables = usableTables(data);
     if (tables.length === 0) return null;
-    const parts = tables.map((table) => renderTable(table, tables.length > 1, false, doc));
+    const parts = tables.map((table) => renderTable(table, tables.length > 1, false, doc, DATA_PLACES, ROW_LIMIT, null));
     const metrics = usableMetrics(data);
     if (metrics.length > 0) parts.push(renderMetrics(metrics));
     return parts.join('\n');
+}
+
+function intervalText(low, high) {
+    return `${isNumber(low) ? formatNumber(low, true, RESULT_PLACES) : '-∞'} to ${isNumber(high) ? formatNumber(high, true, RESULT_PLACES) : '∞'}`;
 }
 
 function renderTest(doc) {
     const data = doc.data;
     if (!isObject(data) || !isObject(data.test) || text(data.test.method) === null) return null;
     const test = data.test;
-    const parts = [`<p class="fw-embed__method">${escapeHtml(test.method)}</p>`];
-    if (typeof test.alternative === 'string' && Object.hasOwn(ALTERNATIVES, test.alternative)) {
-        parts.push(`<p class="fw-embed__meta">${ALTERNATIVES[test.alternative]}</p>`);
+    const result = (value) => formatNumber(value, false, RESULT_PLACES);
+    const main = [];
+    if (isObject(test.statistic) && text(test.statistic.name) !== null) main.push([test.statistic.name, result(test.statistic.value)]);
+    if (isNumber(test.p_value)) main.push(['p-value', formatPValue(test.p_value)]);
+    const estimates = named(test.estimates);
+    const interval = isObject(test.conf_int) && isNumber(test.conf_int.level) ? test.conf_int : null;
+    const ci = interval === null ? null : `${formatPercent(interval.level)} CI`;
+    if (estimates.length === 1 && interval !== null) {
+        main.push([`${asciiCapitalize(estimates[0].name)} (${ci})`, `${result(estimates[0].value)} (${intervalText(interval.low, interval.high)})`]);
+    } else {
+        for (const entry of estimates) main.push([asciiCapitalize(entry.name), result(entry.value)]);
+        if (interval !== null) main.push([ci, intervalText(interval.low, interval.high)]);
     }
-    const stats = [];
-    if (isObject(test.statistic) && text(test.statistic.name) !== null) stats.push([test.statistic.name, formatNumber(test.statistic.value)]);
-    for (const entry of named(test.parameters)) stats.push([entry.name, formatNumber(entry.value)]);
-    if (isNumber(test.p_value)) stats.push(['p-value', formatPValue(test.p_value)]);
-    for (const entry of named(test.estimates)) stats.push([asciiCapitalize(entry.name), formatNumber(entry.value)]);
-    for (const entry of named(test.null_value)) stats.push([`Null value: ${entry.name}`, formatNumber(entry.value)]);
-    if (isObject(test.conf_int) && isNumber(test.conf_int.level)) {
-        const low = isNumber(test.conf_int.low) ? formatNumber(test.conf_int.low) : '-∞';
-        const high = isNumber(test.conf_int.high) ? formatNumber(test.conf_int.high) : '∞';
-        stats.push([`${formatPercent(test.conf_int.level)} CI`, `${low} to ${high}`]);
-    }
-    if (stats.length > 0) parts.push(renderPairs(stats));
-    for (const table of usableTables(data)) parts.push(renderTable(table, true, true, doc));
+    const extra = [];
+    if (typeof test.alternative === 'string' && Object.hasOwn(ALTERNATIVES, test.alternative)) extra.push(['Alternative', ALTERNATIVES[test.alternative]]);
+    for (const entry of named(test.parameters)) extra.push([entry.name, result(entry.value)]);
+    for (const entry of named(test.null_value)) extra.push([`Null value: ${entry.name}`, result(entry.value)]);
+    const rest = [];
+    if (extra.length > 0) rest.push(renderPairs(extra));
+    for (const table of usableTables(data)) rest.push(renderTable(table, true, true, doc, RESULT_PLACES, ROW_LIMIT, null));
     const metrics = usableMetrics(data);
-    if (metrics.length > 0) parts.push(renderMetrics(metrics));
-    return parts.join('\n');
+    if (metrics.length > 0) rest.push(renderMetrics(metrics));
+    const parts = [`<p class="fw-embed__method">${escapeHtml(test.method)}</p>`];
+    if (main.length > 0) parts.push(renderPairs(main));
+    return [...parts, ...details('Test details', rest)].join('\n');
 }
 
 function named(value) {
@@ -189,17 +219,17 @@ function cell(row, index) {
     return Array.isArray(row) && index >= 0 && index < row.length ? row[index] : null;
 }
 
-function shownRows(table) {
-    return table.rows.slice(0, ROW_LIMIT).filter((row) => Array.isArray(row));
+function shownRows(table, limit) {
+    return table.rows.slice(0, limit).filter((row) => Array.isArray(row));
 }
 
 function isDecimalColumn(rows, index) {
     return rows.some((row) => isNumber(cell(row, index)) && !Number.isInteger(cell(row, index)));
 }
 
-function formatCell(value, column, decimal) {
+function formatCell(value, column, decimal, places) {
     if (isNumber(value) && isPValueName(column.name)) return formatPValue(value);
-    return formatValue(value, decimal);
+    return formatValue(value, decimal, places);
 }
 
 function columnLabel(column, modelLabels) {
@@ -224,86 +254,120 @@ function openTable(table, showCaption, modifier) {
     return lines;
 }
 
-function tableNotes(table, rows, doc) {
+// `rest` names the <details> that holds the remaining rows, or null to link to the artifact.
+function tableNotes(table, rows, doc, rest) {
     const notes = [];
     const total = Number.isInteger(table.row_count) ? table.row_count : table.rows.length;
     const columnTotal = Number.isInteger(table.column_count) ? table.column_count : table.columns.length;
     const parts = [];
     if (total > rows.length) parts.push(`${formatNumber(rows.length)} of ${formatNumber(total)} rows`);
-    if (columnTotal > table.columns.length) parts.push(`${formatNumber(table.columns.length)} of ${formatNumber(columnTotal)} columns`);
+    if (rest === null && columnTotal > table.columns.length) parts.push(`${formatNumber(table.columns.length)} of ${formatNumber(columnTotal)} columns`);
     if (parts.length > 0) {
         const href = safeUrl(doc.url);
-        notes.push(`<p class="fw-embed__note">Showing ${parts.join(' and ')}.${href === null ? '' : ` <a href="${escapeHtml(href)}">View the full table</a>`}</p>`);
+        let more = '';
+        if (rest !== null) more = ` More in ${rest}.`;
+        else if (href !== null) more = ` <a href="${escapeHtml(href)}">View the full table</a>`;
+        notes.push(`<p class="fw-embed__note">Showing ${parts.join(' and ')}.${more}</p>`);
     }
-    if (text(table.precision_note) !== null) notes.push(`<p class="fw-embed__note">${escapeHtml(table.precision_note)}</p>`);
+    if (rest === null && text(table.precision_note) !== null) notes.push(`<p class="fw-embed__note">${escapeHtml(table.precision_note)}</p>`);
     return notes;
 }
 
-function renderTable(table, showCaption, modelLabels, doc) {
-    const rows = shownRows(table);
+function renderTable(table, showCaption, modelLabels, doc, places, limit, rest) {
+    const rows = shownRows(table, limit);
     const columns = table.columns;
     const decimal = columns.map((_, index) => isDecimalColumn(rows, index));
     const lines = openTable(table, showCaption, null);
     lines.push('<thead><tr>' + columns.map((column) => th(columnLabel(column, modelLabels), column.type === 'number')).join('') + '</tr></thead>');
     lines.push('<tbody>');
     for (const row of rows) {
-        lines.push('<tr>' + columns.map((column, index) => td(formatCell(cell(row, index), column, decimal[index]), column.type === 'number')).join('') + '</tr>');
+        lines.push('<tr>' + columns.map((column, index) => td(formatCell(cell(row, index), column, decimal[index], places), column.type === 'number')).join('') + '</tr>');
     }
     lines.push('</tbody>', '</table>', '</div>');
-    return [...lines, ...tableNotes(table, rows, doc)].join('\n');
+    return [...lines, ...tableNotes(table, rows, doc, rest)].join('\n');
 }
 
-function renderCoefficients(table, model, level, doc) {
-    const rows = shownRows(table);
-    const at = (name) => columnIndex(table, name);
-    const term = at('term');
-    const estimate = at('estimate');
-    const error = at('std_error');
-    const pValue = at('p_value');
-    const low = at('conf_low');
-    const high = at('conf_high');
-    const interval = low >= 0 && high >= 0;
-    const ratio = text(model.exponentiate);
-    const extras = [];
-    table.columns.forEach((column, index) => { if (!COEFFICIENT_COLUMNS.has(column.name)) extras.push(index); });
-    const decimal = table.columns.map((_, index) => isDecimalColumn(rows, index));
-
-    const head = [th(columnLabel(table.columns[term], true), false)];
-    for (const index of extras) head.push(th(columnLabel(table.columns[index], true), table.columns[index].type === 'number'));
-    head.push(th('Estimate', true));
-    const intervalLabel = level === null ? 'CI' : `${formatPercent(level)} CI`;
-    if (ratio !== null) head.push(th(interval ? `${ratio} (${intervalLabel})` : ratio, true));
-    if (error >= 0) head.push(th('Std. error', true));
-    if (interval) head.push(th(intervalLabel, true));
-    if (pValue >= 0) head.push(th('p-value', true));
-
-    const lines = openTable(table, true, 'coefficients');
-    lines.push('<thead><tr>' + head.join('') + '</tr></thead>', '<tbody>');
+// A coefficient table with the given columns: [header, numeric, (row) => text].
+function coefficientTable(table, doc, modifier, columns) {
+    const rows = shownRows(table, ROW_LIMIT);
+    const term = columnIndex(table, 'term');
+    const lines = openTable(table, true, modifier);
+    lines.push('<thead><tr>' + th(columnLabel(table.columns[term], true), false) + columns.map(([header, numeric]) => th(header, numeric)).join('') + '</tr></thead>', '<tbody>');
     for (const row of rows) {
-        const cells = [`<th scope="row">${escapeHtml(formatValue(cell(row, term)))}</th>`];
-        for (const index of extras) cells.push(td(formatCell(cell(row, index), table.columns[index], decimal[index]), table.columns[index].type === 'number'));
-        const value = cell(row, estimate);
-        cells.push(td(formatValue(value, true), true));
-        if (ratio !== null) cells.push(td(ratioCell(value, interval ? [cell(row, low), cell(row, high)] : null, cell(row, term)), true));
-        if (error >= 0) cells.push(td(formatValue(cell(row, error), true), true));
-        if (interval) {
-            const a = cell(row, low);
-            const b = cell(row, high);
-            cells.push(td(a === null && b === null ? EMPTY : `${formatValue(a, true)} to ${formatValue(b, true)}`, true));
-        }
-        if (pValue >= 0) cells.push(td(isNumber(cell(row, pValue)) ? formatPValue(cell(row, pValue)) : formatValue(cell(row, pValue)), true));
-        lines.push('<tr>' + cells.join('') + '</tr>');
+        lines.push('<tr>' + `<th scope="row">${escapeHtml(formatValue(cell(row, term)))}</th>` + columns.map(([, numeric, value]) => td(value(row), numeric)).join('') + '</tr>');
     }
     lines.push('</tbody>', '</table>', '</div>');
-    return [...lines, ...tableNotes(table, rows, doc)].join('\n');
+    return [...lines, ...tableNotes(table, rows, doc, null)].join('\n');
+}
+
+// Columns outside the standard set, such as a multinomial outcome, with their own formatting.
+function extraColumns(table) {
+    const rows = shownRows(table, ROW_LIMIT);
+    const columns = [];
+    table.columns.forEach((column, index) => {
+        if (COEFFICIENT_COLUMNS.has(column.name)) return;
+        const decimal = isDecimalColumn(rows, index);
+        columns.push([columnLabel(column, true), column.type === 'number', (row) => formatCell(cell(row, index), column, decimal, RESULT_PLACES)]);
+    });
+    return columns;
+}
+
+function intervalLabel(level) {
+    return level === null ? 'CI' : `${formatPercent(level)} CI`;
+}
+
+function decimalCell(index) {
+    return (row) => formatValue(cell(row, index), true, RESULT_PLACES);
+}
+
+function intervalCell(low, high) {
+    return (row) => {
+        const a = cell(row, low);
+        const b = cell(row, high);
+        return a === null && b === null ? EMPTY : `${formatValue(a, true, RESULT_PLACES)} to ${formatValue(b, true, RESULT_PLACES)}`;
+    };
+}
+
+// The default view: the estimate and its interval, or only the exponentiated estimate and its interval.
+function renderEstimates(table, model, level, doc) {
+    const estimate = columnIndex(table, 'estimate');
+    const term = columnIndex(table, 'term');
+    const low = columnIndex(table, 'conf_low');
+    const high = columnIndex(table, 'conf_high');
+    const interval = low >= 0 && high >= 0;
+    const ratio = text(model.exponentiate);
+    const columns = extraColumns(table);
+    if (ratio !== null) {
+        columns.push([interval ? `${ratio} (${intervalLabel(level)})` : ratio, true,
+            (row) => ratioCell(cell(row, estimate), interval ? [cell(row, low), cell(row, high)] : null, cell(row, term))]);
+    } else {
+        columns.push(['Estimate', true, decimalCell(estimate)]);
+        if (interval) columns.push([intervalLabel(level), true, intervalCell(low, high)]);
+    }
+    return coefficientTable(table, doc, 'estimates', columns);
+}
+
+// The full table for Model details: estimate, std. error, statistic, p-value, and interval.
+function renderCoefficients(table, level, doc) {
+    const at = (name) => columnIndex(table, name);
+    const columns = extraColumns(table);
+    columns.push(['Estimate', true, decimalCell(at('estimate'))]);
+    if (at('std_error') >= 0) columns.push(['Std. error', true, decimalCell(at('std_error'))]);
+    if (at('statistic') >= 0) columns.push(['Statistic', true, decimalCell(at('statistic'))]);
+    if (at('p_value') >= 0) {
+        const index = at('p_value');
+        columns.push(['p-value', true, (row) => (isNumber(cell(row, index)) ? formatPValue(cell(row, index)) : formatValue(cell(row, index)))]);
+    }
+    if (at('conf_low') >= 0 && at('conf_high') >= 0) columns.push([intervalLabel(level), true, intervalCell(at('conf_low'), at('conf_high'))]);
+    return coefficientTable(table, doc, 'coefficients', columns);
 }
 
 // An exponentiated estimate with its exponentiated interval. Intercepts show EMPTY.
 function ratioCell(estimate, bounds, term) {
     if (!isNumber(estimate) || (typeof term === 'string' && isIntercept(term))) return EMPTY;
-    const value = formatNumber(exp(estimate), true);
+    const value = formatNumber(exp(estimate), true, RESULT_PLACES);
     if (bounds === null) return value;
-    const [low, high] = bounds.map((bound) => (isNumber(bound) ? formatNumber(exp(bound), true) : EMPTY));
+    const [low, high] = bounds.map((bound) => (isNumber(bound) ? formatNumber(exp(bound), true, RESULT_PLACES) : EMPTY));
     return `${value} (${low} to ${high})`;
 }
 
@@ -321,7 +385,7 @@ function metricValue(name, value) {
     if (name === 'confidence_level' && isNumber(value)) return formatPercent(value);
     if (name === 'interval_method' && typeof value === 'string' && Object.hasOwn(INTERVAL_METHODS, value)) return INTERVAL_METHODS[value];
     if (isNumber(value) && isPValueName(name)) return formatPValue(value);
-    return formatValue(value);
+    return formatValue(value, false, RESULT_PLACES);
 }
 
 function renderMetrics(metrics) {

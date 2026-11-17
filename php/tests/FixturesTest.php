@@ -44,12 +44,14 @@ final class FixturesTest extends TestCase
     public function test_number_formatting_matches_the_shared_cases(): void
     {
         $cases = json_decode(file_get_contents(self::SPEC . '/format-cases.json'), true);
-        $this->assertGreaterThan(600, count($cases));
+        $this->assertGreaterThan(1300, count($cases));
         $failures = [];
         foreach ($cases as $case) {
             $actual = match ($case['format']) {
                 'number' => Format::number($case['value']),
                 'decimal' => Format::number($case['value'], true),
+                'result' => Format::number($case['value'], false, Format::RESULT_PLACES),
+                'result-decimal' => Format::number($case['value'], true, Format::RESULT_PLACES),
                 'p' => Format::pValue($case['value']),
                 'percent' => Format::percent($case['value']),
             };

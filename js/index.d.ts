@@ -41,6 +41,7 @@ export interface Config {
 }
 
 export const ROW_LIMIT: number;
+export const FEATURE_LIMIT: number;
 export const DEFAULT_HOSTS: readonly string[];
 export const DEFAULT_VEGA_SCRIPTS: readonly VegaScript[];
 
@@ -50,10 +51,11 @@ export function escapeHtml(value: unknown): string;
 export function safeUrl(value: unknown): string | null;
 export function scriptJson(value: unknown): string;
 
-export function formatNumber(x: unknown, decimal?: boolean): string;
+/** places: 3 for data tables (default), 2 for model and test results. */
+export function formatNumber(x: unknown, decimal?: boolean, places?: 2 | 3): string;
 export function formatPValue(p: unknown): string;
 export function formatPercent(x: unknown): string;
-export function formatValue(value: unknown, decimal?: boolean): string;
+export function formatValue(value: unknown, decimal?: boolean, places?: 2 | 3): string;
 export function formatFixed(x: number, places?: number): string;
 export function formatScientific(x: number, significant?: number): string;
 
@@ -85,6 +87,8 @@ export function responsiveSpec(spec: Record<string, unknown>): Record<string, un
 export function chartTheme(container: Element): { dark: boolean; config: Record<string, unknown> };
 export function textTooltip(): (handler: unknown, event: MouseEvent | null, item: unknown, value: unknown) => void;
 export function defineElement(name?: string): boolean;
+/** Opens closed .fw-embed__details before printing and closes them afterward. */
+export function expandDetailsForPrint(): void;
 export class FrameworkArtifactElement extends HTMLElement {
     load(): Promise<void>;
 }

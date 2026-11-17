@@ -3,12 +3,24 @@
 <p class="fw-embed__meta">Mixed model · gaussian family, identity link · Response: Reaction</p>
 <p class="fw-embed__formula"><code>Reaction ~ Days + (Days | Subject)</code></p>
 <div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Fixed effects">
+<table class="fw-embed__table fw-embed__table--estimates">
+<caption>Fixed effects</caption>
+<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
+<tbody>
+<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">251.41</td><td class="fw-embed__num">238.03 to 264.78</td></tr>
+<tr><th scope="row">Days</th><td class="fw-embed__num">10.47</td><td class="fw-embed__num">7.44 to 13.50</td></tr>
+</tbody>
+</table>
+</div>
+<details class="fw-embed__details">
+<summary>Model details</summary>
+<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Fixed effects">
 <table class="fw-embed__table fw-embed__table--coefficients">
 <caption>Fixed effects</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
+<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">Statistic</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
 <tbody>
-<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">251.405</td><td class="fw-embed__num">6.825</td><td class="fw-embed__num">238.029 to 264.781</td></tr>
-<tr><th scope="row">Days</th><td class="fw-embed__num">10.467</td><td class="fw-embed__num">1.546</td><td class="fw-embed__num">7.438 to 13.497</td></tr>
+<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">251.41</td><td class="fw-embed__num">6.82</td><td class="fw-embed__num">36.84</td><td class="fw-embed__num">238.03 to 264.78</td></tr>
+<tr><th scope="row">Days</th><td class="fw-embed__num">10.47</td><td class="fw-embed__num">1.55</td><td class="fw-embed__num">6.77</td><td class="fw-embed__num">7.44 to 13.50</td></tr>
 </tbody>
 </table>
 </div>
@@ -17,10 +29,10 @@
 <caption>Random effects</caption>
 <thead><tr><th scope="col">Group</th><th scope="col">Term</th><th scope="col" class="fw-embed__num">Variance</th><th scope="col" class="fw-embed__num">Std. dev.</th><th scope="col" class="fw-embed__num">Correlation</th></tr></thead>
 <tbody>
-<tr><td>Subject</td><td>(Intercept)</td><td class="fw-embed__num">612.100</td><td class="fw-embed__num">24.741</td><td class="fw-embed__num">—</td></tr>
-<tr><td>Subject</td><td>Days</td><td class="fw-embed__num">35.072</td><td class="fw-embed__num">5.922</td><td class="fw-embed__num">—</td></tr>
-<tr><td>Subject</td><td>(Intercept), Days</td><td class="fw-embed__num">—</td><td class="fw-embed__num">—</td><td class="fw-embed__num">0.066</td></tr>
-<tr><td>Residual</td><td>—</td><td class="fw-embed__num">654.940</td><td class="fw-embed__num">25.592</td><td class="fw-embed__num">—</td></tr>
+<tr><td>Subject</td><td>(Intercept)</td><td class="fw-embed__num">612.10</td><td class="fw-embed__num">24.74</td><td class="fw-embed__num">—</td></tr>
+<tr><td>Subject</td><td>Days</td><td class="fw-embed__num">35.07</td><td class="fw-embed__num">5.92</td><td class="fw-embed__num">—</td></tr>
+<tr><td>Subject</td><td>(Intercept), Days</td><td class="fw-embed__num">—</td><td class="fw-embed__num">—</td><td class="fw-embed__num">0.07</td></tr>
+<tr><td>Residual</td><td>—</td><td class="fw-embed__num">654.94</td><td class="fw-embed__num">25.59</td><td class="fw-embed__num">—</td></tr>
 </tbody>
 </table>
 </div>
@@ -28,13 +40,14 @@
 <div><dt>Confidence level</dt><dd>95%</dd></div>
 <div><dt>Interval method</dt><dd>Wald normal</dd></div>
 <div><dt>Observations</dt><dd>180</dd></div>
-<div><dt>AIC</dt><dd>1755.628</dd></div>
-<div><dt>BIC</dt><dd>1774.786</dd></div>
-<div><dt>Log likelihood</dt><dd>-871.814</dd></div>
-<div><dt>Residual std. dev.</dt><dd>25.592</dd></div>
+<div><dt>AIC</dt><dd>1755.63</dd></div>
+<div><dt>BIC</dt><dd>1774.79</dd></div>
+<div><dt>Log likelihood</dt><dd>-871.81</dd></div>
+<div><dt>Residual std. dev.</dt><dd>25.59</dd></div>
 <div><dt>REML</dt><dd>Yes</dd></div>
 <div><dt>Groups: Subject</dt><dd>18</dd></div>
 </dl>
+</details>
 </div>
 <figcaption class="fw-embed__caption">
 <span class="fw-embed__title">Sleep deprivation reaction times</span>

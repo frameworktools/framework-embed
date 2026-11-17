@@ -6,6 +6,7 @@ if (typeof window !== 'undefined') {
     window.FrameworkEmbed = FrameworkEmbed;
     if (window.FrameworkEmbedConfig) FrameworkEmbed.configure(window.FrameworkEmbedConfig);
     FrameworkEmbed.defineElement();
+    FrameworkEmbed.expandDetailsForPrint();
     const start = () => FrameworkEmbed.enhanceCharts(document);
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
     else start();

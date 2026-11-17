@@ -91,13 +91,20 @@ export function formatScientific(x, significant = 3) {
     return (x < 0 ? '-' : '') + mantissa + 'e' + (exp < 0 ? '-' : '+') + Math.abs(exp);
 }
 
-// A number in a table cell, statistic, or metric. `decimal` forces three decimals for whole numbers.
-export function formatNumber(x, decimal = false) {
+// Decimal places: 3 for data tables, 2 for model and test results.
+export const DATA_PLACES = 3;
+export const RESULT_PLACES = 2;
+// Below this size a nonzero number is written in scientific notation.
+const SMALL = { 2: 0.01, 3: 0.001 };
+
+// A number in a table cell, statistic, or metric. `decimal` forces `places` decimals for whole numbers.
+// Numbers below 10^-places or at least 1e15 use scientific notation with `places` significant digits.
+export function formatNumber(x, decimal = false, places = DATA_PLACES) {
     if (!isNumber(x)) return EMPTY;
     const size = Math.abs(x);
-    if (size >= 1e15 || (size > 0 && size < 0.001)) return formatScientific(x, 3);
+    if (size >= 1e15 || (size > 0 && size < SMALL[places])) return formatScientific(x, places);
     if (!decimal && Number.isInteger(x)) return formatFixed(x, 0);
-    return formatFixed(x, 3);
+    return formatFixed(x, places);
 }
 
 export function formatPValue(p) {
@@ -111,10 +118,10 @@ export function formatPercent(x) {
     return isNumber(percent) ? formatFixed(percent, 1).replace(/\.0$/, '') + '%' : EMPTY;
 }
 
-export function formatValue(value, decimal = false) {
+export function formatValue(value, decimal = false, places = DATA_PLACES) {
     if (value === null || value === undefined) return EMPTY;
     if (typeof value === 'boolean') return value ? 'Yes' : 'No';
-    if (typeof value === 'number') return formatNumber(value, decimal);
+    if (typeof value === 'number') return formatNumber(value, decimal, places);
     if (typeof value === 'string') return value;
     return EMPTY;
 }

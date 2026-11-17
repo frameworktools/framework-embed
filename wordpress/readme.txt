@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.2.0
+Stable tag: 0.3.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -82,6 +82,11 @@ Yes. The stylesheet uses custom properties such as `--fw-embed-font`, `--fw-embe
 A host name, such as `framework.example.org`, allows HTTPS only. An origin, such as `http://localhost:8000`, allows exactly that scheme, host, and port. IP addresses and paths are rejected.
 
 == Changelog ==
+
+= 0.3.0 =
+* Models show estimates at two decimals; diagnostics sit under Model details.
+* Smaller, roomier type that sits well in blog posts.
+* Live Vega-Lite charts follow the page's theme, width, and font.
 
 = 0.2.0 =
 * The block stores the artifact with the post. Fetch again, Use newest version, and a daily takedown check.

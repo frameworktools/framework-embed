@@ -4,9 +4,9 @@ Renderers that show Framework artifacts on any website without iframes. A Framew
 
 Supported artifacts:
 
-- regression models, with coefficient tables, exponentiated estimates, and fit statistics;
-- tables;
-- hypothesis tests;
+- regression models: estimates with their confidence intervals, or odds, hazard, and rate ratios with theirs. Standard errors, test statistics, p-values, other tables, and fit statistics sit in a closed "Model details" disclosure;
+- tables, with the first 25 rows;
+- hypothesis tests: the statistic, p-value, and estimate with its interval, with the rest under "Test details";
 - figures (SVG, PNG, JPEG, GIF, and WebP);
 - Vega-Lite charts;
 - everything else as a link card.
@@ -61,6 +61,16 @@ mount(document.querySelector('#figure'), doc); // render and draw charts
 ```
 
 See `js/index.d.ts` for the full API.
+
+For the logistic regression in `spec/fixtures/r-glm-logit.json`, the visible table reads:
+
+| Term | Odds ratio (95% CI) |
+|---|---|
+| (Intercept) | — |
+| wt | 3.1e-4 (7.5e-7 to 0.13) |
+| hp | 1.04 (1.00 to 1.07) |
+
+Model and test results use two decimal places. Data tables use three. `SPEC.md` defines both rules.
 
 ## PHP
 

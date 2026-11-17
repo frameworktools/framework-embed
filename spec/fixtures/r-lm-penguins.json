@@ -1,0 +1,162 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "rlmpenguins00000",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "model",
+    "title": "Bill length by body mass and species",
+    "description": null,
+    "alt": "Linear model of bill_length_mm with 4 terms.",
+    "url": "https://framework.pub/@ada/admissions/r-lm-penguins/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/rlmpenguins00000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/admissions/r-lm-penguins/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "model",
+        "source": {
+            "language": "r",
+            "class": [
+                "lm"
+            ]
+        },
+        "model": {
+            "type": "linear",
+            "family": "gaussian",
+            "link": "identity",
+            "response": "bill_length_mm"
+        },
+        "test": null,
+        "tables": [
+            {
+                "title": "Coefficients",
+                "role": "coefficients",
+                "columns": [
+                    {
+                        "name": "term",
+                        "type": "string"
+                    },
+                    {
+                        "name": "estimate",
+                        "type": "number"
+                    },
+                    {
+                        "name": "std_error",
+                        "type": "number"
+                    },
+                    {
+                        "name": "statistic",
+                        "type": "number"
+                    },
+                    {
+                        "name": "p_value",
+                        "type": "number"
+                    },
+                    {
+                        "name": "conf_low",
+                        "type": "number"
+                    },
+                    {
+                        "name": "conf_high",
+                        "type": "number"
+                    }
+                ],
+                "rows": [
+                    [
+                        "(Intercept)",
+                        41.6359803261614,
+                        5.39735732958576,
+                        7.71414190013559,
+                        2.86488709291187e-07,
+                        30.3391816051014,
+                        52.9327790472214
+                    ],
+                    [
+                        "body_mass_g",
+                        0.000396570302846363,
+                        0.00135023704537884,
+                        0.293704208608124,
+                        0.772168157503278,
+                        -0.00242950831228475,
+                        0.00322264891797748
+                    ],
+                    [
+                        "speciesChinstrap",
+                        -1.0234941042439,
+                        2.42552757051312,
+                        -0.421967623327149,
+                        0.677784774335635,
+                        -6.1001816539584,
+                        4.05319344547061
+                    ],
+                    [
+                        "speciesGentoo",
+                        2.81341905372511,
+                        2.33862140990588,
+                        1.20302458611218,
+                        0.243743808379269,
+                        -2.08137181136218,
+                        7.7082099188124
+                    ]
+                ],
+                "precision_note": null,
+                "row_count": 4,
+                "column_count": 7,
+                "truncated": false
+            }
+        ],
+        "metrics": [
+            {
+                "name": "confidence_level",
+                "value": 0.95
+            },
+            {
+                "name": "interval_method",
+                "value": "wald-t"
+            },
+            {
+                "name": "nobs",
+                "value": 23
+            },
+            {
+                "name": "r.squared",
+                "value": 0.122966671997706
+            },
+            {
+                "name": "adj.r.squared",
+                "value": -0.015512274528972
+            },
+            {
+                "name": "sigma",
+                "value": 4.69696736510149
+            },
+            {
+                "name": "aic",
+                "value": 142.03508679543
+            },
+            {
+                "name": "bic",
+                "value": 147.712557875076
+            },
+            {
+                "name": "df_resid",
+                "value": 19
+            }
+        ],
+        "truncated": false,
+        "formula": "bill_length_mm ~ body_mass_g + species"
+    },
+    "spec": null,
+    "image": null
+}

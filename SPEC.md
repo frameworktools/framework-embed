@@ -129,28 +129,37 @@ The `<figure>` carries `data-fw-embed-key` when `key` is a non-empty string and 
 
 ### `model`
 
+A model shows its estimates. Everything else goes in a closed `<details class="fw-embed__details">` whose `<summary>` reads `Model details`. Readers can open it without JavaScript.
+
 Inside `fw-embed__body`, in order:
 
 1. `<p class="fw-embed__meta">`: the model type, family and link, and response, joined by ` · `. For example, `Generalized linear model · binomial family, logit link · Response: am`. Type labels: `linear` Linear model, `glm` Generalized linear model, `mixed` Mixed model, `survival` Survival model, `ordinal` Ordinal model, `multinomial` Multinomial model, `additive` Additive model, `fixed_effects` Fixed-effects model, `quantile` Quantile regression, `linear_ml` Linear model, `tree_ensemble` Tree ensemble. `other` is left out. Unknown types appear as sent.
 2. `<p class="fw-embed__formula"><code>`: `formula`, when present.
-3. One table per entry in `tables`. A table is a coefficient table when its `role` is `coefficients` (or it is the first table and has no role) and it has `term` and `estimate` columns. Every other table renders as a data table with model column labels.
-4. `<dl class="fw-embed__stats">`: the metrics.
+3. An estimates table (`fw-embed__table--estimates`) for each coefficient table.
+4. The `Model details` disclosure, holding:
+   - the full coefficient table (`fw-embed__table--coefficients`) for each coefficient table;
+   - every other table (random effects, importance, smooth terms, ANOVA, and others) as a data table with model column labels, up to 25 rows;
+   - `<dl class="fw-embed__stats">` with the metrics.
 
-A coefficient table has these columns, in order. Columns whose data is absent are left out.
+A table is a coefficient table when its `role` is `coefficients` (or it is the first table and has no role) and it has `term` and `estimate` columns.
 
-- Term.
-- Any columns outside the standard set (`term`, `estimate`, `std_error`, `statistic`, `p_value`, `conf_low`, `conf_high`, `df`).
-- Estimate, on the model's scale.
-- The exponentiated estimate, when `model.exponentiate` is set. The header is the label with the interval, such as `Odds ratio (95% CI)`. The cell reads `exp(estimate) (exp(low) to exp(high))`, such as `1.037 (1.001 to 1.074)`. Without interval columns, the header is the label alone and the cell is `exp(estimate)`. Intercept rows show `—`. A term is an intercept when, in ASCII lower case, it is `(intercept)`, `intercept`, `const`, or `_cons`.
-- Std. error.
-- The interval on the model's scale, as `low to high` under `95% CI`. The level comes from the `confidence_level` metric. Without it, the header is `CI`.
-- p-value. `statistic` and `df` are not shown. The term is a row header (`<th scope="row">`). Estimates, ratios, standard errors, and bounds always use decimal formatting.
+A model with no coefficient table but with an `importance` table shows that table's first 10 rows in place of item 3. Its note reads `Showing 10 of {row_count} rows. More in Model details.` The full table is also in the disclosure.
+
+A model with no coefficient or importance table shows its tables and metrics without a disclosure.
+
+Both coefficient tables start with Term, a row header (`<th scope="row">`). Next come any columns outside the standard set (`term`, `estimate`, `std_error`, `statistic`, `p_value`, `conf_low`, `conf_high`, `df`). The remaining columns depend on the table. Columns whose data is absent are left out.
+
+- **Estimates table, without `model.exponentiate`:** Estimate, and the interval as `low to high` under `95% CI`.
+- **Estimates table, with `model.exponentiate`:** one column for the exponentiated estimate with its exponentiated interval. The header is the label with the interval, such as `Odds ratio (95% CI)`. The cell reads `exp(estimate) (exp(low) to exp(high))`, such as `1.04 (1.00 to 1.07)`. Without interval columns, the header is the label alone and the cell is `exp(estimate)`. The model-scale estimate is not shown. Intercept rows show `—`. A term is an intercept when, in ASCII lower case, it is `(intercept)`, `intercept`, `const`, or `_cons`.
+- **Full coefficient table:** Estimate, Std. error, Statistic, p-value, and the interval on the model's scale.
+
+The interval header takes its level from the `confidence_level` metric. Without that metric, the header is `CI`. Estimates, ratios, standard errors, statistics, and bounds use result formatting with forced decimals.
 
 `exp` is fdlibm's `exp`, computed with IEEE basic operations only, so the JS and PHP renderers agree bit for bit. Platform `exp` functions can differ in the last place.
 
 Metric labels: `nobs` Observations, `df_resid` Residual df, `df_model` Model df, `aic` AIC, `bic` BIC, `rsquared` and `r.squared` R², `rsquared_adj` and `adj.r.squared` Adjusted R², `pseudo_rsquared` Pseudo R², `sigma` Residual std. dev., `llf` and `log_likelihood` Log likelihood, `deviance` Deviance, `null.deviance` Null deviance, `dispersion` Dispersion, `converged` Converged, `reml` REML, `confidence_level` Confidence level, `interval_method` Interval method, `vcov_type` Standard errors, `n_estimators` Trees, `max_depth` Maximum depth, `learning_rate` Learning rate, `n_features` Features, `importance_type` Importance type, `objective` Objective, `n_events` Events, `concordance` Concordance, `theta` Theta, `command` Command. `n_groups.<factor>` becomes `Groups: <factor>`. Other names replace `_` and `.` with spaces and capitalize an initial ASCII letter.
 
-Metric values: `confidence_level` as a percent, `interval_method` `wald-t` as Wald t, `wald-normal` as Wald normal, `profile` as Profile likelihood, and `bootstrap` as Bootstrap. p-value names use p-value formatting. Other numbers use number formatting.
+Metric values: `confidence_level` as a percent, `interval_method` `wald-t` as Wald t, `wald-normal` as Wald normal, `profile` as Profile likelihood, and `bootstrap` as Bootstrap. p-value names use p-value formatting. Other numbers use result formatting.
 
 ### `table`
 
@@ -174,22 +183,28 @@ Each table renders as a data table. Captions appear only when there is more than
 
 - The first 25 rows are shown.
 - Number columns get `class="fw-embed__num"` on their header and cells.
-- A number column is decimal when any shown value in it is not a whole number. Decimal columns use three decimals for every value.
+- A number column is decimal when any shown value in it is not a whole number. Every value in a decimal column gets the full number of decimals: three in `table` documents (data formatting), two in model and test tables (result formatting).
 - Model and test tables label known columns: `term` Term, `estimate` Estimate, `std_error` Std. error, `statistic` Statistic, `p_value` p-value, `conf_low` CI lower, `conf_high` CI upper, `group` Group, `variance` Variance, `std_dev` Std. dev., `correlation` Correlation, `feature` Feature, `importance` Importance, `edf` EDF, `ref_df` Ref. df. A column `label` wins over these.
 - The note appears when `row_count` exceeds the rows shown or `column_count` exceeds the columns sent: `Showing {n} of {total} rows and {m} of {total} columns.` The link appears when `url` is safe.
 
 ### `test`
 
-`<p class="fw-embed__method">`, then `<p class="fw-embed__meta">` with the alternative (Two-sided alternative, One-sided alternative (less), One-sided alternative (greater)), then a `<dl class="fw-embed__stats">` with:
+`<p class="fw-embed__method">`, then a `<dl class="fw-embed__stats">` with the main results:
 
 - the statistic, under its own name;
-- each parameter, under its own name;
 - `p-value`;
-- each estimate, its name with an initial ASCII letter capitalized;
-- each null value, as `Null value: {name}`;
-- the interval, as `95% CI` and `low to high`. A missing bound is `-∞` or `∞`.
+- with exactly one estimate and an interval, one entry named `{Estimate} (95% CI)` that reads `estimate (low to high)`;
+- otherwise each estimate, then the interval as `95% CI` reading `low to high`.
 
-Tables and metrics follow, as for models.
+Estimate names get an initial ASCII capital. A missing bound is `-∞` or `∞`.
+
+A closed `<details class="fw-embed__details">` with the summary `Test details` follows when there is more to show. It holds:
+
+- a `<dl>` with `Alternative` (Two-sided, One-sided (less), or One-sided (greater)), each parameter under its own name, and each null value as `Null value: {name}`;
+- the test's tables, as data tables with model column labels;
+- the metrics.
+
+Numbers use result formatting.
 
 ### `image`
 
@@ -262,17 +277,23 @@ A URL is used in `href` or `src` only when it matches `^https?://` (any case) fo
 
 All rounding works on the shortest round-trip decimal form of the number (JavaScript `toExponential()` digits). It rounds half away from zero. Rounding the binary value directly would make JavaScript and PHP disagree on ties such as 0.0625.
 
-| Rule | Applies to | Example |
-|---|---|---|
-| Missing value | `null` | `—` |
-| Booleans | `true`, `false` | `Yes`, `No` |
-| Scientific, three significant digits | nonzero numbers with absolute value below 0.001, and any number at or above 1e15 | `5.99e-7`, `1.00e+15` |
-| Whole number | whole numbers outside decimal columns | `32`, `2026` |
-| Three decimals | everything else | `0.036`, `-5.030` |
-| Grouping | integer parts of five or more digits get commas | `12,345.679`, `9999` |
-| p-value | `p_value` columns and metrics (also `p.value`, `p-value`, `pvalue`, `Pr(>|t|)`, `Pr(>|z|)`, `Pr(>Chisq)`, `P>|t|`, `P>|z|`, any ASCII case) and test p-values | `< 0.001` below 0.001, else three decimals |
-| Percent | confidence levels | `x * 100` rounded to one decimal, with `.0` dropped: `95%`, `97.5%` |
+There are two contexts, which differ only in the number of places `p`:
 
+- **Data formatting (`p` = 3):** values in `table` documents.
+- **Result formatting (`p` = 2):** everything in `model` and `test` documents, including their tables and metrics.
+
+| Rule | Applies to | Data (`p` = 3) | Result (`p` = 2) |
+|---|---|---|---|
+| Missing value | `null` | `—` | `—` |
+| Booleans | `true`, `false` | `Yes`, `No` | `Yes`, `No` |
+| Scientific, `p` significant digits | nonzero numbers with absolute value below 10^-`p` (0.001 or 0.01), and any number at or above 1e15 | `5.99e-7`, `1.00e+15` | `3.1e-4`, `1.5e-3` |
+| Whole number | whole numbers outside decimal columns | `32`, `2026` | `32`, `2026` |
+| `p` decimals | everything else | `0.036`, `-5.030` | `0.04`, `-5.03` |
+| Grouping | integer parts of five or more digits get commas | `12,345.679`, `9999` | `12,345.68` |
+| p-value | `p_value` columns and metrics (also `p.value`, `p-value`, `pvalue`, `Pr(>|t|)`, `Pr(>|z|)`, `Pr(>Chisq)`, `P>|t|`, `P>|z|`, any ASCII case) and test p-values, in both contexts | `< 0.001` below 0.001, else three decimals | the same |
+| Percent | confidence levels, in both contexts | `x * 100` rounded to one decimal, with `.0` dropped: `95%`, `97.5%` | the same |
+
+- A number just under the threshold can round up to it, for example `0.00995` becomes `1.0e-2` in result formatting.
 - A negative number that rounds to zero loses its sign.
 - The minus sign is ASCII `-`.
 - Strings, dates, and large integers that Cloud sent as strings appear as sent.
@@ -310,3 +331,5 @@ On an allowed host, these paths are artifact URLs. Query strings and fragments a
 ## Theming
 
 The stylesheet themes through `--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`. `--fw-embed-font` and `--fw-embed-fg` are unset by default, so the site's font and color apply. Muted text and borders mix the current text color with transparency, so they suit light and dark pages. The accent changes under `prefers-color-scheme: dark` and under a `data-theme="dark"` or `.dark` ancestor. A `data-theme="light"` or `.light` ancestor keeps the light accent. Figures sit on a white card in both themes.
+
+Type sizes are relative to the host text, so the host's scale applies. The figure is 0.875em of the surrounding text. Tables and statistics come to about 0.8125em of it, and captions, notes, the meta line, and the `details` summary to about 0.75em. Table rows use a lighter rule than the header. In print, closed `details` open through `::details-content` where supported, and through the JS bundle's `beforeprint` handler elsewhere.
