@@ -95,17 +95,22 @@ export function formatScientific(x, significant = 3) {
 export const DATA_PLACES = 3;
 export const RESULT_PLACES = 2;
 // A number in a table cell, statistic, or metric. `decimal` forces `places` decimals for whole numbers.
-// No scientific notation: large numbers are written in full, and a nonzero number that rounds to
-// zero is written as "< 0.01" (or "> -0.01"), with `places` decimals.
+// No scientific notation: large numbers are written in full. A nonzero number that rounds to zero
+// at `places` gets the decimals it needs for two significant digits (0.00031, not "< 0.01"), up to
+// SMALL_PLACES; past that it is written as "< 0.0000000001" (or "> -0.0000000001").
+export const SMALL_PLACES = 10;
 export function formatNumber(x, decimal = false, places = DATA_PLACES) {
     if (!isNumber(x)) return EMPTY;
     if (!decimal && Number.isInteger(x)) return formatFixed(x, 0);
     const fixed = formatFixed(x, places);
-    if (x !== 0 && !/[1-9]/.test(fixed)) {
-        const smallest = '0.' + '0'.repeat(places - 1) + '1';
-        return x > 0 ? `< ${smallest}` : `> -${smallest}`;
+    if (x === 0 || /[1-9]/.test(fixed)) return fixed;
+    for (let more = places + 1; more <= SMALL_PLACES; more++) {
+        const small = formatFixed(x, more);
+        const significant = small.replace(/^-?0\.0*/, '');
+        if (significant.length >= 2 || (more === SMALL_PLACES && /[1-9]/.test(significant))) return small.replace(/0+$/, '');
     }
-    return fixed;
+    const smallest = '0.' + '0'.repeat(SMALL_PLACES - 1) + '1';
+    return x > 0 ? `< ${smallest}` : `> -${smallest}`;
 }
 
 export function formatPValue(p) {
