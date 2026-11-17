@@ -1,0 +1,28 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "hostilepage00000",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "page",
+    "title": "<script>alert(1)</script>",
+    "description": "\"><img src=x onerror=alert(1)>",
+    "alt": "<script>alert(1)</script>",
+    "url": "data:text/html,<script>alert(1)</script>",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/hostilepage00000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "\"><img src=x onerror=alert(1)>",
+        "url": "https://framework.pub/@ada?x=\"><b>"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/a b"
+    },
+    "data": null,
+    "spec": null,
+    "image": null
+}

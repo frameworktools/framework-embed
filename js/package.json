@@ -1,0 +1,50 @@
+{
+  "name": "@framework-cloud/embed",
+  "version": "0.1.0",
+  "description": "Render Framework artifacts (models, tables, tests, figures, Vega-Lite charts) from Framework Cloud embed documents, without iframes.",
+  "license": "MIT",
+  "type": "module",
+  "main": "./dist/framework-embed.js",
+  "module": "./dist/framework-embed.js",
+  "types": "./index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "import": "./dist/framework-embed.js"
+    },
+    "./render": "./src/render.js",
+    "./css": "./dist/framework-embed.css",
+    "./framework-embed.css": "./dist/framework-embed.css",
+    "./iife": "./dist/framework-embed.iife.js"
+  },
+  "files": [
+    "dist",
+    "src",
+    "index.d.ts",
+    "README.md"
+  ],
+  "sideEffects": [
+    "./src/iife.js",
+    "./dist/framework-embed.iife.js",
+    "*.css"
+  ],
+  "scripts": {
+    "build": "node scripts/build.mjs",
+    "test": "vitest run",
+    "fixtures": "node scripts/write-fixtures.mjs",
+    "prepublishOnly": "npm run build && npm test"
+  },
+  "devDependencies": {
+    "ajv": "8.17.1",
+    "esbuild": "0.25.10",
+    "happy-dom": "18.0.1",
+    "vega": "6.2.0",
+    "vega-embed": "7.1.0",
+    "vega-interpreter": "2.2.1",
+    "vega-lite": "6.4.3",
+    "vitest": "3.2.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

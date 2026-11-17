@@ -1,0 +1,16 @@
+framework_embed.settings:
+  type: config_object
+  label: 'Framework embed settings'
+  mapping:
+    hosts:
+      type: sequence
+      label: 'Extra allowed hosts'
+      sequence:
+        type: string
+        label: 'Host name or origin'
+    max_ttl:
+      type: integer
+      label: 'Longest cache lifetime, in seconds'
+    takedown:
+      type: boolean
+      label: 'Remove stored copies the server reports gone'

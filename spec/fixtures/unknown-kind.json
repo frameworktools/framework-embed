@@ -1,0 +1,12 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "unknownkind00000",
+    "version": 2,
+    "kind": "notebook",
+    "title": "Exploration notebook",
+    "description": "A kind this renderer does not know.",
+    "url": "https://framework.pub/d/unknownkind00000/versions/2",
+    "future_field": {
+        "nested": true
+    }
+}

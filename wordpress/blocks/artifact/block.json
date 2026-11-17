@@ -1,0 +1,49 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "framework/artifact",
+	"version": "0.2.0",
+	"title": "Framework artifact",
+	"category": "embed",
+	"icon": "chart-bar",
+	"description": "A model, table, test, figure, or chart from framework.pub or another Framework Cloud server, stored with the post.",
+	"keywords": [
+		"framework",
+		"regression",
+		"model",
+		"table",
+		"chart"
+	],
+	"textdomain": "framework-embed",
+	"attributes": {
+		"url": {
+			"type": "string",
+			"default": ""
+		},
+		"embedUrl": {
+			"type": "string",
+			"default": ""
+		},
+		"document": {
+			"type": "string",
+			"default": ""
+		},
+		"fetchedAt": {
+			"type": "string",
+			"default": ""
+		},
+		"removed": {
+			"type": "boolean",
+			"default": false
+		}
+	},
+	"supports": {
+		"html": false,
+		"align": [
+			"wide",
+			"full"
+		]
+	},
+	"editorScript": "file:./index.js",
+	"style": "framework-embed"
+}

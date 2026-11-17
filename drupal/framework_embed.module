@@ -1,0 +1,44 @@
+<?php
+
+/**
+ * @file
+ * Hooks for Framework Embeds.
+ */
+
+declare(strict_types=1);
+
+use Drupal\Core\Cache\Cache;
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\framework_embed\Embedder;
+
+/**
+ * Implements hook_help().
+ */
+function framework_embed_help(string $route_name, RouteMatchInterface $route_match): ?string {
+  if ($route_name !== 'help.page.framework_embed') {
+    return NULL;
+  }
+
+  return '<p>' . t('Shows Framework artifacts in content. Add a "Framework artifact" field to store artifacts with content; it renders from the stored copy. For URLs in text, enable the "Embed Framework artifacts" filter on a text format, after "Limit allowed HTML tags". For Link fields, choose the "Framework artifact" formatter. Both render from a cache filled in the background.') . '</p>';
+}
+
+/**
+ * Implements hook_cron().
+ *
+ * Runs the daily takedown check for stored copies (see Takedown).
+ *
+ * The Internal Page Cache keeps anonymous pages until a cache tag changes and
+ * ignores max-age. Invalidating the embed tag once per longest lifetime bounds
+ * how stale a cached page's figures can get.
+ */
+function framework_embed_cron(): void {
+  \Drupal::service('framework_embed.takedown')->runIfDue(\Drupal::time()->getRequestTime());
+
+  $state = \Drupal::state();
+  $now = \Drupal::time()->getRequestTime();
+  $maxTtl = (int) (\Drupal::config('framework_embed.settings')->get('max_ttl') ?? 3600);
+  if ($now - (int) $state->get('framework_embed.invalidated', 0) >= max(60, $maxTtl)) {
+    Cache::invalidateTags([Embedder::TAG]);
+    $state->set('framework_embed.invalidated', $now);
+  }
+}

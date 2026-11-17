@@ -1,0 +1,37 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "minimalmodel0000",
+    "version": 1,
+    "kind": "model",
+    "title": "Minimal model",
+    "description": null,
+    "alt": "Minimal model",
+    "url": "https://framework.pub/@ada/admissions/minimal-model/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/minimalmodel0000/versions/1",
+    "author": {
+        "name": "Ada Example",
+        "url": null
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "model",
+        "source": {
+            "language": "python",
+            "class": []
+        },
+        "tables": [],
+        "metrics": [
+            {
+                "name": "nobs",
+                "value": 12
+            },
+            {
+                "name": "objective",
+                "value": "reg:squarederror"
+            }
+        ],
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

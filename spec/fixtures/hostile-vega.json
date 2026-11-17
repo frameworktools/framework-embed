@@ -1,0 +1,75 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "hostilevega00000",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "vega-lite",
+    "title": "Chart <script>alert(1)</script>",
+    "description": null,
+    "alt": "Chart \"><img src=x onerror=alert(1)>",
+    "url": "https://framework.pub/@ada/admissions/hostile-vega/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/hostilevega00000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/admissions/hostile-vega/versions/1"
+    },
+    "data": null,
+    "spec": {
+        "$schema": "https://vega.github.io/schema/vega-lite/v6.json",
+        "title": "</script><script>alert(1)</script>   & <!-- x",
+        "description": "tab\there \"quote\" back\\slash \u0001",
+        "data": {
+            "values": [
+                {
+                    "a": "A",
+                    "b": 1e-7
+                },
+                {
+                    "a": "B",
+                    "b": 1e+21
+                },
+                {
+                    "a": "C",
+                    "b": 2
+                },
+                {
+                    "a": "D",
+                    "b": -0.5
+                },
+                {
+                    "a": "E",
+                    "b": 123456789012345680
+                }
+            ]
+        },
+        "mark": "bar",
+        "encoding": {
+            "x": {
+                "field": "a",
+                "type": "nominal"
+            },
+            "y": {
+                "field": "b",
+                "type": "quantitative"
+            }
+        },
+        "config": {},
+        "params": [],
+        "usermeta": {
+            "2": "two",
+            "10": "ten",
+            "b": "bee",
+            "01": "zero-one"
+        }
+    },
+    "image": null
+}

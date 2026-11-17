@@ -1,0 +1,7 @@
+framework_embed.settings:
+  path: '/admin/config/content/framework-embed'
+  defaults:
+    _form: '\Drupal\framework_embed\Form\SettingsForm'
+    _title: 'Framework embeds'
+  requirements:
+    _permission: 'administer framework embed'

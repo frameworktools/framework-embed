@@ -1,0 +1,160 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "statastcox000000",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "model",
+    "title": "Drug trial survival",
+    "description": null,
+    "alt": "Survival model of _t with 3 terms. Hazard ratios available.",
+    "url": "https://framework.pub/@ada/admissions/stata-stcox/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/statastcox000000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/admissions/stata-stcox/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "model",
+        "source": {
+            "language": "stata",
+            "class": [
+                "stcox",
+                "cox"
+            ]
+        },
+        "model": {
+            "type": "survival",
+            "response": "_t",
+            "exponentiate": "Hazard ratio"
+        },
+        "test": null,
+        "tables": [
+            {
+                "title": "Coefficients",
+                "role": "coefficients",
+                "columns": [
+                    {
+                        "name": "term",
+                        "type": "string"
+                    },
+                    {
+                        "name": "estimate",
+                        "type": "number"
+                    },
+                    {
+                        "name": "std_error",
+                        "type": "number"
+                    },
+                    {
+                        "name": "statistic",
+                        "type": "number"
+                    },
+                    {
+                        "name": "p_value",
+                        "type": "number"
+                    },
+                    {
+                        "name": "conf_low",
+                        "type": "number"
+                    },
+                    {
+                        "name": "conf_high",
+                        "type": "number"
+                    }
+                ],
+                "rows": [
+                    [
+                        "2.drug",
+                        -1.7115595551676477,
+                        0.49436392682262537,
+                        -3.462144914513037,
+                        0.0005358885282653075,
+                        -2.680495046995788,
+                        -0.7426240633395074
+                    ],
+                    [
+                        "3.drug",
+                        -2.9563840318125147,
+                        0.6557432095535114,
+                        -4.508447802037455,
+                        0.00000653036306294016,
+                        -4.2416171056440986,
+                        -1.6711509579809312
+                    ],
+                    [
+                        "age",
+                        0.11183999732664864,
+                        0.03657889370855602,
+                        3.0575008150257044,
+                        0.0022319103446088308,
+                        0.040146683063560076,
+                        0.18353331158973718
+                    ]
+                ],
+                "precision_note": null,
+                "row_count": 3,
+                "column_count": 7,
+                "truncated": false
+            }
+        ],
+        "metrics": [
+            {
+                "name": "nobs",
+                "value": 48
+            },
+            {
+                "name": "n_events",
+                "value": 31
+            },
+            {
+                "name": "df_model",
+                "value": 3
+            },
+            {
+                "name": "aic",
+                "value": 169.30513460494467
+            },
+            {
+                "name": "bic",
+                "value": 174.91873763766836
+            },
+            {
+                "name": "log_likelihood",
+                "value": -81.65256730247233
+            },
+            {
+                "name": "converged",
+                "value": true
+            },
+            {
+                "name": "vcov_type",
+                "value": "oim"
+            },
+            {
+                "name": "confidence_level",
+                "value": 0.95
+            },
+            {
+                "name": "interval_method",
+                "value": "wald-normal"
+            },
+            {
+                "name": "command",
+                "value": "stcox i.drug age"
+            }
+        ],
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

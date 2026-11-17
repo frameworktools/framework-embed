@@ -1,0 +1,177 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "stataregress0000",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "model",
+    "title": "Car prices",
+    "description": null,
+    "alt": "Linear model of price with 4 terms.",
+    "url": "https://framework.pub/@ada/admissions/stata-regress/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/stataregress0000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/admissions/stata-regress/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "model",
+        "source": {
+            "language": "stata",
+            "class": [
+                "regress"
+            ]
+        },
+        "model": {
+            "type": "linear",
+            "family": "gaussian",
+            "link": "identity",
+            "response": "price"
+        },
+        "test": null,
+        "tables": [
+            {
+                "title": "Coefficients",
+                "role": "coefficients",
+                "columns": [
+                    {
+                        "name": "term",
+                        "type": "string"
+                    },
+                    {
+                        "name": "estimate",
+                        "type": "number"
+                    },
+                    {
+                        "name": "std_error",
+                        "type": "number"
+                    },
+                    {
+                        "name": "statistic",
+                        "type": "number"
+                    },
+                    {
+                        "name": "p_value",
+                        "type": "number"
+                    },
+                    {
+                        "name": "conf_low",
+                        "type": "number"
+                    },
+                    {
+                        "name": "conf_high",
+                        "type": "number"
+                    }
+                ],
+                "rows": [
+                    [
+                        "mpg",
+                        21.853603820182776,
+                        74.22113859357229,
+                        0.2944390807563729,
+                        0.7692938063689134,
+                        -126.17578946875054,
+                        169.88299710911608
+                    ],
+                    [
+                        "weight",
+                        3.464705829621015,
+                        0.630748957649892,
+                        5.493002862073946,
+                        5.99118022401298e-7,
+                        2.2067167002730774,
+                        4.722694958968953
+                    ],
+                    [
+                        "1.foreign",
+                        3673.060378248887,
+                        683.9782706935644,
+                        5.370141911853937,
+                        9.72172867165664e-7,
+                        2308.9087315325633,
+                        5037.212024965211
+                    ],
+                    [
+                        "(Intercept)",
+                        -5853.695655575719,
+                        3376.987424814948,
+                        -1.7334075965345026,
+                        0.08742622310489088,
+                        -12588.884701611263,
+                        881.4933904598256
+                    ]
+                ],
+                "precision_note": null,
+                "row_count": 4,
+                "column_count": 7,
+                "truncated": false
+            }
+        ],
+        "metrics": [
+            {
+                "name": "nobs",
+                "value": 74
+            },
+            {
+                "name": "df_model",
+                "value": 3
+            },
+            {
+                "name": "df_resid",
+                "value": 70
+            },
+            {
+                "name": "r.squared",
+                "value": 0.49955938897230323
+            },
+            {
+                "name": "adj.r.squared",
+                "value": 0.47811193421397336
+            },
+            {
+                "name": "sigma",
+                "value": 2130.7695285897153
+            },
+            {
+                "name": "aic",
+                "value": 1348.1980281526496
+            },
+            {
+                "name": "bic",
+                "value": 1357.4142885254662
+            },
+            {
+                "name": "log_likelihood",
+                "value": -670.0990140763248
+            },
+            {
+                "name": "vcov_type",
+                "value": "ols"
+            },
+            {
+                "name": "confidence_level",
+                "value": 0.95
+            },
+            {
+                "name": "interval_method",
+                "value": "wald-t"
+            },
+            {
+                "name": "command",
+                "value": "regress price mpg weight i.foreign"
+            }
+        ],
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

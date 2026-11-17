@@ -1,0 +1,8 @@
+administer framework embed:
+  title: 'Administer Framework embeds'
+  description: 'Choose which Framework Cloud servers artifacts are fetched from.'
+  restrict access: true
+
+view framework embed notices:
+  title: 'View Framework embed notices'
+  description: 'See why an artifact is missing: private, deleted, or unreachable. Visitors see nothing or a link.'

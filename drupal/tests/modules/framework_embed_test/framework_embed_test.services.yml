@@ -1,0 +1,5 @@
+services:
+  framework_embed_test.fetcher:
+    class: Drupal\framework_embed_test\FixtureFetcher
+    decorates: framework_embed.fetcher
+    arguments: ['@state']

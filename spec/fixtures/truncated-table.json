@@ -1,0 +1,252 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "truncated0000000",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "table",
+    "title": "Transactions",
+    "description": null,
+    "alt": "Table with 5000 rows and 64 columns.",
+    "url": "https://framework.pub/@ada/admissions/truncated-table/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/truncated0000000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/admissions/truncated-table/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "table",
+        "source": {
+            "language": "python",
+            "class": [
+                "pandas.core.frame.DataFrame"
+            ]
+        },
+        "model": null,
+        "test": null,
+        "tables": [
+            {
+                "title": "Table",
+                "role": "data",
+                "columns": [
+                    {
+                        "name": "id",
+                        "type": "string"
+                    },
+                    {
+                        "name": "account",
+                        "type": "string"
+                    },
+                    {
+                        "name": "amount",
+                        "type": "number",
+                        "label": "Amount (USD)"
+                    },
+                    {
+                        "name": "flagged",
+                        "type": "boolean"
+                    }
+                ],
+                "rows": [
+                    [
+                        "id-1",
+                        "9007199254740993",
+                        1000,
+                        null
+                    ],
+                    [
+                        "id-2",
+                        "9007199254741000",
+                        1037.25,
+                        false
+                    ],
+                    [
+                        "id-3",
+                        "9007199254741007",
+                        1074.5,
+                        true
+                    ],
+                    [
+                        "id-4",
+                        "9007199254741014",
+                        1111.75,
+                        null
+                    ],
+                    [
+                        "id-5",
+                        "9007199254741021",
+                        1149,
+                        true
+                    ],
+                    [
+                        "id-6",
+                        "9007199254741028",
+                        1186.25,
+                        false
+                    ],
+                    [
+                        "id-7",
+                        "9007199254741035",
+                        1223.5,
+                        null
+                    ],
+                    [
+                        "id-8",
+                        "9007199254741042",
+                        1260.75,
+                        false
+                    ],
+                    [
+                        "id-9",
+                        "9007199254741049",
+                        1298,
+                        true
+                    ],
+                    [
+                        "id-10",
+                        "9007199254741056",
+                        1335.25,
+                        null
+                    ],
+                    [
+                        "id-11",
+                        "9007199254741063",
+                        1372.5,
+                        true
+                    ],
+                    [
+                        "id-12",
+                        "9007199254741070",
+                        1409.75,
+                        false
+                    ],
+                    [
+                        "id-13",
+                        "9007199254741077",
+                        1447,
+                        null
+                    ],
+                    [
+                        "id-14",
+                        "9007199254741084",
+                        1484.25,
+                        false
+                    ],
+                    [
+                        "id-15",
+                        "9007199254741091",
+                        1521.5,
+                        true
+                    ],
+                    [
+                        "id-16",
+                        "9007199254741098",
+                        1558.75,
+                        null
+                    ],
+                    [
+                        "id-17",
+                        "9007199254741105",
+                        1596,
+                        true
+                    ],
+                    [
+                        "id-18",
+                        "9007199254741112",
+                        1633.25,
+                        false
+                    ],
+                    [
+                        "id-19",
+                        "9007199254741119",
+                        1670.5,
+                        null
+                    ],
+                    [
+                        "id-20",
+                        "9007199254741126",
+                        1707.75,
+                        false
+                    ],
+                    [
+                        "id-21",
+                        "9007199254741133",
+                        1745,
+                        true
+                    ],
+                    [
+                        "id-22",
+                        "9007199254741140",
+                        1782.25,
+                        null
+                    ],
+                    [
+                        "id-23",
+                        "9007199254741147",
+                        1819.5,
+                        true
+                    ],
+                    [
+                        "id-24",
+                        "9007199254741154",
+                        1856.75,
+                        false
+                    ],
+                    [
+                        "id-25",
+                        "9007199254741161",
+                        1894,
+                        null
+                    ],
+                    [
+                        "id-26",
+                        "9007199254741168",
+                        1931.25,
+                        false
+                    ],
+                    [
+                        "id-27",
+                        "9007199254741175",
+                        1968.5,
+                        true
+                    ],
+                    [
+                        "id-28",
+                        "9007199254741182",
+                        2005.75,
+                        null
+                    ],
+                    [
+                        "id-29",
+                        "9007199254741189",
+                        2043,
+                        true
+                    ],
+                    [
+                        "id-30",
+                        "9007199254741196",
+                        2080.25,
+                        false
+                    ]
+                ],
+                "precision_note": "Large integer columns are shown as text to preserve their exact values.",
+                "row_count": 5000,
+                "column_count": 64,
+                "truncated": true
+            }
+        ],
+        "metrics": [],
+        "truncated": true
+    },
+    "spec": null,
+    "image": null
+}

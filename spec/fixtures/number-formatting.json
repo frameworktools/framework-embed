@@ -1,0 +1,230 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "numberformat0000",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "table",
+    "title": "Number formatting",
+    "description": null,
+    "alt": "Table with 20 rows and 4 columns.",
+    "url": "https://framework.pub/@ada/admissions/number-formatting/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/numberformat0000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/admissions/number-formatting/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "table",
+        "source": {
+            "language": "r",
+            "class": [
+                "data.frame"
+            ]
+        },
+        "model": null,
+        "test": null,
+        "tables": [
+            {
+                "title": "Mixed values",
+                "role": "data",
+                "columns": [
+                    {
+                        "name": "case",
+                        "type": "string"
+                    },
+                    {
+                        "name": "value",
+                        "type": "number"
+                    },
+                    {
+                        "name": "p_value",
+                        "type": "number"
+                    },
+                    {
+                        "name": "whole",
+                        "type": "number"
+                    }
+                ],
+                "rows": [
+                    [
+                        "case 1",
+                        0,
+                        0,
+                        0
+                    ],
+                    [
+                        "case 2",
+                        0,
+                        0,
+                        0
+                    ],
+                    [
+                        "case 3",
+                        1,
+                        0.0001,
+                        1
+                    ],
+                    [
+                        "case 4",
+                        2026,
+                        0.2026,
+                        2026
+                    ],
+                    [
+                        "case 5",
+                        9999,
+                        0.9999,
+                        9999
+                    ],
+                    [
+                        "case 6",
+                        10000,
+                        1,
+                        10000
+                    ],
+                    [
+                        "case 7",
+                        123456789,
+                        1,
+                        123456789
+                    ],
+                    [
+                        "case 8",
+                        0.0625,
+                        0.00000625,
+                        0
+                    ],
+                    [
+                        "case 9",
+                        1.0005,
+                        0.00010004999999999999,
+                        1
+                    ],
+                    [
+                        "case 10",
+                        -0.000025,
+                        2.5e-9,
+                        0
+                    ],
+                    [
+                        "case 11",
+                        0.000999,
+                        9.990000000000001e-8,
+                        0
+                    ],
+                    [
+                        "case 12",
+                        0.001,
+                        1e-7,
+                        0
+                    ],
+                    [
+                        "case 13",
+                        9999.9996,
+                        0.9999999599999999,
+                        10000
+                    ],
+                    [
+                        "case 14",
+                        12345.6785,
+                        1,
+                        12346
+                    ],
+                    [
+                        "case 15",
+                        1000000000000000,
+                        1,
+                        1000000000000000
+                    ],
+                    [
+                        "case 16",
+                        -12345600000000000,
+                        1,
+                        -12345600000000000
+                    ],
+                    [
+                        "case 17",
+                        0.30000000000000004,
+                        0.000030000000000000004,
+                        0
+                    ],
+                    [
+                        "case 18",
+                        -0.0004,
+                        4e-8,
+                        0
+                    ],
+                    [
+                        "case 19",
+                        3.14159,
+                        0.000314159,
+                        3
+                    ],
+                    [
+                        "case 20",
+                        1e-300,
+                        1e-304,
+                        0
+                    ]
+                ],
+                "precision_note": null,
+                "row_count": 20,
+                "column_count": 4,
+                "truncated": false
+            },
+            {
+                "title": "Whole numbers",
+                "role": "data",
+                "columns": [
+                    {
+                        "name": "year",
+                        "type": "number"
+                    },
+                    {
+                        "name": "count",
+                        "type": "number"
+                    },
+                    {
+                        "name": "on",
+                        "type": "date"
+                    }
+                ],
+                "rows": [
+                    [
+                        2024,
+                        12,
+                        "2024-01-01"
+                    ],
+                    [
+                        2025,
+                        34567,
+                        null
+                    ],
+                    [
+                        2026,
+                        -1234567,
+                        "2026-11-16"
+                    ]
+                ],
+                "precision_note": null,
+                "row_count": 3,
+                "column_count": 3,
+                "truncated": false
+            }
+        ],
+        "metrics": [],
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

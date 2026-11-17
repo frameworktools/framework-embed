@@ -1,0 +1,12 @@
+node_modules/
+js/dist/
+php/vendor/
+php/composer.lock
+php/.phpunit.cache/
+.DS_Store
+php/.phpunit.result.cache
+wordpress/vendor-embed/
+wordpress/dist/
+statamic/vendor/
+statamic/composer.lock
+.phpunit.cache/

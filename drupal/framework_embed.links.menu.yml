@@ -1,0 +1,5 @@
+framework_embed.settings:
+  title: 'Framework embeds'
+  description: 'Allowed Framework Cloud servers for artifact embeds.'
+  parent: system.admin_config_content
+  route_name: framework_embed.settings

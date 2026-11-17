@@ -1,0 +1,44 @@
+<figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="rlmer00000000000" data-fw-embed-version="1">
+<div class="fw-embed__body">
+<p class="fw-embed__meta">Mixed model · gaussian family, identity link · Response: Reaction</p>
+<p class="fw-embed__formula"><code>Reaction ~ Days + (Days | Subject)</code></p>
+<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Fixed effects">
+<table class="fw-embed__table fw-embed__table--coefficients">
+<caption>Fixed effects</caption>
+<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
+<tbody>
+<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">251.405</td><td class="fw-embed__num">6.825</td><td class="fw-embed__num">238.029 to 264.781</td></tr>
+<tr><th scope="row">Days</th><td class="fw-embed__num">10.467</td><td class="fw-embed__num">1.546</td><td class="fw-embed__num">7.438 to 13.497</td></tr>
+</tbody>
+</table>
+</div>
+<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Random effects">
+<table class="fw-embed__table">
+<caption>Random effects</caption>
+<thead><tr><th scope="col">Group</th><th scope="col">Term</th><th scope="col" class="fw-embed__num">Variance</th><th scope="col" class="fw-embed__num">Std. dev.</th><th scope="col" class="fw-embed__num">Correlation</th></tr></thead>
+<tbody>
+<tr><td>Subject</td><td>(Intercept)</td><td class="fw-embed__num">612.100</td><td class="fw-embed__num">24.741</td><td class="fw-embed__num">—</td></tr>
+<tr><td>Subject</td><td>Days</td><td class="fw-embed__num">35.072</td><td class="fw-embed__num">5.922</td><td class="fw-embed__num">—</td></tr>
+<tr><td>Subject</td><td>(Intercept), Days</td><td class="fw-embed__num">—</td><td class="fw-embed__num">—</td><td class="fw-embed__num">0.066</td></tr>
+<tr><td>Residual</td><td>—</td><td class="fw-embed__num">654.940</td><td class="fw-embed__num">25.592</td><td class="fw-embed__num">—</td></tr>
+</tbody>
+</table>
+</div>
+<dl class="fw-embed__stats">
+<div><dt>Confidence level</dt><dd>95%</dd></div>
+<div><dt>Interval method</dt><dd>Wald normal</dd></div>
+<div><dt>Observations</dt><dd>180</dd></div>
+<div><dt>AIC</dt><dd>1755.628</dd></div>
+<div><dt>BIC</dt><dd>1774.786</dd></div>
+<div><dt>Log likelihood</dt><dd>-871.814</dd></div>
+<div><dt>Residual std. dev.</dt><dd>25.592</dd></div>
+<div><dt>REML</dt><dd>Yes</dd></div>
+<div><dt>Groups: Subject</dt><dd>18</dd></div>
+</dl>
+</div>
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">Sleep deprivation reaction times</span>
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/admissions/r-lmer/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+</figure>

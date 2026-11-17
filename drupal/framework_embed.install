@@ -1,0 +1,33 @@
+<?php
+
+/**
+ * @file
+ * Install hooks for Framework Embeds.
+ */
+
+declare(strict_types=1);
+
+/**
+ * Implements hook_install().
+ */
+function framework_embed_install(): void {
+  // framework_embed_cron() counts from here, not from the epoch.
+  \Drupal::state()->set('framework_embed.invalidated', \Drupal::time()->getRequestTime());
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function framework_embed_uninstall(): void {
+  \Drupal::state()->deleteMultiple(['framework_embed.invalidated', 'framework_embed.takedown_last']);
+}
+
+/**
+ * Adds the takedown setting, on by default.
+ */
+function framework_embed_update_10001(): void {
+  $config = \Drupal::configFactory()->getEditable('framework_embed.settings');
+  if ($config->get('takedown') === NULL) {
+    $config->set('takedown', TRUE)->save();
+  }
+}

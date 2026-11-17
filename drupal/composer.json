@@ -1,0 +1,19 @@
+{
+    "name": "drupal/framework_embed",
+    "description": "Shows Framework artifacts (models, tables, tests, figures, and charts) from framework.pub and other Framework Cloud servers, without iframes.",
+    "type": "drupal-module",
+    "license": "MIT",
+    "keywords": ["Drupal", "framework", "embed", "statistics"],
+    "require": {
+        "php": ">=8.1",
+        "drupal/core": "^10.3 || ^11",
+        "framework-cloud/embed": "^0.1"
+    },
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../php",
+            "options": { "symlink": true, "versions": { "framework-cloud/embed": "0.1.0" } }
+        }
+    ]
+}

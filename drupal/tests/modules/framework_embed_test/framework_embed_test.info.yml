@@ -1,0 +1,8 @@
+name: 'Framework Embeds test fetcher'
+type: module
+description: 'Test only: serves spec/fixtures instead of contacting a Framework server.'
+package: Testing
+hidden: true
+core_version_requirement: ^10.3 || ^11
+dependencies:
+  - framework_embed:framework_embed

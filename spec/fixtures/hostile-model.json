@@ -1,0 +1,124 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "key\"><img src=x onerror=alert(1)>",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "model",
+    "title": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+    "description": "Description \"><img src=x onerror=alert(1)> 'quoted'",
+    "alt": "\"><img src=x onerror=alert(1)>",
+    "url": "https://framework.pub/d/hostile00000000/versions/1\"onmouseover=\"alert(1)",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/hostile00000000/versions/1",
+    "published_at": "2026-11-16T12:00:00Z",
+    "author": {
+        "name": "<script>alert(1)</script>Ada",
+        "url": "javascript:alert(1)"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "\"><img src=x onerror=alert(1)>Framework",
+        "url": "javascript:alert(document.cookie)"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "model",
+        "source": {
+            "language": "r",
+            "class": [
+                "<script>alert(1)</script>"
+            ]
+        },
+        "model": {
+            "type": "<b><script>alert(1)</script></b>",
+            "family": "\"><img src=x onerror=alert(1)>",
+            "link": "logit",
+            "response": "<script>alert(1)</script>",
+            "exponentiate": "<script>alert(1)</script>Odds"
+        },
+        "test": null,
+        "tables": [
+            {
+                "title": "Coefficients <script>alert(1)</script>",
+                "role": "coefficients",
+                "columns": [
+                    {
+                        "name": "term",
+                        "type": "string"
+                    },
+                    {
+                        "name": "estimate",
+                        "type": "number"
+                    },
+                    {
+                        "name": "p_value",
+                        "type": "number"
+                    },
+                    {
+                        "name": "x\"><img src=x onerror=alert(1)>",
+                        "type": "string",
+                        "label": "<script>alert(1)</script>label"
+                    }
+                ],
+                "rows": [
+                    [
+                        "<script>alert(1)</script>",
+                        1.5,
+                        0.2,
+                        "\"><img src=x onerror=alert(1)>"
+                    ],
+                    [
+                        "\"><img src=x onerror=alert(1)>",
+                        -0.25,
+                        1e-9,
+                        "&amp; already escaped"
+                    ]
+                ],
+                "precision_note": null,
+                "row_count": 2,
+                "column_count": 4,
+                "truncated": false
+            },
+            {
+                "title": "\"><img src=x onerror=alert(1)>",
+                "role": "data",
+                "columns": [
+                    {
+                        "name": "<script>alert(1)</script>",
+                        "type": "string",
+                        "label": "\"><img src=x onerror=alert(1)>"
+                    }
+                ],
+                "rows": [
+                    [
+                        "</td></tr></table><script>alert(1)</script>"
+                    ]
+                ],
+                "precision_note": "<script>alert(1)</script> note",
+                "row_count": 2,
+                "column_count": 1,
+                "truncated": true
+            }
+        ],
+        "metrics": [
+            {
+                "name": "<script>alert(1)</script>",
+                "value": "\"><img src=x onerror=alert(1)>"
+            },
+            {
+                "name": "confidence_level",
+                "value": 0.9
+            },
+            {
+                "name": "interval_method",
+                "value": "<script>alert(1)</script>"
+            }
+        ],
+        "truncated": true,
+        "formula": "y ~ <script>alert(1)</script>"
+    },
+    "spec": null,
+    "image": null
+}

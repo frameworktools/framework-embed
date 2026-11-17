@@ -1,0 +1,9 @@
+name: Framework Embeds
+type: module
+description: 'Shows Framework artifacts (models, tables, tests, figures, and charts) from framework.pub and other Framework Cloud servers, without iframes.'
+package: Content
+core_version_requirement: ^10.3 || ^11
+php: 8.1
+configure: framework_embed.settings
+dependencies:
+  - drupal:filter

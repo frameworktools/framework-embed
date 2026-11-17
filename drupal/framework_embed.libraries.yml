@@ -1,0 +1,12 @@
+# Copies of php/assets, refreshed by `make drupal` (the module serves them from its own directory).
+framework_embed:
+  css:
+    theme:
+      assets/framework-embed.css: {}
+
+# Draws Vega-Lite charts. Attached only when a rendered artifact contains one.
+chart:
+  js:
+    assets/framework-embed.iife.js: { attributes: { defer: true } }
+  dependencies:
+    - framework_embed/framework_embed

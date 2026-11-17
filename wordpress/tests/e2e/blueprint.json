@@ -1,0 +1,8 @@
+{
+	"$schema": "https://playground.wordpress.net/blueprint-schema.json",
+	"preferredVersions": { "php": "8.3", "wp": "latest" },
+	"steps": [
+		{ "step": "activatePlugin", "pluginPath": "framework-embed/framework-embed.php" },
+		{ "step": "runPHP", "code": "<?php require '/wordpress/wp-load.php'; require '/e2e/create-posts.php';" }
+	]
+}

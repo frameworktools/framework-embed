@@ -1,0 +1,26 @@
+services:
+  cache.framework_embed:
+    class: Drupal\Core\Cache\CacheBackendInterface
+    tags:
+      - { name: cache.bin }
+    factory: ['@cache_factory', 'get']
+    arguments: [framework_embed]
+
+  logger.channel.framework_embed:
+    parent: logger.channel_base
+    arguments: ['framework_embed']
+
+  framework_embed.fetcher:
+    class: Drupal\framework_embed\GuzzleFetcher
+    arguments: ['@http_client']
+
+  # needs_destruction: queued fetches run after the response is sent.
+  framework_embed.embedder:
+    class: Drupal\framework_embed\Embedder
+    arguments: ['@config.factory', '@framework_embed.fetcher', '@cache.framework_embed', '@queue', '@cache_tags.invalidator', '@current_user', '@logger.channel.framework_embed', '@datetime.time']
+    tags:
+      - { name: needs_destruction }
+
+  framework_embed.takedown:
+    class: Drupal\framework_embed\Takedown
+    arguments: ['@framework_embed.embedder', '@entity_field.manager', '@entity_type.manager', '@config.factory', '@state', '@logger.channel.framework_embed']
