@@ -94,17 +94,18 @@ export function formatScientific(x, significant = 3) {
 // Decimal places: 3 for data tables, 2 for model and test results.
 export const DATA_PLACES = 3;
 export const RESULT_PLACES = 2;
-// Below this size a nonzero number is written in scientific notation.
-const SMALL = { 2: 0.01, 3: 0.001 };
-
 // A number in a table cell, statistic, or metric. `decimal` forces `places` decimals for whole numbers.
-// Numbers below 10^-places or at least 1e15 use scientific notation with `places` significant digits.
+// No scientific notation: large numbers are written in full, and a nonzero number that rounds to
+// zero is written as "< 0.01" (or "> -0.01"), with `places` decimals.
 export function formatNumber(x, decimal = false, places = DATA_PLACES) {
     if (!isNumber(x)) return EMPTY;
-    const size = Math.abs(x);
-    if (size >= 1e15 || (size > 0 && size < SMALL[places])) return formatScientific(x, places);
     if (!decimal && Number.isInteger(x)) return formatFixed(x, 0);
-    return formatFixed(x, places);
+    const fixed = formatFixed(x, places);
+    if (x !== 0 && !/[1-9]/.test(fixed)) {
+        const smallest = '0.' + '0'.repeat(places - 1) + '1';
+        return x > 0 ? `< ${smallest}` : `> -${smallest}`;
+    }
+    return fixed;
 }
 
 export function formatPValue(p) {

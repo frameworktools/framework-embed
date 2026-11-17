@@ -84,13 +84,15 @@ function formatScientific(x, significant = 3) {
 }
 var DATA_PLACES = 3;
 var RESULT_PLACES = 2;
-var SMALL = { 2: 0.01, 3: 1e-3 };
 function formatNumber(x, decimal = false, places = DATA_PLACES) {
   if (!isNumber(x)) return EMPTY;
-  const size = Math.abs(x);
-  if (size >= 1e15 || size > 0 && size < SMALL[places]) return formatScientific(x, places);
   if (!decimal && Number.isInteger(x)) return formatFixed(x, 0);
-  return formatFixed(x, places);
+  const fixed = formatFixed(x, places);
+  if (x !== 0 && !/[1-9]/.test(fixed)) {
+    const smallest = "0." + "0".repeat(places - 1) + "1";
+    return x > 0 ? `< ${smallest}` : `> -${smallest}`;
+  }
+  return fixed;
 }
 function formatPValue(p) {
   if (!isNumber(p)) return formatValue(p);
@@ -342,21 +344,21 @@ function renderTest(doc) {
   const test = data.test;
   const result = (value) => formatNumber(value, false, RESULT_PLACES);
   const main = [];
-  if (isObject(test.statistic) && text(test.statistic.name) !== null) main.push([test.statistic.name, result(test.statistic.value)]);
-  if (isNumber(test.p_value)) main.push(["p-value", formatPValue(test.p_value)]);
+  if (isObject(test.statistic) && text(test.statistic.name) !== null) main.push([test.statistic.name, result(test.statistic.value), true]);
+  if (isNumber(test.p_value)) main.push(["p-value", formatPValue(test.p_value), true]);
   const estimates = named(test.estimates);
   const interval = isObject(test.conf_int) && isNumber(test.conf_int.level) ? test.conf_int : null;
   const ci = interval === null ? null : `${formatPercent(interval.level)} CI`;
   if (estimates.length === 1 && interval !== null) {
-    main.push([`${asciiCapitalize(estimates[0].name)} (${ci})`, `${result(estimates[0].value)} (${intervalText(interval.low, interval.high)})`]);
+    main.push([`${asciiCapitalize(estimates[0].name)} (${ci})`, `${result(estimates[0].value)} (${intervalText(interval.low, interval.high)})`, true]);
   } else {
-    for (const entry of estimates) main.push([asciiCapitalize(entry.name), result(entry.value)]);
-    if (interval !== null) main.push([ci, intervalText(interval.low, interval.high)]);
+    for (const entry of estimates) main.push([asciiCapitalize(entry.name), result(entry.value), true]);
+    if (interval !== null) main.push([ci, intervalText(interval.low, interval.high), true]);
   }
   const extra = [];
-  if (typeof test.alternative === "string" && Object.hasOwn(ALTERNATIVES, test.alternative)) extra.push(["Alternative", ALTERNATIVES[test.alternative]]);
-  for (const entry of named(test.parameters)) extra.push([entry.name, result(entry.value)]);
-  for (const entry of named(test.null_value)) extra.push([`Null value: ${entry.name}`, result(entry.value)]);
+  if (typeof test.alternative === "string" && Object.hasOwn(ALTERNATIVES, test.alternative)) extra.push(["Alternative", ALTERNATIVES[test.alternative], false]);
+  for (const entry of named(test.parameters)) extra.push([entry.name, result(entry.value), true]);
+  for (const entry of named(test.null_value)) extra.push([`Null value: ${entry.name}`, result(entry.value), true]);
   const rest = [];
   if (extra.length > 0) rest.push(renderPairs(extra));
   for (const table of usableTables(data)) rest.push(renderTable(table, true, true, doc, RESULT_PLACES, ROW_LIMIT, null));
@@ -416,13 +418,16 @@ function openTable(table, showCaption, modifier) {
   if (showCaption) lines.push(`<caption>${escapeHtml(title)}</caption>`);
   return lines;
 }
+function numberSpan(count) {
+  return `<span class="fw-embed__num">${escapeHtml(formatNumber(count))}</span>`;
+}
 function tableNotes(table, rows, doc, rest) {
   const notes = [];
   const total = Number.isInteger(table.row_count) ? table.row_count : table.rows.length;
   const columnTotal = Number.isInteger(table.column_count) ? table.column_count : table.columns.length;
   const parts = [];
-  if (total > rows.length) parts.push(`${formatNumber(rows.length)} of ${formatNumber(total)} rows`);
-  if (rest === null && columnTotal > table.columns.length) parts.push(`${formatNumber(table.columns.length)} of ${formatNumber(columnTotal)} columns`);
+  if (total > rows.length) parts.push(`${numberSpan(rows.length)} of ${numberSpan(total)} rows`);
+  if (rest === null && columnTotal > table.columns.length) parts.push(`${numberSpan(table.columns.length)} of ${numberSpan(columnTotal)} columns`);
   if (parts.length > 0) {
     const href = safeUrl(doc.url);
     let more = "";
@@ -535,10 +540,10 @@ function metricValue(name, value) {
   return formatValue(value, false, RESULT_PLACES);
 }
 function renderMetrics(metrics) {
-  return renderPairs(metrics.map((metric) => [metricLabel(metric.name), metricValue(metric.name, metric.value)]));
+  return renderPairs(metrics.map((metric) => [metricLabel(metric.name), metricValue(metric.name, metric.value), isNumber(metric.value)]));
 }
 function renderPairs(pairs) {
-  return ['<dl class="fw-embed__stats">', ...pairs.map(([term, value]) => `<div><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(value)}</dd></div>`), "</dl>"].join("\n");
+  return ['<dl class="fw-embed__stats">', ...pairs.map(([term, value, numeric]) => `<div><dt>${escapeHtml(term)}</dt><dd${numeric ? ' class="fw-embed__num"' : ""}>${escapeHtml(value)}</dd></div>`), "</dl>"].join("\n");
 }
 function renderImage(doc) {
   const image = isObject(doc.image) ? doc.image : null;

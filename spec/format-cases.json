@@ -412,132 +412,132 @@
  {
   "format": "result",
   "value": 0.001,
-  "expected": "1.0e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.001,
-  "expected": "1.0e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.0009995,
-  "expected": "1.00e-3"
+  "expected": "0.001"
  },
  {
   "format": "decimal",
   "value": 0.0009995,
-  "expected": "1.00e-3"
+  "expected": "0.001"
  },
  {
   "format": "result",
   "value": 0.0009995,
-  "expected": "1.0e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0009995,
-  "expected": "1.0e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.00099949,
-  "expected": "9.99e-4"
+  "expected": "0.001"
  },
  {
   "format": "decimal",
   "value": 0.00099949,
-  "expected": "9.99e-4"
+  "expected": "0.001"
  },
  {
   "format": "result",
   "value": 0.00099949,
-  "expected": "1.0e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00099949,
-  "expected": "1.0e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": -0.0004,
-  "expected": "-4.00e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -0.0004,
-  "expected": "-4.00e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -0.0004,
-  "expected": "-4.0e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.0004,
-  "expected": "-4.0e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": 0.000025,
-  "expected": "2.50e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000025,
-  "expected": "2.50e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000025,
-  "expected": "2.5e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000025,
-  "expected": "2.5e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 1e-300,
-  "expected": "1.00e-300"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 1e-300,
-  "expected": "1.00e-300"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 1e-300,
-  "expected": "1.0e-300"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 1e-300,
-  "expected": "1.0e-300"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 5e-324,
-  "expected": "5.00e-324"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 5e-324,
-  "expected": "5.00e-324"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 5e-324,
-  "expected": "5.0e-324"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 5e-324,
-  "expected": "5.0e-324"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -562,62 +562,62 @@
  {
   "format": "number",
   "value": 1000000000000000,
-  "expected": "1.00e+15"
+  "expected": "1,000,000,000,000,000"
  },
  {
   "format": "decimal",
   "value": 1000000000000000,
-  "expected": "1.00e+15"
+  "expected": "1,000,000,000,000,000.000"
  },
  {
   "format": "result",
   "value": 1000000000000000,
-  "expected": "1.0e+15"
+  "expected": "1,000,000,000,000,000"
  },
  {
   "format": "result-decimal",
   "value": 1000000000000000,
-  "expected": "1.0e+15"
+  "expected": "1,000,000,000,000,000.00"
  },
  {
   "format": "number",
   "value": -12345600000000000,
-  "expected": "-1.23e+16"
+  "expected": "-12,345,600,000,000,000"
  },
  {
   "format": "decimal",
   "value": -12345600000000000,
-  "expected": "-1.23e+16"
+  "expected": "-12,345,600,000,000,000.000"
  },
  {
   "format": "result",
   "value": -12345600000000000,
-  "expected": "-1.2e+16"
+  "expected": "-12,345,600,000,000,000"
  },
  {
   "format": "result-decimal",
   "value": -12345600000000000,
-  "expected": "-1.2e+16"
+  "expected": "-12,345,600,000,000,000.00"
  },
  {
   "format": "number",
   "value": 1.7976931348623157e+308,
-  "expected": "1.80e+308"
+  "expected": "179,769,313,486,231,570,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000"
  },
  {
   "format": "decimal",
   "value": 1.7976931348623157e+308,
-  "expected": "1.80e+308"
+  "expected": "179,769,313,486,231,570,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000.000"
  },
  {
   "format": "result",
   "value": 1.7976931348623157e+308,
-  "expected": "1.8e+308"
+  "expected": "179,769,313,486,231,570,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000"
  },
  {
   "format": "result-decimal",
   "value": 1.7976931348623157e+308,
-  "expected": "1.8e+308"
+  "expected": "179,769,313,486,231,570,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000,000.00"
  },
  {
   "format": "number",
@@ -702,42 +702,42 @@
  {
   "format": "number",
   "value": 1e-7,
-  "expected": "1.00e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 1e-7,
-  "expected": "1.00e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 1e-7,
-  "expected": "1.0e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 1e-7,
-  "expected": "1.0e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.000123456,
-  "expected": "1.23e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000123456,
-  "expected": "1.23e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000123456,
-  "expected": "1.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000123456,
-  "expected": "1.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -812,12 +812,12 @@
  {
   "format": "result",
   "value": 0.0099,
-  "expected": "9.9e-3"
+  "expected": "0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0099,
-  "expected": "9.9e-3"
+  "expected": "0.01"
  },
  {
   "format": "number",
@@ -832,12 +832,12 @@
  {
   "format": "result",
   "value": 0.00995,
-  "expected": "1.0e-2"
+  "expected": "0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00995,
-  "expected": "1.0e-2"
+  "expected": "0.01"
  },
  {
   "format": "number",
@@ -852,12 +852,12 @@
  {
   "format": "result",
   "value": 0.005,
-  "expected": "5.0e-3"
+  "expected": "0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.005,
-  "expected": "5.0e-3"
+  "expected": "0.01"
  },
  {
   "format": "number",
@@ -1002,22 +1002,22 @@
  {
   "format": "number",
   "value": 0.00030947,
-  "expected": "3.09e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.00030947,
-  "expected": "3.09e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.00030947,
-  "expected": "3.1e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00030947,
-  "expected": "3.1e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -1042,22 +1042,22 @@
  {
   "format": "number",
   "value": 1.501874946057796e-9,
-  "expected": "1.50e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 1.501874946057796e-9,
-  "expected": "1.50e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 1.501874946057796e-9,
-  "expected": "1.5e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 1.501874946057796e-9,
-  "expected": "1.5e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -1182,22 +1182,22 @@
  {
   "format": "number",
   "value": 0.0000286498791,
-  "expected": "2.86e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0000286498791,
-  "expected": "2.86e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0000286498791,
-  "expected": "2.9e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0000286498791,
-  "expected": "2.9e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -1242,22 +1242,22 @@
  {
   "format": "number",
   "value": 0.0003643144727,
-  "expected": "3.64e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0003643144727,
-  "expected": "3.64e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0003643144727,
-  "expected": "3.6e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0003643144727,
-  "expected": "3.6e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -1302,42 +1302,42 @@
  {
   "format": "number",
   "value": -5.681347250938418e-9,
-  "expected": "-5.68e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -5.681347250938418e-9,
-  "expected": "-5.68e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -5.681347250938418e-9,
-  "expected": "-5.7e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -5.681347250938418e-9,
-  "expected": "-5.7e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": -3.453506208956242e-9,
-  "expected": "-3.45e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -3.453506208956242e-9,
-  "expected": "-3.45e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -3.453506208956242e-9,
-  "expected": "-3.5e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -3.453506208956242e-9,
-  "expected": "-3.5e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -1462,22 +1462,22 @@
  {
   "format": "number",
   "value": -1.327034213e-9,
-  "expected": "-1.33e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -1.327034213e-9,
-  "expected": "-1.33e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -1.327034213e-9,
-  "expected": "-1.3e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -1.327034213e-9,
-  "expected": "-1.3e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -1542,22 +1542,22 @@
  {
   "format": "number",
   "value": -2.50801677e-7,
-  "expected": "-2.51e-7"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -2.50801677e-7,
-  "expected": "-2.51e-7"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -2.50801677e-7,
-  "expected": "-2.5e-7"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -2.50801677e-7,
-  "expected": "-2.5e-7"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -1882,22 +1882,22 @@
  {
   "format": "number",
   "value": 4.971400559e-8,
-  "expected": "4.97e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 4.971400559e-8,
-  "expected": "4.97e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 4.971400559e-8,
-  "expected": "5.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 4.971400559e-8,
-  "expected": "5.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -1962,42 +1962,42 @@
  {
   "format": "number",
   "value": 3.77892291546e-7,
-  "expected": "3.78e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 3.77892291546e-7,
-  "expected": "3.78e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 3.77892291546e-7,
-  "expected": "3.8e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 3.77892291546e-7,
-  "expected": "3.8e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.00042729867101,
-  "expected": "4.27e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.00042729867101,
-  "expected": "4.27e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.00042729867101,
-  "expected": "4.3e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00042729867101,
-  "expected": "4.3e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -2132,32 +2132,32 @@
  {
   "format": "result",
   "value": -0.00236341619491577,
-  "expected": "-2.4e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.00236341619491577,
-  "expected": "-2.4e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": -3e-11,
-  "expected": "-3.00e-11"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -3e-11,
-  "expected": "-3.00e-11"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -3e-11,
-  "expected": "-3.0e-11"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -3e-11,
-  "expected": "-3.0e-11"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -2342,22 +2342,22 @@
  {
   "format": "number",
   "value": 1.7e-7,
-  "expected": "1.70e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 1.7e-7,
-  "expected": "1.70e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 1.7e-7,
-  "expected": "1.7e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 1.7e-7,
-  "expected": "1.7e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -2372,12 +2372,12 @@
  {
   "format": "result",
   "value": -0.002474272489548,
-  "expected": "-2.5e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.002474272489548,
-  "expected": "-2.5e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -2492,12 +2492,12 @@
  {
   "format": "result",
   "value": -0.00272684717,
-  "expected": "-2.7e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.00272684717,
-  "expected": "-2.7e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -2522,42 +2522,42 @@
  {
   "format": "number",
   "value": 0.000720182418823242,
-  "expected": "7.20e-4"
+  "expected": "0.001"
  },
  {
   "format": "decimal",
   "value": 0.000720182418823242,
-  "expected": "7.20e-4"
+  "expected": "0.001"
  },
  {
   "format": "result",
   "value": 0.000720182418823242,
-  "expected": "7.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000720182418823242,
-  "expected": "7.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.0000010782111287117,
-  "expected": "1.08e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0000010782111287117,
-  "expected": "1.08e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0000010782111287117,
-  "expected": "1.1e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0000010782111287117,
-  "expected": "1.1e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -2622,22 +2622,22 @@
  {
   "format": "number",
   "value": 0.000049,
-  "expected": "4.90e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000049,
-  "expected": "4.90e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000049,
-  "expected": "4.9e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000049,
-  "expected": "4.9e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -2702,22 +2702,22 @@
  {
   "format": "number",
   "value": 0.00021,
-  "expected": "2.10e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.00021,
-  "expected": "2.10e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.00021,
-  "expected": "2.1e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00021,
-  "expected": "2.1e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -2862,42 +2862,42 @@
  {
   "format": "number",
   "value": 0.0004157474994659,
-  "expected": "4.16e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0004157474994659,
-  "expected": "4.16e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0004157474994659,
-  "expected": "4.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0004157474994659,
-  "expected": "4.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.000040265071988106,
-  "expected": "4.03e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000040265071988106,
-  "expected": "4.03e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000040265071988106,
-  "expected": "4.0e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000040265071988106,
-  "expected": "4.0e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -2962,22 +2962,22 @@
  {
   "format": "number",
   "value": -2.52e-8,
-  "expected": "-2.52e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -2.52e-8,
-  "expected": "-2.52e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -2.52e-8,
-  "expected": "-2.5e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -2.52e-8,
-  "expected": "-2.5e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -3062,62 +3062,62 @@
  {
   "format": "number",
   "value": 4e-8,
-  "expected": "4.00e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 4e-8,
-  "expected": "4.00e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 4e-8,
-  "expected": "4.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 4e-8,
-  "expected": "4.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": -9.4215059280396e-7,
-  "expected": "-9.42e-7"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -9.4215059280396e-7,
-  "expected": "-9.42e-7"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -9.4215059280396e-7,
-  "expected": "-9.4e-7"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -9.4215059280396e-7,
-  "expected": "-9.4e-7"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": 3.401502430439e-8,
-  "expected": "3.40e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 3.401502430439e-8,
-  "expected": "3.40e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 3.401502430439e-8,
-  "expected": "3.4e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 3.401502430439e-8,
-  "expected": "3.4e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3202,62 +3202,62 @@
  {
   "format": "number",
   "value": 0.0000044329048,
-  "expected": "4.43e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0000044329048,
-  "expected": "4.43e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0000044329048,
-  "expected": "4.4e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0000044329048,
-  "expected": "4.4e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": -0.000261105889081955,
-  "expected": "-2.61e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -0.000261105889081955,
-  "expected": "-2.61e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -0.000261105889081955,
-  "expected": "-2.6e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.000261105889081955,
-  "expected": "-2.6e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": 4.255374729633e-9,
-  "expected": "4.26e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 4.255374729633e-9,
-  "expected": "4.26e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 4.255374729633e-9,
-  "expected": "4.3e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 4.255374729633e-9,
-  "expected": "4.3e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3302,22 +3302,22 @@
  {
   "format": "number",
   "value": 4.3665087e-8,
-  "expected": "4.37e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 4.3665087e-8,
-  "expected": "4.37e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 4.3665087e-8,
-  "expected": "4.4e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 4.3665087e-8,
-  "expected": "4.4e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3402,22 +3402,22 @@
  {
   "format": "number",
   "value": 0.000003,
-  "expected": "3.00e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000003,
-  "expected": "3.00e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000003,
-  "expected": "3.0e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000003,
-  "expected": "3.0e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3522,22 +3522,22 @@
  {
   "format": "number",
   "value": 0.0001244259834,
-  "expected": "1.24e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0001244259834,
-  "expected": "1.24e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0001244259834,
-  "expected": "1.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0001244259834,
-  "expected": "1.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3622,42 +3622,42 @@
  {
   "format": "number",
   "value": -1.4034366e-8,
-  "expected": "-1.40e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -1.4034366e-8,
-  "expected": "-1.40e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -1.4034366e-8,
-  "expected": "-1.4e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -1.4034366e-8,
-  "expected": "-1.4e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": 0.00000979412854,
-  "expected": "9.79e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.00000979412854,
-  "expected": "9.79e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.00000979412854,
-  "expected": "9.8e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00000979412854,
-  "expected": "9.8e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3762,22 +3762,22 @@
  {
   "format": "number",
   "value": 1.774415e-8,
-  "expected": "1.77e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 1.774415e-8,
-  "expected": "1.77e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 1.774415e-8,
-  "expected": "1.8e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 1.774415e-8,
-  "expected": "1.8e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3802,62 +3802,62 @@
  {
   "format": "number",
   "value": 3e-8,
-  "expected": "3.00e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 3e-8,
-  "expected": "3.00e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 3e-8,
-  "expected": "3.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 3e-8,
-  "expected": "3.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 6.5418518e-9,
-  "expected": "6.54e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 6.5418518e-9,
-  "expected": "6.54e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 6.5418518e-9,
-  "expected": "6.5e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 6.5418518e-9,
-  "expected": "6.5e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 3.4033400416374205e-7,
-  "expected": "3.40e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 3.4033400416374205e-7,
-  "expected": "3.40e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 3.4033400416374205e-7,
-  "expected": "3.4e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 3.4033400416374205e-7,
-  "expected": "3.4e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -3922,22 +3922,22 @@
  {
   "format": "number",
   "value": 0.000003,
-  "expected": "3.00e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000003,
-  "expected": "3.00e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000003,
-  "expected": "3.0e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000003,
-  "expected": "3.0e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4012,52 +4012,52 @@
  {
   "format": "result",
   "value": -0.001062,
-  "expected": "-1.1e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.001062,
-  "expected": "-1.1e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": 0.000317549,
-  "expected": "3.18e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000317549,
-  "expected": "3.18e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000317549,
-  "expected": "3.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000317549,
-  "expected": "3.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.000002378767788410186,
-  "expected": "2.38e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000002378767788410186,
-  "expected": "2.38e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000002378767788410186,
-  "expected": "2.4e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000002378767788410186,
-  "expected": "2.4e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4102,22 +4102,22 @@
  {
   "format": "number",
   "value": -0.0006,
-  "expected": "-6.00e-4"
+  "expected": "-0.001"
  },
  {
   "format": "decimal",
   "value": -0.0006,
-  "expected": "-6.00e-4"
+  "expected": "-0.001"
  },
  {
   "format": "result",
   "value": -0.0006,
-  "expected": "-6.0e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.0006,
-  "expected": "-6.0e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -4162,42 +4162,42 @@
  {
   "format": "number",
   "value": -0.000058446282148,
-  "expected": "-5.84e-5"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -0.000058446282148,
-  "expected": "-5.84e-5"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -0.000058446282148,
-  "expected": "-5.8e-5"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.000058446282148,
-  "expected": "-5.8e-5"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": -0.000020131396651268,
-  "expected": "-2.01e-5"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -0.000020131396651268,
-  "expected": "-2.01e-5"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -0.000020131396651268,
-  "expected": "-2.0e-5"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.000020131396651268,
-  "expected": "-2.0e-5"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -4232,12 +4232,12 @@
  {
   "format": "result",
   "value": -0.0033,
-  "expected": "-3.3e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.0033,
-  "expected": "-3.3e-3"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -4322,42 +4322,42 @@
  {
   "format": "number",
   "value": 0.0003,
-  "expected": "3.00e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0003,
-  "expected": "3.00e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0003,
-  "expected": "3.0e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0003,
-  "expected": "3.0e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.000549495553970337,
-  "expected": "5.49e-4"
+  "expected": "0.001"
  },
  {
   "format": "decimal",
   "value": 0.000549495553970337,
-  "expected": "5.49e-4"
+  "expected": "0.001"
  },
  {
   "format": "result",
   "value": 0.000549495553970337,
-  "expected": "5.5e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000549495553970337,
-  "expected": "5.5e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4402,22 +4402,22 @@
  {
   "format": "number",
   "value": 8.902898654341696e-10,
-  "expected": "8.90e-10"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 8.902898654341696e-10,
-  "expected": "8.90e-10"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 8.902898654341696e-10,
-  "expected": "8.9e-10"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 8.902898654341696e-10,
-  "expected": "8.9e-10"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4482,62 +4482,62 @@
  {
   "format": "number",
   "value": 5.3e-8,
-  "expected": "5.30e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 5.3e-8,
-  "expected": "5.30e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 5.3e-8,
-  "expected": "5.3e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 5.3e-8,
-  "expected": "5.3e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.00001,
-  "expected": "1.00e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.00001,
-  "expected": "1.00e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.00001,
-  "expected": "1.0e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00001,
-  "expected": "1.0e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 2.5981318057e-8,
-  "expected": "2.60e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 2.5981318057e-8,
-  "expected": "2.60e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 2.5981318057e-8,
-  "expected": "2.6e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 2.5981318057e-8,
-  "expected": "2.6e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4642,22 +4642,22 @@
  {
   "format": "number",
   "value": 3.075e-8,
-  "expected": "3.08e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 3.075e-8,
-  "expected": "3.08e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 3.075e-8,
-  "expected": "3.1e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 3.075e-8,
-  "expected": "3.1e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4712,12 +4712,12 @@
  {
   "format": "result",
   "value": 0.0023,
-  "expected": "2.3e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0023,
-  "expected": "2.3e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4822,42 +4822,42 @@
  {
   "format": "number",
   "value": -2.7e-8,
-  "expected": "-2.70e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -2.7e-8,
-  "expected": "-2.70e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -2.7e-8,
-  "expected": "-2.7e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -2.7e-8,
-  "expected": "-2.7e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": 0.0004,
-  "expected": "4.00e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0004,
-  "expected": "4.00e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0004,
-  "expected": "4.0e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0004,
-  "expected": "4.0e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -4902,22 +4902,22 @@
  {
   "format": "number",
   "value": 0.0000434454447,
-  "expected": "4.34e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0000434454447,
-  "expected": "4.34e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0000434454447,
-  "expected": "4.3e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0000434454447,
-  "expected": "4.3e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5002,22 +5002,22 @@
  {
   "format": "number",
   "value": 0.00082315,
-  "expected": "8.23e-4"
+  "expected": "0.001"
  },
  {
   "format": "decimal",
   "value": 0.00082315,
-  "expected": "8.23e-4"
+  "expected": "0.001"
  },
  {
   "format": "result",
   "value": 0.00082315,
-  "expected": "8.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.00082315,
-  "expected": "8.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5052,12 +5052,12 @@
  {
   "format": "result",
   "value": 0.0010836408138275,
-  "expected": "1.1e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0010836408138275,
-  "expected": "1.1e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5082,22 +5082,22 @@
  {
   "format": "number",
   "value": 5.3317737802863116e-9,
-  "expected": "5.33e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 5.3317737802863116e-9,
-  "expected": "5.33e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 5.3317737802863116e-9,
-  "expected": "5.3e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 5.3317737802863116e-9,
-  "expected": "5.3e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5202,22 +5202,22 @@
  {
   "format": "number",
   "value": 0.0000368,
-  "expected": "3.68e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0000368,
-  "expected": "3.68e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0000368,
-  "expected": "3.7e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0000368,
-  "expected": "3.7e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5252,12 +5252,12 @@
  {
   "format": "result",
   "value": 0.0027834,
-  "expected": "2.8e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0027834,
-  "expected": "2.8e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5282,22 +5282,22 @@
  {
   "format": "number",
   "value": 4.800707161426544e-9,
-  "expected": "4.80e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 4.800707161426544e-9,
-  "expected": "4.80e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 4.800707161426544e-9,
-  "expected": "4.8e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 4.800707161426544e-9,
-  "expected": "4.8e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5322,22 +5322,22 @@
  {
   "format": "number",
   "value": -0.00000532679,
-  "expected": "-5.33e-6"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -0.00000532679,
-  "expected": "-5.33e-6"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -0.00000532679,
-  "expected": "-5.3e-6"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.00000532679,
-  "expected": "-5.3e-6"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -5362,22 +5362,22 @@
  {
   "format": "number",
   "value": 4.078859e-9,
-  "expected": "4.08e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 4.078859e-9,
-  "expected": "4.08e-9"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 4.078859e-9,
-  "expected": "4.1e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 4.078859e-9,
-  "expected": "4.1e-9"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5422,42 +5422,42 @@
  {
   "format": "number",
   "value": 0.0001104031860828399,
-  "expected": "1.10e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0001104031860828399,
-  "expected": "1.10e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0001104031860828399,
-  "expected": "1.1e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0001104031860828399,
-  "expected": "1.1e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 5.913968145847e-7,
-  "expected": "5.91e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 5.913968145847e-7,
-  "expected": "5.91e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 5.913968145847e-7,
-  "expected": "5.9e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 5.913968145847e-7,
-  "expected": "5.9e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5552,12 +5552,12 @@
  {
   "format": "result",
   "value": 0.001794974565506,
-  "expected": "1.8e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.001794974565506,
-  "expected": "1.8e-3"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5662,22 +5662,22 @@
  {
   "format": "number",
   "value": 7.1657212823629e-10,
-  "expected": "7.17e-10"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 7.1657212823629e-10,
-  "expected": "7.17e-10"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 7.1657212823629e-10,
-  "expected": "7.2e-10"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 7.1657212823629e-10,
-  "expected": "7.2e-10"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -5982,22 +5982,22 @@
  {
   "format": "number",
   "value": -2e-9,
-  "expected": "-2.00e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -2e-9,
-  "expected": "-2.00e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -2e-9,
-  "expected": "-2.0e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -2e-9,
-  "expected": "-2.0e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6022,42 +6022,42 @@
  {
   "format": "number",
   "value": 0.0000044,
-  "expected": "4.40e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0000044,
-  "expected": "4.40e-6"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0000044,
-  "expected": "4.4e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0000044,
-  "expected": "4.4e-6"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": -3.27267849445343e-8,
-  "expected": "-3.27e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -3.27267849445343e-8,
-  "expected": "-3.27e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -3.27267849445343e-8,
-  "expected": "-3.3e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -3.27267849445343e-8,
-  "expected": "-3.3e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6102,42 +6102,42 @@
  {
   "format": "number",
   "value": -3.83336422592e-9,
-  "expected": "-3.83e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -3.83336422592e-9,
-  "expected": "-3.83e-9"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -3.83336422592e-9,
-  "expected": "-3.8e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -3.83336422592e-9,
-  "expected": "-3.8e-9"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
   "value": -2.14e-7,
-  "expected": "-2.14e-7"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -2.14e-7,
-  "expected": "-2.14e-7"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -2.14e-7,
-  "expected": "-2.1e-7"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -2.14e-7,
-  "expected": "-2.1e-7"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6322,22 +6322,22 @@
  {
   "format": "number",
   "value": -4.7835940122604e-8,
-  "expected": "-4.78e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -4.7835940122604e-8,
-  "expected": "-4.78e-8"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -4.7835940122604e-8,
-  "expected": "-4.8e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -4.7835940122604e-8,
-  "expected": "-4.8e-8"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6362,22 +6362,22 @@
  {
   "format": "number",
   "value": 0.0000234263003,
-  "expected": "2.34e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0000234263003,
-  "expected": "2.34e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0000234263003,
-  "expected": "2.3e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0000234263003,
-  "expected": "2.3e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -6402,42 +6402,42 @@
  {
   "format": "number",
   "value": 2.01592570543289e-8,
-  "expected": "2.02e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 2.01592570543289e-8,
-  "expected": "2.02e-8"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 2.01592570543289e-8,
-  "expected": "2.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 2.01592570543289e-8,
-  "expected": "2.0e-8"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 2.97e-7,
-  "expected": "2.97e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 2.97e-7,
-  "expected": "2.97e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 2.97e-7,
-  "expected": "3.0e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 2.97e-7,
-  "expected": "3.0e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
@@ -6492,12 +6492,12 @@
  {
   "format": "result",
   "value": -0.00948,
-  "expected": "-9.5e-3"
+  "expected": "-0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.00948,
-  "expected": "-9.5e-3"
+  "expected": "-0.01"
  },
  {
   "format": "number",
@@ -6522,22 +6522,22 @@
  {
   "format": "number",
   "value": -0.00020453,
-  "expected": "-2.05e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -0.00020453,
-  "expected": "-2.05e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -0.00020453,
-  "expected": "-2.0e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.00020453,
-  "expected": "-2.0e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6602,22 +6602,22 @@
  {
   "format": "number",
   "value": -0.0003095653057,
-  "expected": "-3.10e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -0.0003095653057,
-  "expected": "-3.10e-4"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -0.0003095653057,
-  "expected": "-3.1e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -0.0003095653057,
-  "expected": "-3.1e-4"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6662,22 +6662,22 @@
  {
   "format": "number",
   "value": -3.561091199517e-10,
-  "expected": "-3.56e-10"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -3.561091199517e-10,
-  "expected": "-3.56e-10"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -3.561091199517e-10,
-  "expected": "-3.6e-10"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -3.561091199517e-10,
-  "expected": "-3.6e-10"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6822,82 +6822,82 @@
  {
   "format": "number",
   "value": 0.0001304386616,
-  "expected": "1.30e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0001304386616,
-  "expected": "1.30e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0001304386616,
-  "expected": "1.3e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0001304386616,
-  "expected": "1.3e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 0.0004180010616779327,
-  "expected": "4.18e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.0004180010616779327,
-  "expected": "4.18e-4"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.0004180010616779327,
-  "expected": "4.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.0004180010616779327,
-  "expected": "4.2e-4"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": 5.847755730152e-7,
-  "expected": "5.85e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 5.847755730152e-7,
-  "expected": "5.85e-7"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 5.847755730152e-7,
-  "expected": "5.8e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 5.847755730152e-7,
-  "expected": "5.8e-7"
+  "expected": "< 0.01"
  },
  {
   "format": "number",
   "value": -8.887565e-10,
-  "expected": "-8.89e-10"
+  "expected": "> -0.001"
  },
  {
   "format": "decimal",
   "value": -8.887565e-10,
-  "expected": "-8.89e-10"
+  "expected": "> -0.001"
  },
  {
   "format": "result",
   "value": -8.887565e-10,
-  "expected": "-8.9e-10"
+  "expected": "> -0.01"
  },
  {
   "format": "result-decimal",
   "value": -8.887565e-10,
-  "expected": "-8.9e-10"
+  "expected": "> -0.01"
  },
  {
   "format": "number",
@@ -6922,22 +6922,22 @@
  {
   "format": "number",
   "value": 0.000058072376847,
-  "expected": "5.81e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "decimal",
   "value": 0.000058072376847,
-  "expected": "5.81e-5"
+  "expected": "< 0.001"
  },
  {
   "format": "result",
   "value": 0.000058072376847,
-  "expected": "5.8e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "result-decimal",
   "value": 0.000058072376847,
-  "expected": "5.8e-5"
+  "expected": "< 0.01"
  },
  {
   "format": "number",

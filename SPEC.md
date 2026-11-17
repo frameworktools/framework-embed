@@ -153,7 +153,9 @@ Both coefficient tables start with Term, a row header (`<th scope="row">`). Next
 - **Estimates table, with `model.exponentiate`:** one column for the exponentiated estimate with its exponentiated interval. The header is the label with the interval, such as `Odds ratio (95% CI)`. The cell reads `exp(estimate) (exp(low) to exp(high))`, such as `1.04 (1.00 to 1.07)`. Without interval columns, the header is the label alone and the cell is `exp(estimate)`. The model-scale estimate is not shown. Intercept rows show `—`. A term is an intercept when, in ASCII lower case, it is `(intercept)`, `intercept`, `const`, or `_cons`.
 - **Full coefficient table:** Estimate, Std. error, Statistic, p-value, and the interval on the model's scale.
 
-The interval header takes its level from the `confidence_level` metric. Without that metric, the header is `CI`. Estimates, ratios, standard errors, statistics, and bounds use result formatting with forced decimals.
+The interval header takes its level from the `confidence_level` metric. Without that metric, the header is `CI`. Estimates, ratios, standard errors, statistics, and bounds use result formatting with forced decimals. The ratio cell for the glm fixture's `wt` reads `< 0.01 (< 0.01 to 0.13)`.
+
+Statistic values (`<dd>`) carry `class="fw-embed__num"` when the value is a number: metric numbers and percents, and every test value except `Alternative`.
 
 `exp` is fdlibm's `exp`, computed with IEEE basic operations only, so the JS and PHP renderers agree bit for bit. Platform `exp` functions can differ in the last place.
 
@@ -177,7 +179,7 @@ Each table renders as a data table. Captions appear only when there is more than
 </tbody>
 </table>
 </div>
-<p class="fw-embed__note">Showing 25 of 60 rows. <a href="{url}">View the full table</a></p>
+<p class="fw-embed__note">Showing <span class="fw-embed__num">25</span> of <span class="fw-embed__num">60</span> rows. <a href="{url}">View the full table</a></p>
 <p class="fw-embed__note">{precision_note}</p>
 ```
 
@@ -286,14 +288,17 @@ There are two contexts, which differ only in the number of places `p`:
 |---|---|---|---|
 | Missing value | `null` | `—` | `—` |
 | Booleans | `true`, `false` | `Yes`, `No` | `Yes`, `No` |
-| Scientific, `p` significant digits | nonzero numbers with absolute value below 10^-`p` (0.001 or 0.01), and any number at or above 1e15 | `5.99e-7`, `1.00e+15` | `3.1e-4`, `1.5e-3` |
+| Below the precision | nonzero numbers that round to zero at `p` decimals | `< 0.001`, `> -0.001` | `< 0.01`, `> -0.01` |
 | Whole number | whole numbers outside decimal columns | `32`, `2026` | `32`, `2026` |
 | `p` decimals | everything else | `0.036`, `-5.030` | `0.04`, `-5.03` |
-| Grouping | integer parts of five or more digits get commas | `12,345.679`, `9999` | `12,345.68` |
+| Grouping | integer parts of five or more digits get commas, at any size | `12,345.679`, `9999`, `1,000,000,000,000,000` | `12,345.68` |
 | p-value | `p_value` columns and metrics (also `p.value`, `p-value`, `pvalue`, `Pr(>|t|)`, `Pr(>|z|)`, `Pr(>Chisq)`, `P>|t|`, `P>|z|`, any ASCII case) and test p-values, in both contexts | `< 0.001` below 0.001, else three decimals | the same |
 | Percent | confidence levels, in both contexts | `x * 100` rounded to one decimal, with `.0` dropped: `95%`, `97.5%` | the same |
 
-- A number just under the threshold can round up to it, for example `0.00995` becomes `1.0e-2` in result formatting.
+- Nothing uses scientific notation.
+- Large numbers are written in full. Beyond 2^53 the digits are the shortest round-trip digits, padded with zeros: `123456789012345678` becomes `123,456,789,012,345,680`.
+- "Below the precision" applies cell by cell, also inside intervals: `< 0.01 (< 0.01 to 0.13)`. A value that rounds up to `0.01` shows as `0.01`.
+- Infinity and NaN show `—`.
 - A negative number that rounds to zero loses its sign.
 - The minus sign is ASCII `-`.
 - Strings, dates, and large integers that Cloud sent as strings appear as sent.
@@ -331,5 +336,7 @@ On an allowed host, these paths are artifact URLs. Query strings and fragments a
 ## Theming
 
 The stylesheet themes through `--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`. `--fw-embed-font` and `--fw-embed-fg` are unset by default, so the site's font and color apply. Muted text and borders mix the current text color with transparency, so they suit light and dark pages. The accent changes under `prefers-color-scheme: dark` and under a `data-theme="dark"` or `.dark` ancestor. A `data-theme="light"` or `.light` ancestor keeps the light accent. Figures sit on a white card in both themes.
+
+Numbers use `--fw-embed-mono`: numeric table cells (`td.fw-embed__num`), numeric statistic values (`dd.fw-embed__num`), and the counts in notes (`span.fw-embed__num`), at 0.92em of the surrounding text with tabular figures. Labels, headers, and prose keep the host font. The default stack starts with JetBrains Mono. The stylesheet declares it with `@font-face`, weights 400 and 600, from `@fontsource/jetbrains-mono` 5.2.8 on jsDelivr, with `font-display: swap`. Its `unicode-range` is Basic Latin plus the no-break space, en and em dashes, and the minus sign. That covers the letters in interval cells ("to") and formulas, which share the mono stack. A site that sets `--fw-embed-mono` to another stack never downloads the font.
 
 Type sizes are relative to the host text, so the host's scale applies. The figure is 0.875em of the surrounding text. Tables and statistics come to about 0.8125em of it, and captions, notes, the meta line, and the `details` summary to about 0.75em. Table rows use a lighter rule than the header. In print, closed `details` open through `::details-content` where supported, and through the JS bundle's `beforeprint` handler elsewhere.

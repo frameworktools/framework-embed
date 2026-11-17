@@ -67,10 +67,16 @@ For the logistic regression in `spec/fixtures/r-glm-logit.json`, the visible tab
 | Term | Odds ratio (95% CI) |
 |---|---|
 | (Intercept) | — |
-| wt | 3.1e-4 (7.5e-7 to 0.13) |
+| wt | < 0.01 (< 0.01 to 0.13) |
 | hp | 1.04 (1.00 to 1.07) |
 
-Model and test results use two decimal places. Data tables use three. `SPEC.md` defines both rules.
+Model and test results use two decimal places. Data tables use three. Nothing uses scientific notation. `SPEC.md` defines both rules.
+
+Numbers are set in JetBrains Mono (`@fontsource/jetbrains-mono` 5.2.8 from jsDelivr, OFL-1.1). Labels and prose keep the site's font. To use another font for numbers, and skip the download, set the custom property:
+
+```css
+.fw-embed { --fw-embed-mono: ui-monospace, Menlo, monospace; }
+```
 
 ## PHP
 

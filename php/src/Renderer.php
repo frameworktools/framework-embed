@@ -306,35 +306,35 @@ final class Renderer
         $main = [];
         $statistic = $test['statistic'] ?? null;
         if (self::isObject($statistic) && self::text($statistic['name'] ?? null) !== null) {
-            $main[] = [$statistic['name'], self::result($statistic['value'] ?? null)];
+            $main[] = [$statistic['name'], self::result($statistic['value'] ?? null), true];
         }
         if (Format::isNumber($test['p_value'] ?? null)) {
-            $main[] = ['p-value', Format::pValue($test['p_value'])];
+            $main[] = ['p-value', Format::pValue($test['p_value']), true];
         }
         $estimates = self::named($test['estimates'] ?? null);
         $interval = self::isObject($test['conf_int'] ?? null) && Format::isNumber($test['conf_int']['level'] ?? null) ? $test['conf_int'] : null;
         $ci = $interval === null ? null : Format::percent($interval['level']) . ' CI';
         if (count($estimates) === 1 && $interval !== null) {
             $main[] = [Format::asciiCapitalize($estimates[0]['name']) . ' (' . $ci . ')',
-                self::result($estimates[0]['value'] ?? null) . ' (' . self::intervalText($interval['low'] ?? null, $interval['high'] ?? null) . ')'];
+                self::result($estimates[0]['value'] ?? null) . ' (' . self::intervalText($interval['low'] ?? null, $interval['high'] ?? null) . ')', true];
         } else {
             foreach ($estimates as $entry) {
-                $main[] = [Format::asciiCapitalize($entry['name']), self::result($entry['value'] ?? null)];
+                $main[] = [Format::asciiCapitalize($entry['name']), self::result($entry['value'] ?? null), true];
             }
             if ($interval !== null) {
-                $main[] = [$ci, self::intervalText($interval['low'] ?? null, $interval['high'] ?? null)];
+                $main[] = [$ci, self::intervalText($interval['low'] ?? null, $interval['high'] ?? null), true];
             }
         }
         $extra = [];
         $alternative = $test['alternative'] ?? null;
         if (is_string($alternative) && array_key_exists($alternative, self::ALTERNATIVES)) {
-            $extra[] = ['Alternative', self::ALTERNATIVES[$alternative]];
+            $extra[] = ['Alternative', self::ALTERNATIVES[$alternative], false];
         }
         foreach (self::named($test['parameters'] ?? null) as $entry) {
-            $extra[] = [$entry['name'], self::result($entry['value'] ?? null)];
+            $extra[] = [$entry['name'], self::result($entry['value'] ?? null), true];
         }
         foreach (self::named($test['null_value'] ?? null) as $entry) {
-            $extra[] = ['Null value: ' . $entry['name'], self::result($entry['value'] ?? null)];
+            $extra[] = ['Null value: ' . $entry['name'], self::result($entry['value'] ?? null), true];
         }
         $rest = [];
         if ($extra !== []) {
@@ -464,6 +464,11 @@ final class Renderer
         return $lines;
     }
 
+    private static function numberSpan(int|float $count): string
+    {
+        return '<span class="fw-embed__num">' . self::e(Format::number($count)) . '</span>';
+    }
+
     /** $rest names the <details> that holds the remaining rows, or null to link to the artifact. */
     private static function tableNotes(array $table, array $rows, array $doc, ?string $rest): array
     {
@@ -472,10 +477,10 @@ final class Renderer
         $columnTotal = Format::isInteger($table['column_count'] ?? null) ? $table['column_count'] : count($table['columns']);
         $parts = [];
         if ($total > count($rows)) {
-            $parts[] = Format::number(count($rows)) . ' of ' . Format::number($total) . ' rows';
+            $parts[] = self::numberSpan(count($rows)) . ' of ' . self::numberSpan($total) . ' rows';
         }
         if ($rest === null && $columnTotal > count($table['columns'])) {
-            $parts[] = Format::number(count($table['columns'])) . ' of ' . Format::number($columnTotal) . ' columns';
+            $parts[] = self::numberSpan(count($table['columns'])) . ' of ' . self::numberSpan($columnTotal) . ' columns';
         }
         if ($parts !== []) {
             $href = self::safeUrl($doc['url'] ?? null);
@@ -682,14 +687,14 @@ final class Renderer
 
     private static function metrics(array $metrics): string
     {
-        return self::pairs(array_map(fn (array $metric) => [self::metricLabel($metric['name']), self::metricValue($metric['name'], $metric['value'] ?? null)], $metrics));
+        return self::pairs(array_map(fn (array $metric) => [self::metricLabel($metric['name']), self::metricValue($metric['name'], $metric['value'] ?? null), Format::isNumber($metric['value'] ?? null)], $metrics));
     }
 
     private static function pairs(array $pairs): string
     {
         $lines = ['<dl class="fw-embed__stats">'];
-        foreach ($pairs as [$term, $value]) {
-            $lines[] = '<div><dt>' . self::e($term) . '</dt><dd>' . self::e($value) . '</dd></div>';
+        foreach ($pairs as [$term, $value, $numeric]) {
+            $lines[] = '<div><dt>' . self::e($term) . '</dt><dd' . ($numeric ? ' class="fw-embed__num"' : '') . '>' . self::e($value) . '</dd></div>';
         }
         $lines[] = '</dl>';
 

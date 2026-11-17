@@ -15,7 +15,7 @@ describe('model view', () => {
         const host = dom(load('r-glm-logit'));
         const visible = host.querySelector('.fw-embed__body > .fw-embed__scroll table');
         expect(headers(visible)).toEqual(['Term', 'Odds ratio (95% CI)']);
-        expect([...visible.querySelectorAll('tbody td')].map((td) => td.textContent)).toEqual(['—', '3.1e-4 (7.5e-7 to 0.13)', '1.04 (1.00 to 1.07)']);
+        expect([...visible.querySelectorAll('tbody td')].map((td) => td.textContent)).toEqual(['—', '< 0.01 (< 0.01 to 0.13)', '1.04 (1.00 to 1.07)']);
         const details = host.querySelector('details.fw-embed__details');
         expect(details.open).toBe(false);
         expect(details.querySelector('summary').textContent).toBe('Model details');

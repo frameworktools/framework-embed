@@ -37,7 +37,7 @@ describe('trimmed rows', () => {
         const full = load('r-tibble');
         const trimmed = { ...full, data: { ...full.data, tables: [{ ...full.data.tables[0], rows: full.data.tables[0].rows.slice(0, 25) }] } };
         expect(render(trimmed)).toBe(render(full));
-        expect(render(trimmed)).toContain('Showing 25 of 60 rows.');
+        expect(render(trimmed)).toContain('Showing <span class="fw-embed__num">25</span> of <span class="fw-embed__num">60</span> rows.');
     });
 });
 

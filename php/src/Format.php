@@ -153,26 +153,27 @@ final class Format
     /** Decimal places for model and test results. */
     public const RESULT_PLACES = 2;
 
-    private const SMALL = [2 => 0.01, 3 => 0.001];
-
     /**
      * A number in a table cell, statistic, or metric. $decimal forces $places decimals for whole numbers.
-     * Numbers below 10^-places or at least 1e15 use scientific notation with $places significant digits.
+     * No scientific notation: large numbers are written in full, and a nonzero number that rounds to
+     * zero is written as "< 0.01" (or "> -0.01"), with $places decimals.
      */
     public static function number(mixed $x, bool $decimal = false, int $places = self::DATA_PLACES): string
     {
         if (! self::isNumber($x)) {
             return self::EMPTY;
         }
-        $size = abs((float) $x);
-        if ($size >= 1e15 || ($size > 0 && $size < self::SMALL[$places])) {
-            return self::scientific($x, $places);
-        }
         if (! $decimal && self::isInteger($x)) {
             return self::fixed($x, 0);
         }
+        $fixed = self::fixed($x, $places);
+        if ($x != 0 && preg_match('/[1-9]/', $fixed) !== 1) {
+            $smallest = '0.' . str_repeat('0', $places - 1) . '1';
 
-        return self::fixed($x, $places);
+            return $x > 0 ? '< ' . $smallest : '> -' . $smallest;
+        }
+
+        return $fixed;
     }
 
     public static function pValue(mixed $p): string
