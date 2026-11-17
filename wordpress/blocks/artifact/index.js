@@ -60,7 +60,7 @@
 			[ html ]
 		);
 		if ( ! html ) {
-			return el( components.Notice, { status: 'warning', isDismissible: false }, __( 'The stored copy cannot be shown.', 'framework-embed' ) );
+			return el( components.Notice, { status: 'warning', isDismissible: false }, __( 'Could not display the stored artifact.', 'framework-embed' ) );
 		}
 		return el( 'div', { ref: ref, className: 'framework-artifact__preview', dangerouslySetInnerHTML: { __html: html } } );
 	}
@@ -114,7 +114,7 @@
 				request
 					.then( onDone )
 					.catch( function ( error ) {
-						errorState[ 1 ]( ( error && error.message ) || __( 'The artifact could not be fetched.', 'framework-embed' ) );
+						errorState[ 1 ]( ( error && error.message ) || __( 'Could not fetch the artifact.', 'framework-embed' ) );
 					} )
 					.finally( function () {
 						busyState[ 1 ]( false );
@@ -159,13 +159,13 @@
 			var stored = doc
 				? sprintf(
 						/* translators: 1: version number, 2: date and time the copy was fetched. */
-						__( 'Stored copy of version %1$s, fetched %2$s.', 'framework-embed' ),
+						__( 'Version %1$s, fetched %2$s.', 'framework-embed' ),
 						doc.version,
 						attributes.fetchedAt ? new Date( attributes.fetchedAt ).toLocaleString() : '—'
 				  )
 				: attributes.removed
-				? __( 'The server reported this artifact gone, so its stored copy was removed.', 'framework-embed' )
-				: __( 'No stored copy.', 'framework-embed' );
+				? __( 'This artifact is no longer available on the server, so its stored copy was removed.', 'framework-embed' )
+				: __( 'No copy is stored for this block.', 'framework-embed' );
 
 			var actions = el(
 				'div',

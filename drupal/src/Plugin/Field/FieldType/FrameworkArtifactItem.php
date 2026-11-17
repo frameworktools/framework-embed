@@ -22,7 +22,7 @@ use Drupal\Core\TypedData\DataDefinition;
 #[FieldType(
   id: 'framework_artifact',
   label: new TranslatableMarkup('Framework artifact'),
-  description: new TranslatableMarkup('A model, table, test, figure, or chart from a Framework Cloud server, stored with the content.'),
+  description: new TranslatableMarkup('Stores and renders a published Framework model, table, hypothesis test, figure, or chart.'),
   category: 'reference',
   default_widget: 'framework_artifact_default',
   default_formatter: 'framework_artifact_stored',
@@ -37,8 +37,8 @@ final class FrameworkArtifactItem extends FieldItemBase {
       'url' => DataDefinition::create('string')->setLabel(new TranslatableMarkup('Artifact URL'))->setRequired(TRUE),
       'embed_url' => DataDefinition::create('string')->setLabel(new TranslatableMarkup('Pinned embed URL')),
       'document' => DataDefinition::create('string')->setLabel(new TranslatableMarkup('Stored embed document')),
-      'fetched_at' => DataDefinition::create('timestamp')->setLabel(new TranslatableMarkup('Fetched')),
-      'removed' => DataDefinition::create('boolean')->setLabel(new TranslatableMarkup('Removed by the takedown check')),
+      'fetched_at' => DataDefinition::create('timestamp')->setLabel(new TranslatableMarkup('Fetched time')),
+      'removed' => DataDefinition::create('boolean')->setLabel(new TranslatableMarkup('Removed by takedown check')),
     ];
   }
 

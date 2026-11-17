@@ -3,42 +3,43 @@
 return [
 
     /*
-    | Hosts embed documents are fetched from, besides framework.pub. A host
-    | name such as framework.example.org allows HTTPS only. An origin such as
-    | http://localhost:8000 allows exactly that scheme, host, and port. IP
-    | addresses, paths, and user info are ignored, and logged as a warning.
+    | Additional Framework Cloud hosts allowed for embeds alongside
+    | framework.pub. A host name such as framework.example.org allows HTTPS on
+    | the default port. An origin such as http://localhost:8000 allows that
+    | exact scheme, host, and port. IP addresses, paths, and user info are
+    | ignored and logged as warnings.
     */
     'hosts' => array_filter(explode(',', (string) env('FRAMEWORK_EMBED_HOSTS', ''))),
 
     /*
-    | The longest time a cached live embed counts as fresh, in seconds. The
-    | server's Cache-Control header can only shorten it. Expired copies still
-    | render for up to a week while they are refreshed in the background.
+    | Maximum time in seconds that a cached live embed counts as fresh. Shorter
+    | Cache-Control max-age headers from the server take precedence. Expired
+    | copies continue rendering for up to seven days while refreshing in the
+    | background.
     */
     'max_ttl' => (int) env('FRAMEWORK_EMBED_MAX_TTL', 3600),
 
     /*
-    | Seconds to wait for a Framework server before rendering a plain link.
+    | Request timeout in seconds when contacting a Framework Cloud server.
     */
     'timeout' => 5,
 
     /*
-    | How live embeds ({{ framework:artifact url="…" }} and the
-    | framework_embeds modifier) are fetched in the background:
-    | 'after_response' runs the fetch after the response is sent;
-    | 'queue' pushes it onto the default queue.
+    | Background refresh mode for live embeds ({{ framework:artifact url="…" }}
+    | and the framework_embeds modifier). 'after_response' runs after the HTTP
+    | response is sent. 'queue' dispatches onto the default Laravel queue.
     */
     'refresh' => env('FRAMEWORK_EMBED_REFRESH', 'after_response'),
 
     /*
-    | Daily check that removes stored copies (framework_artifact fields) whose
-    | artifact the server reports gone with a 404 or 410. Timeouts and server
-    | errors change nothing. Needs Laravel's scheduler (schedule:run).
+    | Daily check that removes stored copies in framework_artifact fields when
+    | the server returns 404 or 410. Timeouts and server errors leave stored
+    | copies unchanged. Requires the Laravel scheduler (schedule:run).
     */
     'takedown' => (bool) env('FRAMEWORK_EMBED_TAKEDOWN', true),
 
     /*
-    | The cache store for live embed documents. Null uses the default store.
+    | Laravel cache store for live embed documents. Null uses the default store.
     */
     'cache_store' => env('FRAMEWORK_EMBED_CACHE_STORE'),
 

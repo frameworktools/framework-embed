@@ -190,9 +190,14 @@
 .fw-embed__details > summary:hover { color: var(--fw-embed-fg, inherit); }
 .fw-embed__details > :not(summary) { margin: 1.125em 0 0; }
 
-/* Figures assume a white background in both themes. */
-.fw-embed__media { background: #fff; border-radius: 0.375em; padding: 0.5em; line-height: 0; }
-.fw-embed__img { display: block; max-width: 100%; height: auto; margin: 0 auto; }
+/* Figures assume a white background in both themes: a thin white band, no card. */
+.fw-embed__media { background: #fff; padding: 0.25em; line-height: 0; }
+/* Raster figures scale down to fit and stop at their natural width. Tall figures stop at 80vh. */
+.fw-embed__img { display: block; width: auto; height: auto; max-width: 100%; max-height: 80vh; margin: 0 auto; }
+/* Vector figures fill the width; a figure capped by height keeps its proportions. */
+.fw-embed__img--vector { width: 100%; object-fit: contain; }
+/* With known dimensions, the renderer narrows tall vector figures to calc(80vh * width / height),
+   so object-fit never has to letterbox them. */
 
 .fw-embed__chart { position: relative; width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; }
 .fw-embed__chart > script { display: none; }

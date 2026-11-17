@@ -167,7 +167,7 @@ class Embedder
         return match ($e->reason) {
             EmbedException::NOT_ALLOWED => __('This URL is not a Framework artifact on an allowed host.'),
             self::GONE => __('This Framework artifact is private, password-protected, or deleted.'),
-            default => __('The Framework server could not be reached, or its answer was not an embed document. Try again later.'),
+            default => __('The Framework Cloud server could not be reached, or it returned an invalid embed response. Try again later.'),
         };
     }
 
@@ -186,7 +186,7 @@ class Embedder
             return $this->figure($doc) ?? $this->link($url);
         }
         if (! empty($value['removed'])) {
-            return $this->link($url) . $this->notice('The Framework server reported this artifact gone, so its stored copy was removed. Visitors see a link.', $url);
+            return $this->link($url) . $this->notice('This artifact is no longer available on the Framework Cloud server, so its stored copy was removed. Visitors see a link.', $url);
         }
 
         return $this->link($url);
@@ -207,7 +207,7 @@ class Embedder
             return '';
         }
         if (! $this->isArtifactUrl($url)) {
-            return $this->link($url) . $this->notice('This URL is not a Framework artifact on an allowed host. Add other Framework servers to config/framework-embed.php.', $url);
+            return $this->link($url) . $this->notice('This URL is not a Framework artifact on an allowed host. Add self-hosted Framework Cloud servers in config/framework-embed.php.', $url);
         }
 
         $entry = $this->cache->get($this->key('live', $url));
@@ -228,7 +228,7 @@ class Embedder
         }
         $this->schedule($url);
 
-        return $this->link($url) . $this->notice('The artifact is being fetched in the background. Visitors see a link until it arrives.', $url);
+        return $this->link($url) . $this->notice('This artifact is being fetched in the background. Visitors see a link until the fetch completes.', $url);
     }
 
     /** Dispatches a fetch, at most once per RETRY_TTL for a URL. */

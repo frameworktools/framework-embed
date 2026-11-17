@@ -1,45 +1,68 @@
 # framework-embed
 
-Renderers that show Framework artifacts on any website without iframes. A Framework Cloud server, such as framework.pub, serves an embed document for each public or unlisted artifact. The renderers here turn that document into static, escaped HTML that the site's own CSS can theme.
+`framework-embed` displays published Framework artifacts on blogs, personal sites, and web pages. It includes plugins for WordPress, Drupal, and Statamic, a `<framework-artifact>` custom element for HTML pages, and JavaScript and PHP renderers.
 
-Supported artifacts:
+Each public or unlisted artifact on [framework.pub](https://framework.pub) or a self-hosted Framework Cloud server provides a `framework.embed/v1` document. The renderers convert that document into escaped HTML styled with CSS custom properties rather than rendering an iframe. Embedding requires no account or API key on the receiving site, and the code is MIT licensed.
 
-- regression models: one coefficient table with estimates, odds, hazard, or rate ratios when the model has them, standard errors, statistics, p-values, and confidence intervals. Fit statistics and other tables sit in a closed "Model details" disclosure;
-- tables, with the first 25 rows;
-- hypothesis tests: the statistic, p-value, and estimate with its interval, with the rest under "Test details";
-- figures (SVG, PNG, JPEG, GIF, and WebP);
-- Vega-Lite charts;
-- everything else as a link card.
+## Supported artifacts
 
-The code is MIT licensed. No account or key is needed to embed a public or unlisted artifact.
+- **Regression models.** One coefficient table with estimates, exponentiated odds, hazard, or rate ratios when applicable, standard errors, test statistics, p-values, and confidence intervals. Fit statistics and additional tables appear in a collapsible **Model details** panel.
+- **Tables.** Static HTML tables displaying the first 25 rows with a link to the full table.
+- **Hypothesis tests.** Test statistic, p-value, and estimate with its confidence interval, with additional parameters under **Test details**.
+- **Figures.** SVG, PNG, JPEG, GIF, and WebP images.
+- **Charts.** Interactive Vega-Lite charts rendered with `vega-embed`.
+- **Other artifacts.** Link cards for HTML documents, Quarto sites, PDFs, and downloadable files.
 
-## Repository layout
+## CMS plugins
 
-| Path | Contents |
-|---|---|
-| `SPEC.md` | The `framework.embed/v1` specification: document, markup, number formatting, allowed hosts, and theming |
-| `spec/embed.schema.json` | JSON Schema for embed documents. It allows unknown fields. |
-| `spec/fixtures/*.json` | Embed documents. Six come from Framework Cloud's own test fixtures. The rest are made by hand for other artifact types and edge cases. |
-| `spec/fixtures/*.html` | The exact HTML every renderer must produce for each document |
-| `spec/format-cases.json` | Number formatting cases every renderer must reproduce |
-| `js/` | `@framework-cloud/embed`: renderer, `<framework-artifact>` element, chart loader, and stylesheet |
-| `php/` | `framework-cloud/embed`: client, URL matcher, renderer, and a copy of the built CSS and JS |
-| `wordpress/` | WordPress plugin `framework-embed` |
-| `drupal/` | Drupal module `framework_embed` |
-| `statamic/` | Statamic addon `framework-cloud/statamic-embed` |
-| `testing/` | `FixtureServer.php`, a test-only fetcher that serves `spec/fixtures`, shared by the plugin test harnesses |
+Each plugin renders through the PHP package, contacts only framework.pub and servers configured by an administrator, and never blocks page rendering on network requests. Plugins support stored and live embeds:
 
-The JS and PHP renderers produce byte-identical HTML for every fixture. The CMS plugins render through the PHP package.
+| Tier | Used by | Behavior |
+|---|---|---|
+| Stored | WordPress block, Drupal field, Statamic fieldtype | Inserting a URL fetches the embed document once and saves it with the content, pinned to its version URL. Pages render from that saved copy. **Fetch again** (same version) and **Use newest version** replace the copy only after author confirmation. |
+| Live | Pasted URLs, shortcodes, text filters, Link formatters, Antlers `url=` tag and modifier | The first view renders a link and queues a background fetch. Subsequent views render from a cache governed by `Cache-Control`. Expired copies continue rendering while refreshing in the background. A `404` or `410` response removes the cached copy and restores the link. |
 
-## Data flow
+A daily takedown check, enabled by default, checks each stored copy on an allowed host. It removes a stored copy only when the server returns `404` or `410` and leaves a link in its place. Timeouts and server errors leave stored copies unchanged. Image artifacts render as `<img>` elements pointing to the image URL in the embed document without copying image files to the site.
 
-1. A site author pastes an artifact URL, such as `https://framework.pub/@ada/admissions/model`.
-2. The consumer checks the URL's host against its allowed hosts and requests `/api/embed/v1/resolve?url=…` from that host.
-3. The server answers with a `framework.embed/v1` document, or `404` when the artifact is private, password-protected, or gone.
-4. A renderer turns the document into a `<figure class="fw-embed">`. A PHP site does this on the server. A static site can use the `<framework-artifact>` element.
-5. `framework-embed.css` styles the figure. `framework-embed.iife.js` draws Vega-Lite charts with vega-embed, which it loads only when a chart is on the page.
+| Plugin | Requirements | Stored embeds | Live embeds | Background fetch |
+|---|---|---|---|---|
+| WordPress | WordPress 6.5+, PHP 8.1+ | Framework artifact block | URL on its own line, `[framework_artifact url="…"]` | Action Scheduler when installed, otherwise WP-Cron |
+| Drupal | Drupal 10.3+ or 11, PHP 8.1+ | Framework artifact field | Text format filter, Link field formatter | Post-response callback, with a cron queue fallback |
+| Statamic | Statamic 5 or 6, PHP 8.1+ | `framework_artifact` fieldtype and entry actions | `{{ framework:artifact url="…" }}`, `framework_embeds` modifier | Post-response job or Laravel queue |
 
-## JavaScript
+Each plugin validates allowed hosts with `UrlMatcher` following the rules in `SPEC.md`.
+
+### WordPress
+
+Download `framework-embed-<version>.zip` from the [latest release](https://github.com/frameworktools/framework-embed/releases/latest), or build it from source:
+
+```sh
+make wordpress   # writes wordpress/dist/framework-embed-<version>.zip
+```
+
+Upload the archive under **Plugins → Add New → Upload Plugin** and activate it. The archive bundles `php/src` and `php/assets` with its own autoloader, so WordPress requires no Composer step. Add self-hosted Framework Cloud servers under **Settings → Framework embeds**. Live embeds require WP-Cron or a system cron job calling `wp-cron.php`. See `wordpress/readme.txt` for details.
+
+### Drupal
+
+```sh
+composer require drupal/framework_embed
+drush en framework_embed
+```
+
+Add a **Framework artifact** field to a content type for stored embeds. For live embeds, enable **Embed Framework artifacts** on a text format after **Limit allowed HTML tags**, or select the **Framework artifact** formatter on a Link field. Until the packages are published on Packagist, configure path repositories as shown in `drupal/README.md`.
+
+### Statamic
+
+```sh
+composer require framework-cloud/statamic-embed
+php artisan vendor:publish --tag=framework-embed
+```
+
+Add `{{ framework:styles }}` inside `<head>` and `{{ framework:scripts only_if_charts="true" }}` before `</body>`. Add a **Framework artifact** field to a blueprint for stored embeds and render it with `{{ framework:artifact field="handle" }}`. Scheduled takedown checks require the Laravel scheduler. Until the packages are published on Packagist, configure path repositories as shown in `statamic/README.md`.
+
+## Web component and JavaScript
+
+Include the stylesheet and browser bundle to use `<framework-artifact>` on any HTML page:
 
 ```html
 <link rel="stylesheet" href="framework-embed.css">
@@ -50,19 +73,21 @@ The JS and PHP renderers produce byte-identical HTML for every fixture. The CMS 
 </framework-artifact>
 ```
 
-The element renders into light DOM, so site CSS applies. Its children remain as the fallback until the document loads. A stored document in a child `<script type="application/json">` renders without a request. Set `window.FrameworkEmbedConfig = {hosts: ["framework.pub", "framework.example.edu"]}` before the script to allow another server.
+The custom element renders into light DOM so host page styles apply. Child elements remain visible as a fallback until the embed document loads. Placing a `framework.embed/v1` document inside a child `<script type="application/json">` renders without a network request. Set `window.FrameworkEmbedConfig = {hosts: ["framework.pub", "framework.example.edu"]}` before the script tag to allow additional servers.
+
+Programmatic usage through `@framework-cloud/embed`:
 
 ```js
 import { render, fetchEmbed, mount } from '@framework-cloud/embed';
 
-const doc = await fetchEmbed('https://framework.pub/d/aB3dE5fG7hJ9kL1m'); // null when gone
-const html = render(doc); // pure, escaped HTML string
-mount(document.querySelector('#figure'), doc); // render and draw charts
+const doc = await fetchEmbed('https://framework.pub/d/aB3dE5fG7hJ9kL1m'); // null on 404 or 410
+const html = render(doc); // escaped HTML string
+mount(document.querySelector('#figure'), doc); // render HTML and initialize charts
 ```
 
-See `js/index.d.ts` for the full API.
+See `js/index.d.ts` and `js/README.md` for the full JavaScript API.
 
-For the logistic regression in `spec/fixtures/r-glm-logit.json`, the coefficient table reads:
+For the logistic regression in `spec/fixtures/r-glm-logit.json`, the rendered coefficient table contains:
 
 | Term | Estimate | Odds ratio (95% CI) | Std. error | Statistic | p-value | 95% CI |
 |---|---|---|---|---|---|---|
@@ -70,11 +95,9 @@ For the logistic regression in `spec/fixtures/r-glm-logit.json`, the coefficient
 | wt | -8.08 | < 0.01 (< 0.01 to 0.13) | 3.07 | -2.63 | 0.008 | -14.10 to -2.07 |
 | hp | 0.04 | 1.04 (1.00 to 1.07) | 0.02 | 2.04 | 0.041 | < 0.01 to 0.07 |
 
-The fit statistics sit in a closed "Model details" disclosure below it.
+Fit statistics appear in a collapsed **Model details** panel below the table. Model and test results use two decimal places, data tables use three decimal places, and values never use scientific notation.
 
-Model and test results use two decimal places. Data tables use three. Nothing uses scientific notation. `SPEC.md` defines both rules.
-
-Numbers are set in JetBrains Mono (`@fontsource/jetbrains-mono` 5.2.8 from jsDelivr, OFL-1.1). Labels and prose keep the site's font. To use another font for numbers, and skip the download, set the custom property:
+Numeric cells use JetBrains Mono (`@fontsource/jetbrains-mono` 5.2.8 from jsDelivr, OFL-1.1), while labels and prose inherit the site's font. Set `--fw-embed-mono` to use another monospace font and skip the font download:
 
 ```css
 .fw-embed { --fw-embed-mono: ui-monospace, Menlo, monospace; }
@@ -87,71 +110,53 @@ use Framework\Embed\Client;
 use Framework\Embed\Renderer;
 
 $client = new Client(hosts: ['framework.pub'], cache: $cache);
-$doc = $client->resolve('https://framework.pub/@ada/admissions/model'); // null when gone
+$doc = $client->resolve('https://framework.pub/@ada/admissions/model'); // null on 404 or 410
 echo $doc === null ? '' : Renderer::render($doc);
 ```
 
-`Client` takes any fetcher callable and any cache that implements `Framework\Embed\Cache` (a PSR-16 subset; `Psr16Cache` wraps a PSR-16 cache). `Assets::css()` and `Assets::script()` give the paths of the shipped stylesheet and script.
+`Client` accepts any fetcher callable and any cache implementing `Framework\Embed\Cache`. `Psr16Cache` adapts a PSR-16 cache store. `Assets::css()` and `Assets::script()` return filesystem paths to the bundled stylesheet and script.
 
-## CMS plugins
+## Data flow
 
-Each plugin renders through the PHP package, contacts only framework.pub and hosts an administrator adds, and never waits on the network while rendering a page. Embeds come in two tiers.
+1. An author pastes or enters an artifact URL such as `https://framework.pub/@ada/admissions/model`.
+2. The consumer checks the URL host against its allowed hosts and requests `/api/embed/v1/resolve?url=…` from that server.
+3. The server responds with a `framework.embed/v1` JSON document, or `404` when the artifact is private, password-protected, or deleted.
+4. The renderer turns the document into `<figure class="fw-embed">`. PHP sites render on the server, and static pages can render in the browser with `<framework-artifact>`.
+5. `framework-embed.css` styles the output. When a Vega-Lite chart is present on the page, `framework-embed.iife.js` loads `vega-embed` and renders the chart.
 
-| Tier | Used by | Behavior |
-|---|---|---|
-| Stored (preferred) | WordPress block, Drupal field, Statamic fieldtype | Inserting a URL fetches the embed document once and saves it with the content, pinned to its version URL. Pages render from that copy. "Fetch again" (same version) and "Use newest version" replace it only after the author confirms. |
-| Live | Pasted URLs, shortcodes, text filters, Link formatters, Antlers `url=` tag and modifier | The first view renders a link and queues a background fetch. Later views render from a cache that honors `Cache-Control`. An expired copy renders while it refreshes. A `404` drops the copy and the link stays. |
+## Repository layout
 
-A daily takedown check, on by default and switchable, asks the server about each stored copy on an allowed host. It removes a copy only on a `404` or `410`, never on a timeout or server error, and leaves a link in its place. Image artifacts render as `<img>` pointing at the image URL in the document; no file is copied.
+| Path | Contents |
+|---|---|
+| `SPEC.md` | `framework.embed/v1` specification covering document schema, markup, number formatting, allowed hosts, and theming |
+| `spec/embed.schema.json` | JSON Schema for embed documents |
+| `spec/fixtures/*.json` | Fixture embed documents from Framework Cloud and edge-case test inputs |
+| `spec/fixtures/*.html` | Expected HTML output that both renderers must match byte for byte |
+| `spec/format-cases.json` | Shared number-formatting test cases |
+| `spec/model-names.json` | Shared model-naming test cases |
+| `js/` | `@framework-cloud/embed` package: renderer, `<framework-artifact>` element, chart loader, and stylesheet |
+| `php/` | `framework-cloud/embed` package: client, URL matcher, renderer, and bundled CSS and JS assets |
+| `wordpress/` | WordPress plugin `framework-embed` |
+| `drupal/` | Drupal module `framework_embed` |
+| `statamic/` | Statamic addon `framework-cloud/statamic-embed` |
+| `testing/` | `FixtureServer.php` test fetcher shared across plugin test suites |
 
-| Plugin | Requires | Stored | Live | Background fetch |
-|---|---|---|---|---|
-| WordPress | WordPress 6.5+, PHP 8.1+ | Framework artifact block (document in a block attribute) | Paste on its own line, `[framework_artifact url="…"]` | Action Scheduler if installed, else WP-Cron |
-| Drupal | Drupal 10.3+ or 11, PHP 8.1+ | Framework artifact field | Text format filter, Link field formatter | After the response, with a cron queue as backup |
-| Statamic | Statamic 5 or 6, PHP 8.1+ | `framework_artifact` fieldtype, with entry actions | `{{ framework:artifact url="…" }}`, `framework_embeds` modifier | After the response, or the queue |
-
-Allowed hosts follow the rules in "Allowed hosts" in `SPEC.md`. Each plugin validates them with `UrlMatcher`.
-
-### WordPress
-
-```sh
-make wordpress   # writes wordpress/dist/framework-embed-<version>.zip
-```
-
-Upload the zip under Plugins → Add New → Upload Plugin and activate it. The zip bundles `php/src` and `php/assets` with its own autoloader, so the site needs no Composer. To allow a self-hosted server, add its host under Settings → Framework embeds. Live embeds need WP-Cron, or a real cron job calling `wp-cron.php`. See `wordpress/readme.txt`.
-
-### Drupal
-
-```sh
-composer require drupal/framework_embed
-drush en framework_embed
-```
-
-Add a "Framework artifact" field to a content type for stored embeds. For live embeds, enable "Embed Framework artifacts" on a text format, after "Limit allowed HTML tags", or choose the "Framework artifact" formatter for Link fields. Until the packages are published, install from path repositories as `drupal/README.md` describes.
-
-### Statamic
-
-```sh
-composer require framework-cloud/statamic-embed
-php artisan vendor:publish --tag=framework-embed
-```
-
-Add `{{ framework:styles }}` to the layout's `<head>` and `{{ framework:scripts only_if_charts="true" }}` before `</body>`. Add a "Framework artifact" field to a blueprint for stored embeds and render it with `{{ framework:artifact field="handle" }}`. The takedown check needs Laravel's scheduler. Until the packages are published, install from path repositories as `statamic/README.md` describes.
+The JavaScript and PHP renderers produce identical HTML for every fixture.
 
 ## Development
 
 ```sh
-make install   # npm ci in js/, composer install in php/
-make build     # build js/dist and copy it into php/assets
-make test      # vitest, PHPUnit, and a check that php/assets matches js/dist
-make fixtures  # regenerate spec/fixtures/*.html and spec/format-cases.json from the JS renderer
+make install           # npm ci in js/, composer install in php/
+make build             # build js/dist and copy assets into php/assets and drupal/assets
+make test              # run Vitest, PHPUnit, and asset sync checks
+make fixtures          # regenerate spec/fixtures/*.html and spec/format-cases.json from JS
 
 make statamic-install  # composer install in statamic/
-make plugins-test      # WordPress, Drupal, and Statamic unit tests
-make wordpress-e2e     # WordPress in Playground, with fixture fetches
+make plugins-test      # run WordPress, Drupal, and Statamic unit tests
+make wordpress-e2e     # run WordPress Playground end-to-end checks
 make drupal-e2e DRUPAL_PROJECT=/path/to/drupal-project
 ```
 
-`make fixtures` rewrites the expected output. Review every diff by hand before committing it.
+`make fixtures` rewrites expected HTML fixtures from the JavaScript renderer. Review every diff before committing.
 
-Packagist needs `composer.json` at a repository root. Publishing the PHP package will need a split repository or a root `composer.json` that points at `php/`.
+Packagist requires `composer.json` at the repository root, so publishing `framework-cloud/embed` requires either a split repository or a root `composer.json` pointing to `php/`.

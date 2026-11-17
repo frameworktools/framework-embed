@@ -2,11 +2,11 @@
 	"$schema": "https://schemas.wp.org/trunk/block.json",
 	"apiVersion": 3,
 	"name": "framework/artifact",
-	"version": "0.3.2",
+	"version": "0.3.3",
 	"title": "Framework artifact",
 	"category": "embed",
 	"icon": "chart-bar",
-	"description": "A model, table, test, figure, or chart from framework.pub or another Framework Cloud server, stored with the post.",
+	"description": "Embed a model, table, hypothesis test, figure, or chart from framework.pub or a self-hosted Framework Cloud server.",
 	"keywords": [
 		"framework",
 		"regression",

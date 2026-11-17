@@ -33,8 +33,8 @@ class FetchArtifactsAgain extends Action
     public function confirmationText()
     {
         return $this->newest
-            ? 'Fetch the newest version of each Framework artifact in this entry, and replace its stored copy?|Fetch the newest version of each Framework artifact in these :count entries, and replace their stored copies?'
-            : 'Fetch each Framework artifact in this entry again, and replace its stored copy?|Fetch each Framework artifact in these :count entries again, and replace their stored copies?';
+            ? 'Fetch the newest version of each Framework artifact in this entry and replace its stored copy?|Fetch the newest version of each Framework artifact in these :count entries and replace their stored copies?'
+            : 'Fetch each Framework artifact in this entry again and replace its stored copy?|Fetch each Framework artifact in these :count entries again and replace their stored copies?';
     }
 
     /** @return list<string> Handles of framework_artifact fields that hold a URL. */

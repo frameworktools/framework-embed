@@ -62,9 +62,9 @@ describe('model view', () => {
     it('shows the top 10 features and continues in details', () => {
         const host = dom(load('python-xgboost'));
         expect(host.querySelectorAll('.fw-embed__body > .fw-embed__scroll tbody tr')).toHaveLength(10);
-        expect(host.querySelector('.fw-embed__body > .fw-embed__note').textContent).toBe('Showing 10 of 30 rows. More in Model details.');
+        expect(host.querySelector('.fw-embed__body > .fw-embed__note').textContent).toBe('Showing 10 of 30 rows. The rest are in Model details.');
         expect(host.querySelectorAll('details tbody tr')).toHaveLength(15);
-        expect(host.querySelector('details .fw-embed__note').textContent).toBe('Showing rows 11 to 25 of 30. View the full table');
+        expect(host.querySelector('details .fw-embed__note').textContent).toBe('Showing rows 11 to 25 of 30. View full table');
     });
 
     it('shows everything when there is no coefficient table', () => {
@@ -77,6 +77,16 @@ describe('model view', () => {
         const doc = load('r-glm-logit');
         doc.data.metrics = [];
         expect(dom(doc).querySelector('details')).toBeNull();
+    });
+});
+
+describe('figures', () => {
+    it('marks SVG figures as vector so they fill the width', () => {
+        expect(dom(load('r-ggplot')).querySelector('img').className).toBe('fw-embed__img fw-embed__img--vector');
+        expect(dom(load('matplotlib-png')).querySelector('img').className).toBe('fw-embed__img');
+        const doc = load('r-ggplot');
+        doc.image.content_type = 'IMAGE/SVG+XML; charset=utf-8';
+        expect(dom(doc).querySelector('img').classList.contains('fw-embed__img--vector')).toBe(true);
     });
 });
 

@@ -35,30 +35,30 @@ final class SettingsForm extends ConfigFormBase {
   public function buildForm(array $form, FormStateInterface $form_state): array {
     $config = $this->config('framework_embed.settings');
     $form['intro'] = [
-      '#markup' => '<p>' . $this->t('Artifact URLs from framework.pub render as figures. Add self-hosted Framework Cloud servers here. No other host is ever contacted.') . '</p>',
+      '#markup' => '<p>' . $this->t('Artifacts from framework.pub are enabled by default. Add self-hosted Framework Cloud servers below to allow embeds from those hosts.') . '</p>',
     ];
     $form['hosts'] = [
       '#type' => 'textarea',
       '#title' => $this->t('Extra hosts'),
       '#default_value' => implode("\n", (array) $config->get('hosts')),
-      '#description' => $this->t('One per line. A host name such as framework.example.org allows HTTPS only. An origin such as http://localhost:8000 allows exactly that scheme, host, and port. IP addresses are not allowed.'),
+      '#description' => $this->t('Enter one host per line. A host name such as framework.example.org allows HTTPS on the default port. An origin such as http://localhost:8000 allows that exact scheme, host, and port. IP addresses and paths are not allowed.'),
       '#rows' => 5,
     ];
     $form['max_ttl'] = [
       '#type' => 'number',
-      '#title' => $this->t('Longest fresh lifetime for cached embeds'),
+      '#title' => $this->t('Maximum cache lifetime'),
       '#field_suffix' => $this->t('seconds'),
       '#min' => 0,
       '#max' => 86400,
       '#default_value' => (int) ($config->get('max_ttl') ?? 3600),
-      '#description' => $this->t("The server's Cache-Control header can only shorten it."),
+      '#description' => $this->t('Applies to live embeds. Shorter Cache-Control max-age headers from the Framework Cloud server take precedence.'),
     ];
 
     $form['takedown'] = [
       '#type' => 'checkbox',
-      '#title' => $this->t('Remove stored copies of artifacts that are no longer public'),
+      '#title' => $this->t('Remove stored copies when an artifact is deleted or restricted'),
       '#default_value' => (bool) ($config->get('takedown') ?? TRUE),
-      '#description' => $this->t('Once a day, cron checks each stored artifact on an allowed host. A copy is removed only when the server answers 404 or 410, and a link takes its place. Timeouts and server errors change nothing.'),
+      '#description' => $this->t('Cron checks stored artifacts on allowed hosts once a day. If the server returns 404 or 410, the stored copy is replaced with a link. Timeouts and server errors leave the stored copy unchanged.'),
     ];
 
     return parent::buildForm($form, $form_state);
@@ -70,7 +70,7 @@ final class SettingsForm extends ConfigFormBase {
   public function validateForm(array &$form, FormStateInterface $form_state): void {
     [$hosts, $invalid] = HostList::parse((string) $form_state->getValue('hosts'));
     if ($invalid !== []) {
-      $form_state->setErrorByName('hosts', $this->t('Not allowed: @entries. Enter a host name such as framework.example.org, or an origin such as http://localhost:8000. IP addresses and paths are not allowed.', ['@entries' => implode(', ', $invalid)]));
+      $form_state->setErrorByName('hosts', $this->t('Not allowed: @entries. Enter a host name such as framework.example.org or an origin such as http://localhost:8000. IP addresses and paths are not allowed.', ['@entries' => implode(', ', $invalid)]));
     }
     $form_state->setValue('hosts', $hosts);
     parent::validateForm($form, $form_state);

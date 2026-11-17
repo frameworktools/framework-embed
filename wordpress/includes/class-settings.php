@@ -126,7 +126,7 @@ final class Framework_Embed_Settings {
 				'framework_embed_invalid_hosts',
 				sprintf(
 					/* translators: %s: comma-separated list of rejected entries. */
-					__( 'Not saved: %s. Enter a host name such as framework.example.org, or an origin such as http://localhost:8000. IP addresses and paths are not allowed.', 'framework-embed' ),
+					__( 'Not saved: %s. Enter a host name such as framework.example.org or an origin such as http://localhost:8000. IP addresses and paths are not allowed.', 'framework-embed' ),
 					implode( ', ', $bad )
 				)
 			);
@@ -144,8 +144,8 @@ final class Framework_Embed_Settings {
 		?>
 		<div class="wrap">
 			<h1><?php esc_html_e( 'Framework embeds', 'framework-embed' ); ?></h1>
-			<p><?php esc_html_e( 'Artifact URLs from framework.pub render as figures. Add self-hosted Framework Cloud servers here. No other host is ever contacted.', 'framework-embed' ); ?></p>
-			<p><?php esc_html_e( 'The Framework artifact block stores a copy of the artifact in the post and renders from it. Pasted URLs and the shortcode render from a cache that refreshes in the background, and show a link until the first fetch finishes.', 'framework-embed' ); ?></p>
+			<p><?php esc_html_e( 'Artifacts from framework.pub are enabled by default. Add self-hosted Framework Cloud servers below to allow embeds from those hosts.', 'framework-embed' ); ?></p>
+			<p><?php esc_html_e( 'The Framework artifact block saves a copy of the artifact with the post. Pasted URLs and the shortcode use a background cache and display a link until the first fetch completes.', 'framework-embed' ); ?></p>
 			<form action="options.php" method="post">
 				<?php settings_fields( self::PAGE ); ?>
 				<table class="form-table" role="presentation">
@@ -153,19 +153,19 @@ final class Framework_Embed_Settings {
 						<th scope="row"><label for="framework-embed-hosts"><?php esc_html_e( 'Extra hosts', 'framework-embed' ); ?></label></th>
 						<td>
 							<textarea id="framework-embed-hosts" name="<?php echo esc_attr( Framework_Embed_Plugin::HOSTS_OPTION ); ?>" rows="5" cols="50" class="large-text code" aria-describedby="framework-embed-hosts-help"><?php echo esc_textarea( implode( "\n", $hosts ) ); ?></textarea>
-							<p class="description" id="framework-embed-hosts-help"><?php esc_html_e( 'One per line. A host name such as framework.example.org allows HTTPS only. An origin such as http://localhost:8000 allows exactly that scheme, host, and port. IP addresses are not allowed.', 'framework-embed' ); ?></p>
+							<p class="description" id="framework-embed-hosts-help"><?php esc_html_e( 'Enter one host per line. A host name such as framework.example.org allows HTTPS on the default port. An origin such as http://localhost:8000 allows that exact scheme, host, and port. IP addresses and paths are not allowed.', 'framework-embed' ); ?></p>
 						</td>
 					</tr>
 					<tr>
 						<th scope="row"><?php esc_html_e( 'Takedown check', 'framework-embed' ); ?></th>
 						<td>
 							<input type="hidden" name="<?php echo esc_attr( Framework_Embed_Stored::TAKEDOWN_OPTION ); ?>" value="0">
-							<label><input type="checkbox" name="<?php echo esc_attr( Framework_Embed_Stored::TAKEDOWN_OPTION ); ?>" value="1" <?php checked( Framework_Embed_Stored::takedown_enabled() ); ?>> <?php esc_html_e( 'Remove stored copies of artifacts that are no longer public', 'framework-embed' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Once a day, each stored artifact on an allowed host is checked. A copy is removed only when the server answers 404 or 410, and a link takes its place. Timeouts and server errors change nothing.', 'framework-embed' ); ?></p>
+							<label><input type="checkbox" name="<?php echo esc_attr( Framework_Embed_Stored::TAKEDOWN_OPTION ); ?>" value="1" <?php checked( Framework_Embed_Stored::takedown_enabled() ); ?>> <?php esc_html_e( 'Remove stored copies when an artifact is deleted or restricted', 'framework-embed' ); ?></label>
+							<p class="description"><?php esc_html_e( 'Checks stored artifacts on allowed hosts once a day. If the server returns 404 or 410, the stored copy is replaced with a link. Timeouts and server errors leave the stored copy unchanged.', 'framework-embed' ); ?></p>
 						</td>
 					</tr>
 				</table>
-				<?php submit_button( __( 'Save hosts', 'framework-embed' ) ); ?>
+				<?php submit_button( __( 'Save changes', 'framework-embed' ) ); ?>
 			</form>
 		</div>
 		<?php

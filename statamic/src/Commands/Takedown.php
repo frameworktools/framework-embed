@@ -18,14 +18,14 @@ use Statamic\Facades\Entry;
  */
 class Takedown extends Command
 {
-    protected $signature = 'framework-embed:takedown {--force : Run even when the takedown check is switched off}';
+    protected $signature = 'framework-embed:takedown {--force : Run even when the takedown check is disabled}';
 
-    protected $description = 'Remove stored Framework artifacts that the server reports gone';
+    protected $description = 'Remove stored Framework artifacts when the server returns 404 or 410';
 
     public function handle(): int
     {
         if (! config('framework-embed.takedown', true) && ! $this->option('force')) {
-            $this->line('The takedown check is switched off (framework-embed.takedown).');
+            $this->line('The takedown check is disabled (framework-embed.takedown).');
 
             return self::SUCCESS;
         }

@@ -42,7 +42,7 @@ final class FrameworkArtifactWidget extends WidgetBase {
       '#title' => $this->t('Artifact URL'),
       '#default_value' => $url,
       '#maxlength' => 2048,
-      '#description' => $this->t('A public or unlisted artifact on framework.pub or an allowed Framework server. Saving fetches it and stores a copy with this content.'),
+      '#description' => $this->t('Enter the URL of a public or unlisted artifact on framework.pub or an allowed Framework Cloud server. Saving fetches the artifact and stores a copy with this content.'),
       '#required' => $element['#required'] ?? FALSE,
     ];
     foreach (['embed_url', 'document', 'fetched_at', 'removed'] as $property) {
@@ -62,7 +62,7 @@ final class FrameworkArtifactWidget extends WidgetBase {
         ]),
       ];
       $options = [
-        'keep' => $this->t('Keep the stored copy'),
+        'keep' => $this->t('Keep stored copy'),
         'again' => $this->t('Fetch again (version @version)', ['@version' => $doc['version'] ?? '—']),
       ];
       if (is_int($doc['latest_version'] ?? NULL) && is_int($doc['version'] ?? NULL) && $doc['latest_version'] > $doc['version']) {
@@ -70,7 +70,7 @@ final class FrameworkArtifactWidget extends WidgetBase {
       }
       $element['action'] = [
         '#type' => 'radios',
-        '#title' => $this->t('On save'),
+        '#title' => $this->t('Save action'),
         '#options' => $options,
         '#default_value' => 'keep',
       ];
@@ -84,12 +84,12 @@ final class FrameworkArtifactWidget extends WidgetBase {
       $element['status'] = [
         '#type' => 'item',
         '#title' => $this->t('Stored copy'),
-        '#markup' => $this->t('Removed: the server reported this artifact gone. Visitors see a link.'),
+        '#markup' => $this->t('The stored copy was removed because the artifact is no longer available on the server. Visitors see a link.'),
       ];
       $element['action'] = [
         '#type' => 'radios',
-        '#title' => $this->t('On save'),
-        '#options' => ['keep' => $this->t('Leave the link'), 'again' => $this->t('Fetch again')],
+        '#title' => $this->t('Save action'),
+        '#options' => ['keep' => $this->t('Keep link'), 'again' => $this->t('Fetch again')],
         '#default_value' => 'keep',
       ];
     }
@@ -135,7 +135,7 @@ final class FrameworkArtifactWidget extends WidgetBase {
       $answer = $embedder->request($target);
     }
     catch (EmbedException $e) {
-      $form_state->setError($element['url'], t('The Framework server could not be reached, or its answer was not an embed document. Try again later.'));
+      $form_state->setError($element['url'], t('Could not reach the Framework Cloud server or read its embed response. Try again later.'));
       return;
     }
     if ($answer['doc'] === NULL) {

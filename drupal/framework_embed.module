@@ -19,7 +19,7 @@ function framework_embed_help(string $route_name, RouteMatchInterface $route_mat
     return NULL;
   }
 
-  return '<p>' . t('Shows Framework artifacts in content. Add a "Framework artifact" field to store artifacts with content; it renders from the stored copy. For URLs in text, enable the "Embed Framework artifacts" filter on a text format, after "Limit allowed HTML tags". For Link fields, choose the "Framework artifact" formatter. Both render from a cache filled in the background.') . '</p>';
+  return '<p>' . t('Framework Embeds displays published Framework artifacts in Drupal content. Add a "Framework artifact" field to a content type to save a copy of each artifact with the entity. To embed URLs in body text, enable the "Embed Framework artifacts" filter on a text format after "Limit allowed HTML tags". For Link fields, select the "Framework artifact" formatter. The filter and Link formatter render from a background cache.') . '</p>';
 }
 
 /**

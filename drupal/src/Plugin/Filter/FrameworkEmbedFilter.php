@@ -25,7 +25,7 @@ use Symfony\Component\DependencyInjection\ContainerInterface;
   id: 'framework_embed',
   title: new TranslatableMarkup('Embed Framework artifacts'),
   type: FilterInterface::TYPE_TRANSFORM_IRREVERSIBLE,
-  description: new TranslatableMarkup('Shows a Framework artifact URL that is alone in a paragraph as the artifact. Only framework.pub and the hosts allowed under Configuration → Content authoring → Framework embeds are fetched.'),
+  description: new TranslatableMarkup('Renders a Framework artifact URL on its own line as an embedded artifact. Fetches only from framework.pub and servers allowed under Configuration → Content authoring → Framework embeds.'),
   weight: 100,
 )]
 final class FrameworkEmbedFilter extends FilterBase implements ContainerFactoryPluginInterface {
@@ -65,7 +65,7 @@ final class FrameworkEmbedFilter extends FilterBase implements ContainerFactoryP
    * {@inheritdoc}
    */
   public function tips($long = FALSE): string {
-    return (string) $this->t('Paste a Framework artifact URL on its own line to show the artifact.');
+    return (string) $this->t('Paste a Framework artifact URL on its own line to embed the artifact.');
   }
 
 }

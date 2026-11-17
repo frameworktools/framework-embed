@@ -110,7 +110,7 @@ final class Client
         }
         $doc = Document::decode($response->body);
         if ($doc === null) {
-            throw new EmbedException(EmbedException::INVALID, 'The answer is not a framework.embed/v1 document.');
+            throw new EmbedException(EmbedException::INVALID, 'The response is not a framework.embed/v1 document.');
         }
         $ttl = min($this->maxTtl, self::ttl($response));
         if ($this->cache !== null && $ttl > 0) {

@@ -1,6 +1,6 @@
 {
     "name": "framework-cloud/statamic-embed",
-    "description": "Shows Framework artifacts (models, tables, tests, figures, and charts) from framework.pub and other Framework Cloud servers in Statamic, without iframes.",
+    "description": "Embeds published Framework models, tables, hypothesis tests, figures, and charts from framework.pub and self-hosted Framework Cloud servers in Statamic.",
     "type": "statamic-addon",
     "license": "MIT",
     "keywords": [
@@ -32,7 +32,7 @@
         "statamic": {
             "name": "Framework Embeds",
             "slug": "framework-embed",
-            "description": "Shows Framework artifacts from framework.pub and self-hosted Framework Cloud servers."
+            "description": "Embeds published Framework artifacts from framework.pub and self-hosted Framework Cloud servers."
         },
         "laravel": {
             "providers": [

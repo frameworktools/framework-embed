@@ -102,7 +102,7 @@ final class Takedown {
           if ($changed) {
             if ($entity instanceof RevisionLogInterface && $entity->getEntityType()->isRevisionable()) {
               $entity->setNewRevision(TRUE);
-              $entity->setRevisionLogMessage('Framework embeds: removed a stored artifact the server reported gone.');
+              $entity->setRevisionLogMessage('Framework Embeds: removed stored artifact copy after the server returned 404 or 410.');
             }
             $entity->save();
             $this->logger->notice('Removed a stored Framework artifact from @type @id: the server reported it gone.', ['@type' => $entityTypeId, '@id' => $entity->id()]);

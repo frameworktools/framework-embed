@@ -1,6 +1,6 @@
 {
     "name": "drupal/framework_embed",
-    "description": "Shows Framework artifacts (models, tables, tests, figures, and charts) from framework.pub and other Framework Cloud servers, without iframes.",
+    "description": "Embeds published Framework models, tables, hypothesis tests, figures, and charts from framework.pub and self-hosted Framework Cloud servers.",
     "type": "drupal-module",
     "license": "MIT",
     "keywords": ["Drupal", "framework", "embed", "statistics"],

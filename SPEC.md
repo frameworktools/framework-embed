@@ -1,23 +1,23 @@
 # framework.embed/v1 specification
 
-This is the public specification for showing Framework artifacts on other sites. Framework Cloud serves embed documents. Renderers in this repository turn them into HTML.
+This specification defines how external websites fetch and render published Framework artifacts. Framework Cloud serves embed documents, and the renderers in this repository convert those documents into HTML.
 
-The sections "Embed document", "Renderer markup", and "Security rules for consumers" are copied from Framework Cloud's plan (`docs/plans/2026-11-16-artifact-embeds.md` in the Cloud repository). Keep them in sync with it. The sections after them define what the contract leaves open. Both renderers implement them, and the fixtures in `spec/fixtures` test them.
+The sections "Embed document", "Renderer markup", and "Security rules for consumers" mirror `docs/plans/2026-11-16-artifact-embeds.md` in the Framework Cloud repository and should remain synchronized with it. Subsequent sections specify renderer behavior in full, tested against `spec/fixtures`.
 
 ## Embed API
 
-A Framework Cloud server answers these public, cookie-free routes:
+A Framework Cloud server serves these public, cookie-free routes:
 
-| Route | Answer |
+| Route | Response |
 |---|---|
-| `GET /api/embed/v1/resolve?url=<artifact URL>` | The embed document for a pasted artifact URL on that server. |
-| `GET /api/embed/v1/artifacts/{key}` | The embed document for the newest version. |
-| `GET /api/embed/v1/artifacts/{key}/versions/{n}` | The embed document for version `n`. |
-| `GET /api/embed/v1/artifacts/{key}/versions/{n}/image` | The figure file for image artifacts. It may redirect to a signed file URL. |
-| `GET /api/oembed?url=…&format=json` | oEmbed 1.0: `photo` for images, `link` for everything else. |
-| `GET /.well-known/framework.json` | Discovery of the routes above. |
+| `GET /api/embed/v1/resolve?url=<artifact URL>` | Embed document for a pasted artifact URL on that server |
+| `GET /api/embed/v1/artifacts/{key}` | Embed document for the newest version |
+| `GET /api/embed/v1/artifacts/{key}/versions/{n}` | Embed document for version `n` |
+| `GET /api/embed/v1/artifacts/{key}/versions/{n}/image` | Figure file for image artifacts, which may redirect to a signed file URL |
+| `GET /api/oembed?url=…&format=json` | oEmbed 1.0 `photo` response for images, or `link` for other kinds |
+| `GET /.well-known/framework.json` | Discovery document listing the routes above |
 
-Private, password-protected, missing, and deleted artifacts all answer `404` with `Cache-Control: no-store`. Version URLs send `Cache-Control: public, max-age=3600`. Newest-version and resolve URLs send `public, max-age=300`.
+Private, password-protected, missing, and deleted artifacts return `404` with `Cache-Control: no-store`. Version URLs send `Cache-Control: public, max-age=3600`. Newest-version and resolve URLs send `Cache-Control: public, max-age=300`.
 
 ## Embed document: `framework.embed/v1`
 
@@ -30,30 +30,30 @@ Private, password-protected, missing, and deleted artifacts all answer `404` wit
   "kind": "model",
   "title": "Admission model",
   "description": null,
-  "alt": "Logistic regression of admitted with 4 terms. Odds ratios available.",
+  "alt": "Logistic regression of admitted with 4 terms and odds ratios.",
   "url": "https://framework.pub/d/aB3dE5fG7hJ9kL1m/versions/3",
   "embed_url": "https://framework.pub/api/embed/v1/artifacts/aB3dE5fG7hJ9kL1m/versions/3",
   "published_at": "2026-11-16T12:00:00Z",
   "author": {"name": "Ada Example", "url": "https://framework.pub/@ada"},
   "provider": {"name": "Framework", "url": "https://framework.pub"},
   "attribution": {"text": "Framework", "url": "https://framework.pub/d/aB3dE5fG7hJ9kL1m/versions/3"},
-  "data": { "...": "the framework.artifact/v1 representation, as Cloud normalizes it" },
+  "data": { "...": "the framework.artifact/v1 representation normalized by Framework Cloud" },
   "spec": null,
   "image": null
 }
 ```
 
-- `kind` is one of `model`, `table`, `test`, `image`, `vega-lite`, `page`. Renderers treat an unknown kind as `page`.
-- `data` is set for `model`, `table`, and `test`: the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, `precision_note`).
-- `spec` is set for `vega-lite`: the Vega-Lite specification, data inlined.
-- `image` is `{"url", "content_type", "width", "height"}`. It is set for `image`, and it may be set for other kinds later as a fallback. `width` and `height` may be null.
-- `page` covers HTML documents, Quarto sites, PDFs, data files, and anything else. Renderers show a link card: title, description, author, and the attribution link.
-- `author.url` and `description` may be null. Fields may be added within `v1`; renderers ignore fields they don't know.
+- `kind` is `model`, `table`, `test`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
+- `data` is set for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
+- `spec` is set for `vega-lite` and contains the Vega-Lite specification with inlined data.
+- `image` contains `url`, `content_type`, `width`, and `height`. It is set for `image` and may be set for other kinds in future updates as a fallback. `width` and `height` may be `null`.
+- `page` covers HTML documents, Quarto sites, PDFs, data files, and other outputs. Renderers display a link card with the title, description, author, and attribution link.
+- `author`, `author.url`, and `description` may be `null`. New optional fields may appear within `v1`, and renderers ignore unknown fields.
 - `alt` is a one-sentence text description for screen readers and image alt text.
 
 ## Renderer markup
 
-The JS and PHP renderers produce the same HTML for the same embed document; the shared fixtures in `framework-embed/spec/fixtures` hold the expected output for both. All artifact text is inserted as text, never as HTML. Every class starts with `fw-embed`.
+The JavaScript and PHP renderers produce identical HTML for each embed document, verified against the shared fixtures in `spec/fixtures`. All artifact text is escaped before insertion. Every CSS class begins with `fw-embed`.
 
 ```html
 <figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="…" data-fw-embed-version="3">
@@ -65,32 +65,32 @@ The JS and PHP renderers produce the same HTML for the same embed document; the 
 </figure>
 ```
 
-- `model`: a coefficient table per coefficient-like table (estimate, standard error, confidence interval, p-value when present), the exponentiated column when `model.exponentiate` is set, then fit statistics as a `<dl>`.
-- `table`: a static `<table>` with the first 25 rows and a note giving the total and a link to the artifact for the rest.
-- `test`: method, statistic, parameters, p-value, estimates, and confidence interval.
+- `model`: one coefficient table per coefficient-like table (estimate, exponentiated ratio when `model.exponentiate` is set, standard error, test statistic, p-value, and confidence interval), followed by fit statistics and additional tables in a `Model details` disclosure.
+- `table`: a static `<table>` with the first 25 rows and a note stating the row count with a link to the full artifact.
+- `test`: method, test statistic, p-value, estimates, and confidence interval, followed by parameters and additional details in a `Test details` disclosure.
 - `image`: `<img src alt loading="lazy">`.
-- `vega-lite`: a `<div class="fw-embed__chart" data-fw-embed-chart>` holding the spec in `<script type="application/json">`, and a link to the artifact as the fallback. The JS bundle draws it with vega-embed; without JavaScript the link stays.
+- `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback link to the artifact. The JavaScript bundle renders the chart with `vega-embed`. Without JavaScript, the fallback link remains visible.
 - `page`: a link card.
 
-The stylesheet themes through custom properties (`--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, `--fw-embed-accent`). It follows `prefers-color-scheme` and a `data-theme="dark"` or `.dark` ancestor.
+The stylesheet exposes custom properties (`--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`). It follows `prefers-color-scheme` and any `data-theme="dark"` or `.dark` ancestor.
 
 ## Security rules for consumers
 
-- Fetch only from hosts the site trusts: framework.pub by default, plus servers an administrator adds. Never fetch a host taken from a pasted URL without that check.
-- Insert artifact text as text. Show SVG only through `<img>`.
-- Cache embed documents for no longer than the `Cache-Control` they came with, and drop the copy when the server answers `404`.
-- Load vega-embed from the site itself or a pinned CDN version.
+- Fetch embed documents only from trusted hosts: framework.pub by default, plus servers configured by an administrator. Validate the host of every pasted URL before sending a request.
+- Escape all artifact text and render SVG files only inside `<img>` elements.
+- Cache live embed documents no longer than their `Cache-Control` header allows, and drop cached copies when the server responds with `404` or `410`.
+- Load `vega-embed` from self-hosted files or a pinned CDN version.
 
 ## Consumer tiers
 
-Consumers use embed documents in one of two ways.
+Consumers handle embed documents in one of two tiers.
 
 ### Stored
 
-A consumer may store an embed document with its own content indefinitely and render from the stored copy. A CMS block, a static site build, and an academic.page page are examples. It re-fetches only when the author asks, for example with a refresh button.
+A consumer may save an embed document alongside its own content and render from that saved copy indefinitely. CMS blocks, static site builds, and Academic.page pages use this tier. Stored copies refresh only when the author requests an update.
 
-- A `framework.embed/v1` document must render forever. Renderers never drop support for a v1 shape. New fields are optional and old documents stay valid.
-- The `<framework-artifact>` element renders a stored document from a direct child `<script type="application/json">` without fetching. The `src` attribute is then used only when the inline document is missing or is not `framework.embed/v1`.
+- Renderers continue supporting all valid `framework.embed/v1` documents. New fields within `v1` are optional, so older stored documents remain valid.
+- `<framework-artifact>` renders a stored document from a direct child `<script type="application/json">` without making a network request. Its `src` attribute is used only when the inline document is absent or is not `framework.embed/v1`.
 
 ```html
 <framework-artifact src="https://framework.pub/d/aB3dE5fG7hJ9kL1m/versions/3">
@@ -98,19 +98,19 @@ A consumer may store an embed document with its own content indefinitely and ren
 </framework-artifact>
 ```
 
-The stored document belongs inside a `<script type="application/json">` element written with the same escaping as chart specifications (see `vega-lite` below).
+Write the inline `<script type="application/json">` payload using the same character escaping as chart specifications (see `vega-lite` below).
 
 ### Live
 
-A consumer may fetch the document each time it renders.
+A consumer may fetch and cache the embed document dynamically.
 
-- It caches the document no longer than its `Cache-Control` allows.
-- Fetching never blocks rendering. The JS element keeps its children as the fallback until the document arrives. A server-side consumer renders its cached copy or a plain link when the fetch fails.
-- A `404` or `410` drops the cached copy, and the consumer stops showing the artifact.
+- Cache the document no longer than its `Cache-Control` header allows.
+- Never block page rendering on embed requests. `<framework-artifact>` keeps its child elements visible until the document loads, and server-side consumers render a cached copy or a plain link while refreshing in the background.
+- Drop the cached copy when the server responds with `404` or `410`.
 
 ### Trimmed tables
 
-Cloud trims the rows of each table in an embed document to what renderers show: the first 25. `row_count` keeps the true total, and the note reads `Showing 25 of {row_count} rows.` A table with fewer rows than `row_count` renders the rows it has. Decimal formatting depends only on the shown rows, so a trimmed document renders exactly as the untrimmed one does.
+Framework Cloud trims each table in an embed document to its first 25 rows. `row_count` preserves the full row count, and the rendered note reads `Showing 25 of {row_count} rows.` Tables with fewer rows than `row_count` render all supplied rows. Decimal column detection inspects only the first 25 rows, so trimmed and untrimmed documents render identically.
 
 ## Markup by kind
 
@@ -136,11 +136,11 @@ Inside `fw-embed__body`, in order:
 1. `<p class="fw-embed__meta">`: the model's common name and its response, joined by ` · `. For example, `Logistic regression · Response: am`. "Model names" below has the mapping.
 2. `<p class="fw-embed__formula"><code>`: `formula`, when present. Without a formula, a `command` metric with a string value takes this slot. That is how Stata models show the command that fit them, such as `regress price mpg weight i.foreign`. A string `command` metric never appears in the statistics, even when a formula is present.
 3. Each coefficient table (`fw-embed__table--coefficients`).
-4. The `Model details` disclosure, holding only what is left:
-   - every other table (random effects, smooth terms, ANOVA, and others) as a data table with model column labels, up to 25 rows;
-   - `<dl class="fw-embed__stats">` with the metrics.
+4. The `Model details` disclosure, holding any remaining content:
+   - every other table (random effects, smooth terms, ANOVA, and others) rendered as a data table with model column labels, up to 25 rows.
+   - `<dl class="fw-embed__stats">` containing the model metrics.
 
-   When nothing is left, the disclosure is omitted.
+   When no additional tables or metrics remain, the disclosure is omitted.
 
 #### Model names
 
@@ -169,14 +169,16 @@ The name comes from `model.type`, `model.family`, and `model.link`, compared in 
 | `additive` | other family | Generalized additive model ({family} family, {link} link) |
 | `fixed_effects` | poisson; binomial with logit or no link; other | Fixed-effects Poisson regression; Fixed-effects logistic regression; Fixed-effects regression |
 | `quantile` | any | Quantile regression |
-| `linear_ml` | any | Linear model (machine learning) |
-| `tree_ensemble` | any | Tree ensemble |
+| `linear_ml` | any | Linear model |
+| `tree_ensemble` | any | Tree ensemble model |
 
-Any other combination falls back to the type label, then `{family} family, {link} link` as sent. Type labels: `linear` Linear model, `glm` Generalized linear model, `mixed` Mixed model, `survival` Survival model, `ordinal` Ordinal model, `multinomial` Multinomial model, `additive` Additive model, `fixed_effects` Fixed-effects model, `quantile` Quantile regression, `linear_ml` Linear model, `tree_ensemble` Tree ensemble. Other types appear as sent, and `other` is left out. `spec/model-names.json` holds cases both renderers must reproduce.
+Wherever a link name appears, `sqrt` reads `square-root` and `cloglog` reads `complementary log-log`, so `ordinal` with `cloglog` is Ordinal regression (complementary log-log link).
+
+Any other combination falls back to the type label, then `{family} family, {link} link` as sent. In this fallback the families `gaussian`, `tweedie`, and `poisson` read Gaussian, Tweedie, and Poisson. The first ASCII letter of the meta line is capitalized, so an unknown type `spline` with a log link reads `Spline · log link`. Type labels: `linear` Linear model, `glm` Generalized linear model, `mixed` Mixed model, `survival` Survival model, `ordinal` Ordinal model, `multinomial` Multinomial model, `additive` Additive model, `fixed_effects` Fixed-effects model, `quantile` Quantile regression, `linear_ml` Linear model, `tree_ensemble` Tree ensemble model. Other types appear as sent, and `other` is left out. `spec/model-names.json` holds cases both renderers must reproduce.
 
 A table is a coefficient table when its `role` is `coefficients` (or it is the first table and has no role) and it has `term` and `estimate` columns.
 
-A model with no coefficient table but with an `importance` table shows that table's first 10 rows in place of item 3. When the document has more rows, the disclosure continues the same table with rows 11 to 25 and the note `Showing rows 11 to 25 of {row_count}.`, linked to the artifact when rows remain. The visible part's note reads `Showing 10 of {row_count} rows. More in Model details.` Both parts judge decimal columns on the first 25 rows, so they format alike.
+A model with no coefficient table but with an `importance` table shows that table's first 10 rows in place of item 3. When the document has more rows, the disclosure continues the same table with rows 11 to 25 and the note `Showing rows 11 to 25 of {row_count}.`, linked to the artifact when rows remain. The visible part's note reads `Showing 10 of {row_count} rows. The rest are in Model details.` Both parts judge decimal columns on the first 25 rows, so they format alike.
 
 A model with no coefficient or importance table shows its tables and metrics without a disclosure.
 
@@ -195,14 +197,14 @@ The interval header takes its level from the `confidence_level` metric. Without 
 
 `exp` is fdlibm's `exp`, computed with IEEE basic operations only, so the JS and PHP renderers agree bit for bit. Platform `exp` functions can differ in the last place.
 
-Metric labels: `nobs` Observations, `df_resid` Residual df, `df_model` Model df, `aic` AIC, `bic` BIC, `rsquared` and `r.squared` R², `rsquared_adj` and `adj.r.squared` Adjusted R², `pseudo_rsquared` Pseudo R², `sigma` Residual std. dev., `llf` and `log_likelihood` Log likelihood, `deviance` Deviance, `null.deviance` Null deviance, `dispersion` Dispersion, `converged` Converged, `reml` REML, `confidence_level` Confidence level, `interval_method` Interval method, `vcov_type` Standard errors, `n_estimators` Trees, `max_depth` Maximum depth, `learning_rate` Learning rate, `n_features` Features, `importance_type` Importance type, `objective` Objective, `n_events` Events, `concordance` Concordance, `theta` Theta, `command` Command. `n_groups.<factor>` becomes `Groups: <factor>`. Other names replace `_` and `.` with spaces and capitalize an initial ASCII letter.
+Metric labels: `nobs` Observations, `df_resid` Residual df, `df_model` Model df, `aic` AIC, `bic` BIC, `rsquared` and `r.squared` R², `rsquared_adj` and `adj.r.squared` Adjusted R², `pseudo_rsquared` Pseudo R², `sigma` Residual SD, `llf` and `log_likelihood` Log likelihood, `deviance` Deviance, `null.deviance` Null deviance, `dispersion` Dispersion, `converged` Converged, `reml` REML, `confidence_level` Confidence level, `interval_method` Interval method, `vcov_type` Standard errors, `n_estimators` Trees, `max_depth` Maximum depth, `learning_rate` Learning rate, `n_features` Features, `importance_type` Importance type, `objective` Objective, `n_events` Events, `concordance` Concordance, `theta` Theta, `command` Command. `n_groups.<factor>` becomes `Groups: <factor>`. Other names replace `_` and `.` with spaces and capitalize an initial ASCII letter.
 
 Metric values: `confidence_level` as a percent, `interval_method` `wald-t` as Wald t, `wald-normal` as Wald normal, `profile` as Profile likelihood, and `bootstrap` as Bootstrap. p-value names use p-value formatting. Other numbers use result formatting.
 
-Statistic pairs come in two forms:
+Statistic pairs render in two forms:
 
-- a number, as `<div><dt>…</dt><dd class="fw-embed__num">…</dd></div>`, for metric numbers and percents and every test value except `Alternative`;
-- text, as `<div class="fw-embed__stat--text">`, for other values such as Standard errors and Interval method. The value uses the host font. When the value is longer than 24 characters (Unicode code points), the `<div>` also has `fw-embed__stat--wide`. That pair spans the grid row, with the label above the value.
+- Numeric values render as `<div><dt>…</dt><dd class="fw-embed__num">…</dd></div>` for metric numbers, percentages, and every test value except `Alternative`.
+- Text values render as `<div class="fw-embed__stat--text">` for entries such as Standard errors and Interval method, using the host font. When a value exceeds 24 Unicode code points, the `<div>` adds `fw-embed__stat--wide` and spans the full grid row with the label above the value.
 
 Labels wrap only between words.
 
@@ -222,7 +224,7 @@ Each table renders as a data table. Captions appear only when there is more than
 </tbody>
 </table>
 </div>
-<p class="fw-embed__note">Showing <span class="fw-embed__num">25</span> of <span class="fw-embed__num">60</span> rows. <a href="{url}">View the full table</a></p>
+<p class="fw-embed__note">Showing <span class="fw-embed__num">25</span> of <span class="fw-embed__num">60</span> rows. <a href="{url}">View full table</a></p>
 <p class="fw-embed__note">{precision_note}</p>
 ```
 
@@ -234,37 +236,39 @@ Each table renders as a data table. Captions appear only when there is more than
 
 ### `test`
 
-`<p class="fw-embed__method">`, then a `<dl class="fw-embed__stats">` with the main results:
+`<p class="fw-embed__method">`, followed by `<dl class="fw-embed__stats">` with the primary results:
 
-- the statistic, under its own name;
-- `p-value`;
-- with exactly one estimate and an interval, one entry named `{Estimate} (95% CI)` that reads `estimate (low to high)`;
-- otherwise each estimate, then the interval as `95% CI` reading `low to high`.
+- Test statistic under its own name.
+- `p-value`.
+- When there is one estimate and a confidence interval, a single `{Estimate} (95% CI)` entry reading `estimate (low to high)`.
+- Otherwise, each estimate followed by the confidence interval entry (`95% CI`) reading `low to high`.
 
-Estimate names get an initial ASCII capital. A missing bound is `-∞` or `∞`.
+Estimate names receive an initial ASCII capital. Missing bounds render as `-∞` or `∞`.
 
-A closed `<details class="fw-embed__details">` with the summary `Test details` follows when there is more to show. It holds:
+A closed `<details class="fw-embed__details">` with `<summary>Test details</summary>` follows when additional fields exist:
 
-- a `<dl>` with `Alternative` (Two-sided, One-sided (less), or One-sided (greater)), each parameter under its own name, and each null value as `Null value: {name}`;
-- the test's tables, as data tables with model column labels;
-- the metrics.
+- A `<dl>` containing `Alternative` (`Two-sided`, `One-sided (less)`, or `One-sided (greater)`), each parameter under its own name, and each null value labeled `Null value: {name}`.
+- Any test tables rendered as data tables with model column labels.
+- Any metrics.
 
 Numbers use result formatting.
 
 ### `image`
 
 ```html
-<div class="fw-embed__media"><img class="fw-embed__img" src="{image.url}" alt="{alt}" loading="lazy" decoding="async" width="672" height="480"></div>
+<div class="fw-embed__media"><img class="fw-embed__img fw-embed__img--vector" src="{image.url}" alt="{alt}" loading="lazy" decoding="async" width="672" height="480" style="max-width: min(100%, calc(80vh * 672 / 480))"></div>
 ```
 
 `alt` falls back to `title`, then the empty string. `width` and `height` appear only when both are positive integers. An unsafe `image.url` renders the document as `page`.
+
+A figure whose `image.content_type` starts with `image/svg+xml` (ASCII case-insensitive) is a vector figure and gets `fw-embed__img--vector`. Vector figures fill the figure's width. When `width` and `height` are known, the `style` attribute caps the width at `80vh` times the aspect ratio, so a tall figure narrows instead of being letterboxed. Other figures are raster figures. They scale down to fit the figure and never grow past their natural width. Every figure's height stops at `80vh`, keeping its proportions. The media panel is white in both themes, with a thin `0.25em` band around the figure.
 
 ### `vega-lite`
 
 ```html
 <div class="fw-embed__chart" data-fw-embed-chart>
 <script type="application/json">{spec}</script>
-<p class="fw-embed__fallback">{alt} <a href="{url}">View the chart</a></p>
+<p class="fw-embed__fallback">{alt} <a href="{url}">View chart</a></p>
 </div>
 ```
 
@@ -272,15 +276,15 @@ The specification is written exactly as JavaScript's `JSON.stringify` writes it.
 
 ## Chart safety
 
-Stored specifications render in the host site's origin. Chart renderers must keep vega from evaluating code or reaching the network:
+Stored specifications render in the host site's origin. Chart renderers must prevent Vega from evaluating arbitrary JavaScript or making network requests:
 
-- **No URLs.** A specification with a string `url` property anywhere (data, lookup data, Vega data sources) is not drawn. The fallback paragraph and its link stay.
-- **Blocking loader.** vega receives a loader whose `load`, `sanitize`, `http`, and `file` reject every URL. Data loads fail, images get no source, and `href` encodings neither render as links nor navigate.
-- **Expression interpreter.** vega parses expressions to an AST (`ast: true`) and evaluates them with vega's CSP-safe interpreter, so no expression becomes JavaScript through `new Function`. The pinned vega-embed 7.1.0 build includes vega-interpreter. vega-interpreter 2.x publishes no script build to pin separately. A site may pass its own interpreter with `configure({vegaInterpreter})`.
-- **No embed options from the specification.** The renderer removes the top-level `usermeta` before drawing. vega-embed would otherwise merge `usermeta.embedOptions` over the renderer's options, including the loader.
+- **No URLs.** Any specification containing a string `url` property (in data, lookup transforms, or Vega data sources) is not rendered, leaving the fallback paragraph and link visible.
+- **Blocking loader.** Vega receives a loader whose `load`, `sanitize`, `http`, and `file` methods reject every URL. External data loads fail, image marks receive no source, and `href` encodings neither render as links nor navigate.
+- **Expression interpreter.** Vega parses expressions to an AST (`ast: true`) and evaluates them with its CSP-safe interpreter rather than `new Function`. The pinned `vega-embed` 7.1.0 build includes `vega-interpreter`. Sites may supply a custom interpreter with `configure({vegaInterpreter})`.
+- **No embed options from the specification.** The renderer strips top-level `usermeta` before rendering so `usermeta.embedOptions` cannot override safety options or the loader.
 - **No actions.** `actions: false` hides the export, source, and editor menu.
-- **Text tooltips.** Tooltips are drawn with `textContent` in a `.fw-embed__tooltip` element. HTML in tooltip values is shown as text.
-- Site options in `configure({vegaOptions})` may change the renderer, theme, or size. They cannot change the safety options above.
+- **Text tooltips.** Tooltips render via `textContent` in `.fw-embed__tooltip`, showing HTML in tooltip values as plain text.
+- **Configuration precedence.** `configure({vegaOptions})` may customize the renderer, theme, or size, while the safety options above always take precedence.
 
 ### `page`
 
@@ -296,23 +300,23 @@ The title is a `<span>` when `url` is unsafe. It falls back to `Untitled`.
 
 ## Chart display
 
-These rules apply to the JS bundle only. They change no server-rendered markup.
+These rules apply to the JavaScript bundle and do not alter server-rendered markup.
 
-- **Theme.** The bundle decides between light and dark from the page. It checks, in order:
-  - the nearest ancestor with `data-theme="dark"` or `data-theme="light"`, or the class `dark` or `light`;
-  - the nearest ancestor with a background at least half opaque, which counts as dark when its relative luminance is below 0.2;
-  - the computed `color-scheme`, when it names only `dark` or only `light`;
+- **Theme.** The bundle selects light or dark mode by checking, in order:
+  - the nearest ancestor with `data-theme="dark"`, `data-theme="light"`, `.dark`, or `.light`.
+  - the nearest ancestor with a background at least 50% opaque, treated as dark when its relative luminance is below `0.2`.
+  - the computed `color-scheme` when it specifies solely `dark` or `light`.
   - `prefers-color-scheme`.
-- **Re-theming.** A `MutationObserver` on the `class`, `data-theme`, and `style` attributes of `<html>` and `<body>`, and a `prefers-color-scheme` listener, re-draw a chart once per animation frame when its theme, font, or colors changed.
-- **Size.** A single Vega-Lite view whose top level has no `width` gets `width: "container"` and, unless it sets its own, `autosize: {"type": "fit", "contains": "padding"}`. Facet, repeat, and concat specifications, views with `row`, `column`, or `facet` encodings, and Vega specifications keep their own sizes. Height is unchanged. The chart fills the figure's width. A chart wider than the figure scrolls inside it.
-- **Fonts and colors.** The bundle passes a vega config built from the figure's computed style:
-  - `font` is the figure's `font-family`;
-  - titles use the text color (`--fw-embed-fg`, else the inherited color);
-  - axis and legend labels use `--fw-embed-muted`;
-  - gridlines, domains, ticks, and the view outline use `--fw-embed-border`;
-  - the background is transparent.
+- **Retheming.** A `MutationObserver` on the `class`, `data-theme`, and `style` attributes of `<html>` and `<body>`, paired with a `prefers-color-scheme` listener, redraws charts once per animation frame when theme, font, or colors change.
+- **Size.** A single Vega-Lite view without a top-level `width` receives `width: "container"` and, unless specified, `autosize: {"type": "fit", "contains": "padding"}`. Facet, repeat, and concat specifications, views with `row`, `column`, or `facet` encodings, and Vega specifications keep their declared dimensions. Height is unchanged. Charts wider than the figure scroll horizontally inside it.
+- **Fonts and colors.** The bundle passes a Vega configuration derived from the figure's computed style:
+  - `font` uses the figure's `font-family`.
+  - Titles use `--fw-embed-fg`, falling back to the inherited text color.
+  - Axis and legend labels use `--fw-embed-muted`.
+  - Gridlines, domains, ticks, and the view outline use `--fw-embed-border`.
+  - The chart background is transparent.
 
-  The specification's own `config` and encodings take precedence over this config.
+  The specification's own `config` and encodings take precedence over these defaults.
 
 ## Safe URLs
 
@@ -338,15 +342,14 @@ There are two contexts, which differ only in the number of places `p`:
 | p-value | `p_value` columns and metrics (also `p.value`, `p-value`, `pvalue`, `Pr(>|t|)`, `Pr(>|z|)`, `Pr(>Chisq)`, `P>|t|`, `P>|z|`, any ASCII case) and test p-values, in both contexts | `< 0.001` below 0.001, else three decimals | the same |
 | Percent | confidence levels, in both contexts | `x * 100` rounded to one decimal, with `.0` dropped: `95%`, `97.5%` | the same |
 
-- Nothing uses scientific notation.
-- Large numbers are written in full. Beyond 2^53 the digits are the shortest round-trip digits, padded with zeros: `123456789012345678` becomes `123,456,789,012,345,680`.
-- "Below the precision" applies cell by cell, also inside intervals: `< 0.01 (< 0.01 to 0.13)`. A value that rounds up to `0.01` shows as `0.01`.
-- Infinity and NaN show `—`.
-- A negative number that rounds to zero loses its sign.
+- Values never use scientific notation.
+- Large numbers are written in full. Beyond 2^53, digits come from the shortest round-trip form padded with zeros, so `123456789012345678` formats as `123,456,789,012,345,680`.
+- Precision thresholds apply cell by cell, including interval bounds: `< 0.01 (< 0.01 to 0.13)`. A value that rounds to `0.01` displays as `0.01`.
+- `Infinity`, `-Infinity`, `NaN`, and non-finite results display as `—`.
+- A negative number that rounds to zero omits its minus sign.
 - The minus sign is ASCII `-`.
-- Strings, dates, and large integers that Cloud sent as strings appear as sent.
-- Non-finite results show `—`.
-- `spec/format-cases.json` holds cases that both renderers must reproduce.
+- Strings, dates, and large integers sent as strings by Framework Cloud appear unchanged.
+- `spec/format-cases.json` defines test cases that both renderers must reproduce.
 
 ## Allowed hosts
 
@@ -378,7 +381,7 @@ On an allowed host, these paths are artifact URLs. Query strings and fragments a
 
 ## Theming
 
-The stylesheet themes through `--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`. `--fw-embed-font` and `--fw-embed-fg` are unset by default, so the site's font and color apply. Muted text and borders mix the current text color with transparency, so they suit light and dark pages. The accent changes under `prefers-color-scheme: dark` and under a `data-theme="dark"` or `.dark` ancestor. A `data-theme="light"` or `.light` ancestor keeps the light accent. Figures sit on a white card in both themes.
+The stylesheet themes through `--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`. `--fw-embed-font` and `--fw-embed-fg` are unset by default, so the site's font and color apply. Muted text and borders mix the current text color with transparency, so they suit light and dark pages. The accent changes under `prefers-color-scheme: dark` and under a `data-theme="dark"` or `.dark` ancestor. A `data-theme="light"` or `.light` ancestor keeps the light accent. Figures sit on a white panel in both themes.
 
 Numbers use `--fw-embed-mono`: numeric table cells (`td.fw-embed__num`), numeric statistic values (`dd.fw-embed__num`), and the counts in notes (`span.fw-embed__num`), at 0.92em of the surrounding text with tabular figures. Labels, headers, and prose keep the host font. The default stack starts with JetBrains Mono. The stylesheet declares it with `@font-face`, weights 400 and 600, from `@fontsource/jetbrains-mono` 5.2.8 on jsDelivr, with `font-display: swap`. Its `unicode-range` is Basic Latin plus the no-break space, en and em dashes, and the minus sign. That covers the letters in interval cells ("to") and formulas, which share the mono stack. A site that sets `--fw-embed-mono` to another stack never downloads the font.
 

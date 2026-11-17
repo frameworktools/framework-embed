@@ -48,7 +48,7 @@ export async function fetchEmbed(url, options = {}) {
     if (response.status === 404 || response.status === 410) return null;
     if (!response.ok) throw new EmbedError('http', `The embed request failed with status ${response.status}.`);
     const doc = await response.json();
-    if (doc === null || typeof doc !== 'object' || doc.schema !== 'framework.embed/v1') throw new EmbedError('invalid', 'The answer is not a framework.embed/v1 document.');
+    if (doc === null || typeof doc !== 'object' || doc.schema !== 'framework.embed/v1') throw new EmbedError('invalid', 'The response is not a framework.embed/v1 document.');
     return doc;
 }
 

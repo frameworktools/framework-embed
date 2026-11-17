@@ -70,7 +70,7 @@ final class Framework_Embed_Stored {
 			}
 		}
 		if ( ! empty( $attributes['removed'] ) ) {
-			return $plugin->link( $url ) . $plugin->notice( __( 'The Framework server reported this artifact gone, so its stored copy was removed. Visitors see a link.', 'framework-embed' ), $url );
+			return $plugin->link( $url ) . $plugin->notice( __( 'This artifact is no longer available on the Framework Cloud server, so its stored copy was removed. Visitors see a link.', 'framework-embed' ), $url );
 		}
 		if ( '' === $url ) {
 			return '';
@@ -133,12 +133,12 @@ final class Framework_Embed_Stored {
 		$plugin = Framework_Embed_Plugin::instance();
 		$target = $newest ? self::newest_url( $url ) : trim( $url );
 		if ( null === $target || null === $plugin->matcher()->match( $target ) ) {
-			return new WP_Error( 'framework_embed_not_allowed', __( 'This URL is not a Framework artifact on an allowed host. Add other Framework servers under Settings → Framework embeds.', 'framework-embed' ), array( 'status' => 400 ) );
+			return new WP_Error( 'framework_embed_not_allowed', __( 'This URL is not a Framework artifact on an allowed host. Add self-hosted Framework Cloud servers under Settings → Framework embeds.', 'framework-embed' ), array( 'status' => 400 ) );
 		}
 		try {
 			$answer = $plugin->request( $target );
 		} catch ( EmbedException $e ) {
-			return new WP_Error( 'framework_embed_unreachable', __( 'The Framework server could not be reached, or its answer was not an embed document.', 'framework-embed' ), array( 'status' => 502 ) );
+			return new WP_Error( 'framework_embed_unreachable', __( 'Could not reach the Framework Cloud server or read its embed response.', 'framework-embed' ), array( 'status' => 502 ) );
 		}
 		$doc = $answer['doc'];
 		if ( null === $doc ) {

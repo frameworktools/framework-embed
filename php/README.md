@@ -1,22 +1,22 @@
 # framework-cloud/embed
 
-Fetches Framework Cloud embed documents (`framework.embed/v1`) and renders them as static HTML. It requires PHP 8.1 or later and has no runtime dependencies.
+`framework-cloud/embed` fetches Framework Cloud embed documents (`framework.embed/v1`) and renders them as static HTML. It requires PHP 8.1 or later and has no runtime dependencies.
 
 ## Classes
 
 | Class | Purpose |
 |---|---|
-| `Client` | Resolves artifact URLs on allowed hosts, caches documents for their `Cache-Control` lifetime, and returns `null` on `404` |
+| `Client` | Resolves artifact URLs on allowed hosts, caches documents for their `Cache-Control` lifetime, and returns `null` on `404` or `410` |
 | `UrlMatcher` | Applies the host allow-list and recognizes `/d/{key}`, `/@handle/project/slug`, their `/versions/{n}` forms, and embed API URLs |
-| `Renderer` | `render(array $doc)` and `renderJson(string $json)` return the same HTML as the JS renderer |
-| `Document` | `decode(string $json)` keeps empty JSON objects in Vega-Lite specifications |
-| `Assets` | Paths and a version hash for the CSS and JS copied from the JS build |
-| `Cache`, `ArrayCache`, `Psr16Cache` | The cache interface, an in-memory cache, and a PSR-16 adapter |
-| `Http\StreamFetcher` | The default fetcher. It uses curl or PHP streams, never follows redirects, and caps responses at 16 MB. |
+| `Renderer` | `render(array $doc)` and `renderJson(string $json)` return the same HTML as the JavaScript renderer |
+| `Document` | `decode(string $json)` preserves empty JSON objects in Vega-Lite specifications |
+| `Assets` | Returns filesystem paths and a version hash for the bundled CSS and JavaScript files |
+| `Cache`, `ArrayCache`, `Psr16Cache` | Cache interface, in-memory cache, and PSR-16 adapter |
+| `Http\StreamFetcher` | Default HTTP fetcher using curl or PHP streams, with redirects disabled and a 16 MB response limit |
 
 ## Fetchers
 
-A fetcher is a callable that takes a URL and returns an `Http\Response` or an array with `status`, `headers`, and `body`. It must not follow redirects. WordPress example:
+A fetcher is a callable that accepts a URL and returns an `Http\Response` or an array with `status`, `headers`, and `body`. Fetchers must disable redirects. In WordPress, wrap `wp_remote_get`:
 
 ```php
 $client = new Client(fetcher: function (string $url): Response {
@@ -25,4 +25,4 @@ $client = new Client(fetcher: function (string $url): Response {
 });
 ```
 
-Pass a `Renderer::render` result through the site's output without filters that rewrite HTML. Filters such as `wpautop` can break the chart's JSON element.
+Output `Renderer::render` markup directly without running HTML formatting filters. Filters such as `wpautop` can corrupt the chart's inline JSON `<script>` element.

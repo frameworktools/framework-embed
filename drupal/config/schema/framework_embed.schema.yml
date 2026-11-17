@@ -10,7 +10,7 @@ framework_embed.settings:
         label: 'Host name or origin'
     max_ttl:
       type: integer
-      label: 'Longest cache lifetime, in seconds'
+      label: 'Maximum cache lifetime in seconds'
     takedown:
       type: boolean
-      label: 'Remove stored copies the server reports gone'
+      label: 'Remove stored copies of deleted or restricted artifacts'

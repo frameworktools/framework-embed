@@ -1,8 +1,8 @@
 # Framework Embeds for Statamic
 
-Shows Framework artifacts (regression models, tables, hypothesis tests, figures, and Vega-Lite charts) in Statamic templates, without iframes. Requires Statamic 5 or 6 and PHP 8.1 or later. Tested on Statamic 5.74 (Laravel 12) and 6.42 (Laravel 13).
+Framework Embeds for Statamic displays published Framework models, tables, hypothesis tests, figures, and Vega-Lite charts in Statamic templates as static HTML rather than iframes. It requires Statamic 5 or 6 and PHP 8.1 or later, and is tested on Statamic 5.74 (Laravel 12) and 6.42 (Laravel 13).
 
-It fetches embed documents from framework.pub, and from self-hosted Framework Cloud servers listed in the config. It renders them with the `framework-cloud/embed` PHP package.
+The addon fetches embed documents from framework.pub and from self-hosted Framework Cloud servers listed in `config/framework-embed.php`, rendering them through the `framework-cloud/embed` PHP package.
 
 ## Installation
 
@@ -12,9 +12,9 @@ php artisan vendor:publish --tag=framework-embed          # CSS and JS to public
 php artisan vendor:publish --tag=framework-embed-config   # optional: config/framework-embed.php
 ```
 
-`php artisan statamic:install` also publishes the assets. Publish them again after each update.
+`php artisan statamic:install` also publishes the assets. Re-publish assets after updating the addon.
 
-Until both packages are published, add them as path repositories in the site's `composer.json`:
+Until both packages are published on Packagist, register them as path repositories in the site's root `composer.json`:
 
 ```sh
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
@@ -22,16 +22,16 @@ composer config repositories.framework-embed-statamic '{"type":"path","url":"/pa
 composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0
 ```
 
-## Two tiers
+## Embed tiers
 
-| Tier | Where | Renders from | Network on page view |
+| Tier | Integration | Source | Network on page view |
 |---|---|---|---|
-| Stored (preferred) | The `framework_artifact` fieldtype | A copy saved in the entry | Never |
-| Live | `{{ framework:artifact url="…" }}` and `{{ content \| framework_embeds }}` | The Laravel cache, filled in the background | Never |
+| Stored | `framework_artifact` fieldtype | Copy saved in the entry | None |
+| Live | `{{ framework:artifact url="…" }}` and `{{ content \| framework_embeds }}` | Laravel cache filled in the background | None |
 
-### Stored: the framework_artifact fieldtype
+### Stored embeds
 
-Add a "Framework artifact" field to a blueprint. In the control panel it is a plain URL input: the fieldtype reuses Statamic's `text` component, so the addon ships no Vue build. Saving a new URL fetches the artifact and stores it in the entry:
+Add a **Framework artifact** field to a blueprint. In the control panel, the field renders as a plain URL input using Statamic's `text` component without a separate Vue build. Saving a new URL fetches the artifact and stores the payload in the entry:
 
 ```yaml
 artifact:
@@ -42,11 +42,11 @@ artifact:
   removed: false
 ```
 
-`document` is the embed document as the server sent it. `embed_url` pins the version. Saving with the same URL keeps the copy. A URL that is gone, unreachable, or on a host that is not allowed fails validation.
+`document` holds the raw embed JSON, and `embed_url` pins the version URL. Saving an entry without changing the URL preserves the stored copy. Missing, unreachable, or disallowed URLs fail validation.
 
-Two entry actions replace stored copies, after a confirmation dialog: "Fetch Framework artifacts again" re-fetches the pinned version, and "Use newest Framework artifact versions" fetches the newest one. They appear in the entry listing and on the entry's actions menu.
+Two entry actions update stored copies after confirmation: **Fetch Framework artifacts again** re-fetches the pinned version, and **Use newest Framework artifact versions** fetches the latest version. Both appear in the entry listing and the entry actions menu.
 
-Render a stored artifact:
+Render a stored artifact in Antlers:
 
 ```antlers
 {{ framework:artifact field="artifact" }}
@@ -54,33 +54,33 @@ Render a stored artifact:
 {{ artifact:title }}, version {{ artifact:version }} of {{ artifact:latest_version }}, fetched {{ artifact:fetched_at }}
 ```
 
-### Live: the url tag and the modifier
+### Live embeds
 
 ```antlers
 {{ framework:artifact url="https://framework.pub/d/aB3dE5fG7hJ9kL1m" }}
 {{ content | framework_embeds }}
 ```
 
-The modifier turns every paragraph in rendered Bard or Markdown content that holds only an artifact URL, as text or as a link whose text is the URL, into the artifact.
+The `framework_embeds` modifier replaces any paragraph in rendered Bard or Markdown HTML that contains solely an artifact URL (as plain text or an autolink) with the embedded artifact.
 
-Live embeds never wait on the network:
+Live embeds never block page rendering on network requests:
 
-- No cached copy: a link, and a fetch dispatched with `dispatch()->afterResponse()`, or onto the queue when `refresh` is `queue`.
-- Fresh copy: the figure.
-- Expired copy: the figure, and a background refresh. Copies are kept for seven days past their max-age for this.
-- `404`: the copy is dropped and the link stays.
+- **No cached copy.** Renders a link and dispatches a refresh via `dispatch()->afterResponse()`, or onto the queue when `refresh` is `queue`.
+- **Fresh copy.** Renders the cached artifact.
+- **Expired copy.** Renders the cached artifact and schedules a background refresh. Copies persist for seven days past `max-age` to support stale-while-revalidate rendering.
+- **`404` or `410` response.** Removes the cached copy and renders a plain link.
 
-With static caching, a page cached while it showed a link keeps the link until the static cache is cleared. Use the fieldtype on statically cached pages.
+With static caching enabled, a page cached while showing a link retains that link until the static cache is cleared. Prefer the `framework_artifact` fieldtype on statically cached pages.
 
 ### Takedown check
 
-`php artisan framework-embed:takedown` asks the server about each stored copy on an allowed host. It removes a copy only when the server answers `404` or `410`. Timeouts and server errors change nothing. The field keeps its URL and renders a link. The addon schedules the command daily when `takedown` is on, which is the default; it needs Laravel's scheduler (`php artisan schedule:run` from cron). `--force` runs it while switched off.
+`php artisan framework-embed:takedown` checks each stored copy on an allowed host. It removes a stored copy only when the server returns `404` or `410`, leaving timeouts and server errors untouched. The field retains its URL and renders a plain link. The addon schedules this command daily when `takedown` is enabled (the default), requiring the Laravel scheduler (`php artisan schedule:run` from cron). Pass `--force` to run the check while `takedown` is disabled.
 
-### Images
+### Figure images
 
-Image artifacts render as `<img>` pointing at the image URL in the embed document. No file is copied.
+Image artifacts render as `<img>` elements pointing to the image URL in the embed document without copying files into the site.
 
-### Layout
+### Layout tags
 
 ```antlers
 <head>
@@ -92,7 +92,7 @@ Image artifacts render as `<img>` pointing at the image URL in the embed documen
 </body>
 ```
 
-`{{ framework:scripts }}` prints the script that draws Vega-Lite charts. With `only_if_charts="true"` it prints only when a chart was rendered earlier in the request. The script loads vega, vega-lite, and vega-embed from cdn.jsdelivr.net with subresource integrity.
+`{{ framework:scripts }}` outputs the script tag that initializes Vega-Lite charts. With `only_if_charts="true"`, it outputs the script tag only when a chart rendered earlier in the same request. The script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
 
 Supported URLs:
 
@@ -103,25 +103,25 @@ Supported URLs:
 
 | Key | Default | Purpose |
 |---|---|---|
-| `hosts` | `FRAMEWORK_EMBED_HOSTS`, comma-separated | Extra allowed hosts. framework.pub is always allowed. |
-| `max_ttl` | `3600` | Longest time a live copy counts as fresh, in seconds. The server's `Cache-Control` can only shorten it. |
-| `refresh` | `after_response` | How live fetches run: `after_response` or `queue` |
+| `hosts` | `FRAMEWORK_EMBED_HOSTS`, comma-separated | Additional allowed hosts alongside framework.pub |
+| `max_ttl` | `3600` | Maximum cache lifetime in seconds for live embeds, subject to shorter `Cache-Control` headers |
+| `refresh` | `after_response` | Background fetch mode: `after_response` or `queue` |
 | `takedown` | `true` | Schedule the daily takedown check |
-| `timeout` | `5` | Seconds to wait for a Framework server |
-| `cache_store` | default store | Laravel cache store for live copies |
+| `timeout` | `5` | Request timeout in seconds for Framework Cloud servers |
+| `cache_store` | default store | Laravel cache store for live embeds |
 
-A host name, such as `framework.example.org`, allows HTTPS only. An origin, such as `http://localhost:8000`, allows exactly that scheme, host, and port. IP addresses, paths, and user info are ignored and logged as a warning.
+A bare host name such as `framework.example.org` allows HTTPS on the default port. An origin such as `http://localhost:8000` allows that exact scheme, host, and port. IP addresses, paths, and user info are ignored and logged as warnings.
 
-When no copy can be shown, visitors see a link to the artifact. Signed-in users who can open the control panel also see why. Notices are part of the page HTML, so a statically cached page could keep one.
+When no copy is available, visitors see a link to the artifact, and signed-in users with control panel access also see a notice explaining why. Because notices render in page HTML, avoid caching control panel sessions in static page caches.
 
-Requests use Laravel's HTTP client with redirects and cookies off and a 16 MB limit. They happen when an editor saves or runs an action, in background refreshes, and in the takedown check.
+HTTP requests use Laravel's HTTP client with redirects and cookies disabled and a 16 MB response limit. Requests run on entry save or action execution, during background refreshes, and during takedown checks.
 
 ## Container bindings
 
 | Binding | Purpose |
 |---|---|
-| `framework-embed.fetcher` | A callable that takes an embed API URL and returns `Framework\Embed\Http\Response`. It must not follow redirects. Rebind it to change the transport, or to serve fixtures in tests. |
-| `FrameworkCloud\StatamicEmbed\Embedder` | `render($url)` (live), `renderStored($value)`, `fetchForStorage($url)`, `refresh($url)`, and `convertParagraphs($html)`, scoped to the request |
+| `framework-embed.fetcher` | Callable accepting an embed API URL and returning `Framework\Embed\Http\Response` without following redirects. Rebind it to customize transport or serve fixtures in tests. |
+| `FrameworkCloud\StatamicEmbed\Embedder` | Request-scoped service providing `render($url)`, `renderStored($value)`, `fetchForStorage($url)`, `refresh($url)`, and `convertParagraphs($html)` |
 
 ## Tests
 
@@ -130,4 +130,4 @@ composer install
 vendor/bin/phpunit
 ```
 
-The tests use Statamic's `AddonTestCase` (Orchestra Testbench) and `../testing/FixtureServer.php`, which serves `../spec/fixtures`. `tests/e2e/check.php` checks a running site over HTTP, saving entries through the control panel's entry API. Its header lists what the site needs.
+The test suite uses Statamic's `AddonTestCase` (Orchestra Testbench) with `../testing/FixtureServer.php`. `tests/e2e/check.php` runs end-to-end HTTP checks against a live Statamic site through the control panel entry API.

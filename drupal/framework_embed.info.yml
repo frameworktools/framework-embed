@@ -1,6 +1,6 @@
 name: Framework Embeds
 type: module
-description: 'Shows Framework artifacts (models, tables, tests, figures, and charts) from framework.pub and other Framework Cloud servers, without iframes.'
+description: 'Embeds published Framework models, tables, hypothesis tests, figures, and charts from framework.pub and self-hosted Framework Cloud servers.'
 package: Content
 core_version_requirement: ^10.3 || ^11
 php: 8.1

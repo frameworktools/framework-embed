@@ -208,7 +208,7 @@ class Embedder implements TrustedCallbackInterface, DestructableInterface {
     }
     $this->schedule($url);
 
-    return ['link' => $this->link($url)] + $this->notice($this->t('The artifact is being fetched in the background. Visitors see a link until it arrives.'), $url, $cache);
+    return ['link' => $this->link($url)] + $this->notice($this->t('This artifact is being fetched in the background. Visitors see a link until the fetch completes.'), $url, $cache);
   }
 
   /**
@@ -294,7 +294,7 @@ class Embedder implements TrustedCallbackInterface, DestructableInterface {
     }
     $build = ['link' => $this->link($url)];
     if ($removed) {
-      $build += $this->notice($this->t('The Framework server reported this artifact gone, so its stored copy was removed. Visitors see a link.'), $url, ['contexts' => ['user.permissions']]);
+      $build += $this->notice($this->t('This artifact is no longer available on the Framework Cloud server, so its stored copy was removed. Visitors see a link.'), $url, ['contexts' => ['user.permissions']]);
     }
 
     return $build;

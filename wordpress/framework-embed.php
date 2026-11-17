@@ -1,9 +1,9 @@
 <?php
 /**
  * Plugin Name:       Framework Embeds
- * Plugin URI:        https://github.com/framework-cloud/framework-embed
- * Description:       Shows Framework artifacts (models, tables, tests, figures, and charts) from framework.pub and other Framework Cloud servers, without iframes.
- * Version:           0.3.2
+ * Plugin URI:        https://github.com/frameworktools/framework-embed
+ * Description:       Embeds published Framework models, tables, hypothesis tests, figures, and charts from framework.pub and self-hosted Framework Cloud servers.
+ * Version:           0.3.3
  * Requires at least: 6.5
  * Requires PHP:      8.1
  * Author:            Framework
@@ -19,7 +19,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'FRAMEWORK_EMBED_VERSION', '0.3.2' );
+define( 'FRAMEWORK_EMBED_VERSION', '0.3.3' );
 define( 'FRAMEWORK_EMBED_FILE', __FILE__ );
 define( 'FRAMEWORK_EMBED_DIR', __DIR__ );
 
@@ -29,7 +29,7 @@ if ( ! is_file( __DIR__ . '/vendor-embed/autoload.php' ) ) {
 		'admin_notices',
 		static function () {
 			if ( current_user_can( 'activate_plugins' ) ) {
-				echo '<div class="notice notice-error"><p>' . esc_html__( 'Framework Embeds is missing its bundled renderer. Build the plugin with `make wordpress`.', 'framework-embed' ) . '</p></div>';
+				echo '<div class="notice notice-error"><p>' . esc_html__( 'Framework Embeds is missing its bundled renderer. Run make wordpress to build the plugin.', 'framework-embed' ) . '</p></div>';
 			}
 		}
 	);

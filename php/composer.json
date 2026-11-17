@@ -1,6 +1,6 @@
 {
     "name": "framework-cloud/embed",
-    "description": "Fetch and render Framework artifacts (models, tables, tests, figures, Vega-Lite charts) from Framework Cloud embed documents, without iframes.",
+    "description": "Fetches and renders published Framework models, tables, hypothesis tests, figures, and Vega-Lite charts from Framework Cloud embed documents.",
     "type": "library",
     "license": "MIT",
     "keywords": ["framework", "embed", "statistics", "regression", "oembed"],

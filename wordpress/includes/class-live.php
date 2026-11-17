@@ -64,7 +64,7 @@ final class Framework_Embed_Live {
 			return '';
 		}
 		if ( null === $plugin->matcher()->match( $url ) ) {
-			return $plugin->link( $url ) . $plugin->notice( __( 'This URL is not a Framework artifact on an allowed host. Add other Framework servers under Settings → Framework embeds.', 'framework-embed' ), $url );
+			return $plugin->link( $url ) . $plugin->notice( __( 'This URL is not a Framework artifact on an allowed host. Add self-hosted Framework Cloud servers under Settings → Framework embeds.', 'framework-embed' ), $url );
 		}
 
 		$entry = get_transient( self::key( 'live', $url ) );
@@ -85,7 +85,7 @@ final class Framework_Embed_Live {
 
 		self::schedule( $url );
 
-		return $plugin->link( $url ) . $plugin->notice( __( 'The artifact is being fetched in the background. Visitors see a link until it arrives.', 'framework-embed' ), $url );
+		return $plugin->link( $url ) . $plugin->notice( __( 'This artifact is being fetched in the background. Visitors see a link until the fetch completes.', 'framework-embed' ), $url );
 	}
 
 	/**

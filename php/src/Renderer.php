@@ -30,7 +30,7 @@ final class Renderer
     private const METRIC_LABELS = [
         'nobs' => 'Observations', 'df_resid' => 'Residual df', 'df_model' => 'Model df', 'aic' => 'AIC', 'bic' => 'BIC',
         'rsquared' => 'R²', 'r.squared' => 'R²', 'rsquared_adj' => 'Adjusted R²', 'adj.r.squared' => 'Adjusted R²', 'pseudo_rsquared' => 'Pseudo R²',
-        'sigma' => 'Residual std. dev.', 'llf' => 'Log likelihood', 'log_likelihood' => 'Log likelihood', 'deviance' => 'Deviance',
+        'sigma' => 'Residual SD', 'llf' => 'Log likelihood', 'log_likelihood' => 'Log likelihood', 'deviance' => 'Deviance',
         'null.deviance' => 'Null deviance', 'dispersion' => 'Dispersion', 'converged' => 'Converged', 'reml' => 'REML',
         'confidence_level' => 'Confidence level', 'interval_method' => 'Interval method', 'vcov_type' => 'Standard errors',
         'n_estimators' => 'Trees', 'max_depth' => 'Maximum depth', 'learning_rate' => 'Learning rate', 'n_features' => 'Features',
@@ -43,7 +43,7 @@ final class Renderer
     private const MODEL_TYPES = [
         'linear' => 'Linear model', 'glm' => 'Generalized linear model', 'mixed' => 'Mixed model', 'survival' => 'Survival model',
         'ordinal' => 'Ordinal model', 'multinomial' => 'Multinomial model', 'additive' => 'Additive model', 'fixed_effects' => 'Fixed-effects model',
-        'quantile' => 'Quantile regression', 'linear_ml' => 'Linear model', 'tree_ensemble' => 'Tree ensemble',
+        'quantile' => 'Quantile regression', 'linear_ml' => 'Linear model', 'tree_ensemble' => 'Tree ensemble model',
     ];
 
     private const ALTERNATIVES = ['two.sided' => 'Two-sided', 'less' => 'One-sided (less)', 'greater' => 'One-sided (greater)'];
@@ -379,16 +379,30 @@ final class Renderer
         return array_values(array_filter(self::lst($value), fn ($entry) => self::isObject($entry) && self::text($entry['name'] ?? null) !== null));
     }
 
+    private const FAMILY_NAMES = ['gaussian' => 'Gaussian', 'tweedie' => 'Tweedie', 'poisson' => 'Poisson'];
+
+    private const LINK_NAMES = ['sqrt' => 'square-root', 'cloglog' => 'complementary log-log'];
+
+    private static function familyName(string $family): string
+    {
+        return self::FAMILY_NAMES[strtolower($family)] ?? $family;
+    }
+
+    private static function linkName(string $link): string
+    {
+        return self::LINK_NAMES[strtolower($link)] ?? $link;
+    }
+
     private static function familyLink(?string $family, ?string $link): ?string
     {
         if ($family !== null && $link !== null) {
-            return $family . ' family, ' . $link . ' link';
+            return self::familyName($family) . ' family, ' . self::linkName($link) . ' link';
         }
         if ($family !== null) {
-            return $family . ' family';
+            return self::familyName($family) . ' family';
         }
         if ($link !== null) {
-            return $link . ' link';
+            return self::linkName($link) . ' link';
         }
 
         return null;
@@ -404,7 +418,7 @@ final class Renderer
         $type = $lower($model['type'] ?? null);
         $family = $lower($model['family'] ?? null);
         $link = $lower($model['link'] ?? null);
-        $withLink = fn (string $name, string $implied): string => $link === null || $link === $implied ? $name : $name . ' (' . $link . ' link)';
+        $withLink = fn (string $name, string $implied): string => $link === null || $link === $implied ? $name : $name . ' (' . self::linkName($link) . ' link)';
         if ($type === 'linear') {
             return 'Ordinary least squares regression';
         }
@@ -417,7 +431,7 @@ final class Renderer
                     $link === null || $link === 'logit' => 'Logistic regression',
                     $link === 'probit' => 'Probit regression',
                     $link === 'cloglog' => 'Complementary log-log regression',
-                    default => 'Binomial regression (' . $link . ' link)',
+                    default => 'Binomial regression (' . self::linkName($link) . ' link)',
                 };
             }
             if ($family === 'poisson') {
@@ -427,7 +441,7 @@ final class Renderer
                 return $withLink('Negative binomial regression', 'log');
             }
             if ($family === 'gamma') {
-                return $link === null ? 'Gamma regression' : 'Gamma regression (' . $link . ' link)';
+                return $link === null ? 'Gamma regression' : 'Gamma regression (' . self::linkName($link) . ' link)';
             }
             if ($family !== null && str_starts_with($family, 'quasi')) {
                 $rest = preg_replace('/^[- ]+/', '', substr($family, 5));
@@ -445,7 +459,7 @@ final class Renderer
                 return match (true) {
                     $link === null || $link === 'logit' => 'Logistic mixed model',
                     $link === 'probit' => 'Probit mixed model',
-                    default => 'Binomial mixed model (' . $link . ' link)',
+                    default => 'Binomial mixed model (' . self::linkName($link) . ' link)',
                 };
             }
             if ($family === 'poisson') {
@@ -455,7 +469,7 @@ final class Renderer
                 return $withLink('Negative binomial mixed model', 'log');
             }
             if ($family === 'gamma') {
-                return $link === null ? 'Gamma mixed model' : 'Gamma mixed model (' . $link . ' link)';
+                return $link === null ? 'Gamma mixed model' : 'Gamma mixed model (' . self::linkName($link) . ' link)';
             }
 
             return null;
@@ -467,7 +481,7 @@ final class Renderer
             return match (true) {
                 $link === null || $link === 'logit' => 'Ordinal logistic regression',
                 $link === 'probit' => 'Ordinal probit regression',
-                default => 'Ordinal regression (' . $link . ' link)',
+                default => 'Ordinal regression (' . self::linkName($link) . ' link)',
             };
         }
         if ($type === 'multinomial') {
@@ -491,8 +505,8 @@ final class Renderer
 
         return match ($type) {
             'quantile' => 'Quantile regression',
-            'linear_ml' => 'Linear model (machine learning)',
-            'tree_ensemble' => 'Tree ensemble',
+            'linear_ml' => 'Linear model',
+            'tree_ensemble' => 'Tree ensemble model',
             default => null,
         };
     }
@@ -518,7 +532,7 @@ final class Renderer
             $parts[] = 'Response: ' . $model['response'];
         }
 
-        return $parts === [] ? null : implode(' · ', $parts);
+        return $parts === [] ? null : Format::asciiCapitalize(implode(' · ', $parts));
     }
 
     private static function columnIndex(array $table, string $name): int
@@ -617,7 +631,7 @@ final class Renderer
         $total = Format::isInteger($table['row_count'] ?? null) ? $table['row_count'] : count($table['rows']);
         $columnTotal = Format::isInteger($table['column_count'] ?? null) ? $table['column_count'] : count($table['columns']);
         $href = self::safeUrl($doc['url'] ?? null);
-        $link = $href === null ? '' : ' <a href="' . self::e($href) . '">View the full table</a>';
+        $link = $href === null ? '' : ' <a href="' . self::e($href) . '">View full table</a>';
         if ($start > 0) {
             $last = $start + count($rows);
             $notes[] = '<p class="fw-embed__note">Showing rows ' . self::numberSpan($start + 1) . ' to ' . self::numberSpan($last)
@@ -631,7 +645,7 @@ final class Renderer
                 $parts[] = self::numberSpan(count($table['columns'])) . ' of ' . self::numberSpan($columnTotal) . ' columns';
             }
             if ($parts !== []) {
-                $notes[] = '<p class="fw-embed__note">Showing ' . implode(' and ', $parts) . '.' . ($rest !== null ? ' More in ' . $rest . '.' : $link) . '</p>';
+                $notes[] = '<p class="fw-embed__note">Showing ' . implode(' and ', $parts) . '.' . ($rest !== null ? ' The rest are in ' . $rest . '.' : $link) . '</p>';
             }
         }
         if ($rest === null && self::text($table['precision_note'] ?? null) !== null) {
@@ -868,11 +882,18 @@ final class Renderer
             return null;
         }
         $alt = self::text($doc['alt'] ?? null) ?? self::text($doc['title'] ?? null) ?? '';
-        $tag = '<img class="fw-embed__img" src="' . self::e($src) . '" alt="' . self::e($alt) . '" loading="lazy" decoding="async"';
+        // Vector figures scale to the figure's width; raster figures stop at their natural size.
+        $type = self::text($image['content_type'] ?? null);
+        $vector = $type !== null && str_starts_with(strtolower($type), 'image/svg+xml');
+        $tag = '<img class="fw-embed__img' . ($vector ? ' fw-embed__img--vector' : '') . '" src="' . self::e($src) . '" alt="' . self::e($alt) . '" loading="lazy" decoding="async"';
         $width = $image['width'] ?? null;
         $height = $image['height'] ?? null;
         if (Format::isInteger($width) && $width > 0 && Format::isInteger($height) && $height > 0) {
             $tag .= ' width="' . self::integer($width) . '" height="' . self::integer($height) . '"';
+            // A tall vector figure narrows so its height stays within 80vh.
+            if ($vector) {
+                $tag .= ' style="max-width: min(100%, calc(80vh * ' . self::integer($width) . ' / ' . self::integer($height) . '))"';
+            }
         }
 
         return '<div class="fw-embed__media">' . $tag . '></div>';
@@ -890,7 +911,7 @@ final class Renderer
         return implode("\n", [
             '<div class="fw-embed__chart" data-fw-embed-chart>',
             '<script type="application/json">' . Json::forScript($spec) . '</script>',
-            '<p class="fw-embed__fallback">' . $alt . ($href === null ? '' : ' <a href="' . self::e($href) . '">View the chart</a>') . '</p>',
+            '<p class="fw-embed__fallback">' . $alt . ($href === null ? '' : ' <a href="' . self::e($href) . '">View chart</a>') . '</p>',
             '</div>',
         ]);
     }

@@ -193,7 +193,7 @@ var METRIC_LABELS = {
   rsquared_adj: "Adjusted R\xB2",
   "adj.r.squared": "Adjusted R\xB2",
   pseudo_rsquared: "Pseudo R\xB2",
-  sigma: "Residual std. dev.",
+  sigma: "Residual SD",
   llf: "Log likelihood",
   log_likelihood: "Log likelihood",
   deviance: "Deviance",
@@ -227,7 +227,7 @@ var MODEL_TYPES = {
   fixed_effects: "Fixed-effects model",
   quantile: "Quantile regression",
   linear_ml: "Linear model",
-  tree_ensemble: "Tree ensemble"
+  tree_ensemble: "Tree ensemble model"
 };
 var ALTERNATIVES = { "two.sided": "Two-sided", less: "One-sided (less)", greater: "One-sided (greater)" };
 var COEFFICIENT_COLUMNS = /* @__PURE__ */ new Set(["term", "estimate", "std_error", "statistic", "p_value", "conf_low", "conf_high", "df"]);
@@ -380,10 +380,20 @@ function renderTest(doc) {
 function named(value) {
   return list(value).filter((entry) => isObject(entry) && text(entry.name) !== null);
 }
+var FAMILY_NAMES = { gaussian: "Gaussian", tweedie: "Tweedie", poisson: "Poisson" };
+var LINK_NAMES = { sqrt: "square-root", cloglog: "complementary log-log" };
+function familyName(family) {
+  const key = asciiLower(family);
+  return Object.hasOwn(FAMILY_NAMES, key) ? FAMILY_NAMES[key] : family;
+}
+function linkName(link) {
+  const key = asciiLower(link);
+  return Object.hasOwn(LINK_NAMES, key) ? LINK_NAMES[key] : link;
+}
 function familyLink(family, link) {
-  if (family !== null && link !== null) return `${family} family, ${link} link`;
-  if (family !== null) return `${family} family`;
-  if (link !== null) return `${link} link`;
+  if (family !== null && link !== null) return `${familyName(family)} family, ${linkName(link)} link`;
+  if (family !== null) return `${familyName(family)} family`;
+  if (link !== null) return `${linkName(link)} link`;
   return null;
 }
 function modelName(model) {
@@ -391,7 +401,7 @@ function modelName(model) {
   const type = lower(model.type);
   const family = lower(model.family);
   const link = lower(model.link);
-  const withLink = (name, implied) => link === null || link === implied ? name : `${name} (${link} link)`;
+  const withLink = (name, implied) => link === null || link === implied ? name : `${name} (${linkName(link)} link)`;
   if (type === "linear") return "Ordinary least squares regression";
   if (type === "glm") {
     if (family === "gaussian" && (link === null || link === "identity")) return "Ordinary least squares regression";
@@ -399,11 +409,11 @@ function modelName(model) {
       if (link === null || link === "logit") return "Logistic regression";
       if (link === "probit") return "Probit regression";
       if (link === "cloglog") return "Complementary log-log regression";
-      return `Binomial regression (${link} link)`;
+      return `Binomial regression (${linkName(link)} link)`;
     }
     if (family === "poisson") return withLink("Poisson regression", "log");
     if (family === "negative binomial") return withLink("Negative binomial regression", "log");
-    if (family === "gamma") return link === null ? "Gamma regression" : `Gamma regression (${link} link)`;
+    if (family === "gamma") return link === null ? "Gamma regression" : `Gamma regression (${linkName(link)} link)`;
     if (family !== null && family.startsWith("quasi")) {
       const rest = family.slice(5).replace(/^[- ]+/, "");
       return rest === "" ? "Quasi-likelihood regression" : `Quasi-${rest === "poisson" ? "Poisson" : rest} regression`;
@@ -415,18 +425,18 @@ function modelName(model) {
     if (family === "binomial") {
       if (link === null || link === "logit") return "Logistic mixed model";
       if (link === "probit") return "Probit mixed model";
-      return `Binomial mixed model (${link} link)`;
+      return `Binomial mixed model (${linkName(link)} link)`;
     }
     if (family === "poisson") return withLink("Poisson mixed model", "log");
     if (family === "negative binomial") return withLink("Negative binomial mixed model", "log");
-    if (family === "gamma") return link === null ? "Gamma mixed model" : `Gamma mixed model (${link} link)`;
+    if (family === "gamma") return link === null ? "Gamma mixed model" : `Gamma mixed model (${linkName(link)} link)`;
     return null;
   }
   if (type === "survival") return text(model.exponentiate) === "Hazard ratio" ? "Cox proportional hazards model" : "Parametric survival model";
   if (type === "ordinal") {
     if (link === null || link === "logit") return "Ordinal logistic regression";
     if (link === "probit") return "Ordinal probit regression";
-    return `Ordinal regression (${link} link)`;
+    return `Ordinal regression (${linkName(link)} link)`;
   }
   if (type === "multinomial") return "Multinomial logistic regression";
   if (type === "additive") {
@@ -439,8 +449,8 @@ function modelName(model) {
     return "Fixed-effects regression";
   }
   if (type === "quantile") return "Quantile regression";
-  if (type === "linear_ml") return "Linear model (machine learning)";
-  if (type === "tree_ensemble") return "Tree ensemble";
+  if (type === "linear_ml") return "Linear model";
+  if (type === "tree_ensemble") return "Tree ensemble model";
   return null;
 }
 function modelMeta(model) {
@@ -454,7 +464,7 @@ function modelMeta(model) {
     if (detail !== null) parts.push(detail);
   }
   if (text(model.response) !== null) parts.push(`Response: ${model.response}`);
-  return parts.length > 0 ? parts.join(" \xB7 ") : null;
+  return parts.length > 0 ? asciiCapitalize(parts.join(" \xB7 ")) : null;
 }
 function columnIndex(table, name) {
   return table.columns.findIndex((column) => column.name === name);
@@ -500,7 +510,7 @@ function tableNotes(table, rows, start, doc, rest) {
   const total = Number.isInteger(table.row_count) ? table.row_count : table.rows.length;
   const columnTotal = Number.isInteger(table.column_count) ? table.column_count : table.columns.length;
   const href = safeUrl(doc.url);
-  const link = href === null ? "" : ` <a href="${escapeHtml(href)}">View the full table</a>`;
+  const link = href === null ? "" : ` <a href="${escapeHtml(href)}">View full table</a>`;
   if (start > 0) {
     const last = start + rows.length;
     notes.push(`<p class="fw-embed__note">Showing rows ${numberSpan(start + 1)} to ${numberSpan(last)} of ${numberSpan(total)}.${total > last ? link : ""}</p>`);
@@ -508,7 +518,7 @@ function tableNotes(table, rows, start, doc, rest) {
     const parts = [];
     if (total > rows.length) parts.push(`${numberSpan(rows.length)} of ${numberSpan(total)} rows`);
     if (rest === null && columnTotal > table.columns.length) parts.push(`${numberSpan(table.columns.length)} of ${numberSpan(columnTotal)} columns`);
-    if (parts.length > 0) notes.push(`<p class="fw-embed__note">Showing ${parts.join(" and ")}.${rest !== null ? ` More in ${rest}.` : link}</p>`);
+    if (parts.length > 0) notes.push(`<p class="fw-embed__note">Showing ${parts.join(" and ")}.${rest !== null ? ` The rest are in ${rest}.` : link}</p>`);
   }
   if (rest === null && text(table.precision_note) !== null) notes.push(`<p class="fw-embed__note">${escapeHtml(table.precision_note)}</p>`);
   return notes;
@@ -630,9 +640,12 @@ function renderImage(doc) {
   const src = image === null ? null : safeUrl(image.url);
   if (src === null) return null;
   const alt = text(doc.alt) ?? text(doc.title) ?? "";
-  let tag = `<img class="fw-embed__img" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async"`;
+  const type = text(image.content_type);
+  const vector = type !== null && asciiLower(type).startsWith("image/svg+xml");
+  let tag = `<img class="fw-embed__img${vector ? " fw-embed__img--vector" : ""}" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async"`;
   if (Number.isInteger(image.width) && image.width > 0 && Number.isInteger(image.height) && image.height > 0) {
     tag += ` width="${image.width}" height="${image.height}"`;
+    if (vector) tag += ` style="max-width: min(100%, calc(80vh * ${image.width} / ${image.height}))"`;
   }
   return `<div class="fw-embed__media">${tag}></div>`;
 }
@@ -643,7 +656,7 @@ function renderChart(doc) {
   return [
     '<div class="fw-embed__chart" data-fw-embed-chart>',
     `<script type="application/json">${scriptJson(doc.spec)}<\/script>`,
-    `<p class="fw-embed__fallback">${alt}${href === null ? "" : ` <a href="${escapeHtml(href)}">View the chart</a>`}</p>`,
+    `<p class="fw-embed__fallback">${alt}${href === null ? "" : ` <a href="${escapeHtml(href)}">View chart</a>`}</p>`,
     "</div>"
   ].join("\n");
 }
@@ -784,7 +797,7 @@ async function fetchEmbed(url, options = {}) {
   if (response.status === 404 || response.status === 410) return null;
   if (!response.ok) throw new EmbedError("http", `The embed request failed with status ${response.status}.`);
   const doc = await response.json();
-  if (doc === null || typeof doc !== "object" || doc.schema !== "framework.embed/v1") throw new EmbedError("invalid", "The answer is not a framework.embed/v1 document.");
+  if (doc === null || typeof doc !== "object" || doc.schema !== "framework.embed/v1") throw new EmbedError("invalid", "The response is not a framework.embed/v1 document.");
   return doc;
 }
 function mount(element, doc, options = {}) {
