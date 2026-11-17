@@ -97,7 +97,7 @@ function renderCaption(doc, kind) {
 }
 
 // --- data kinds -------------------------------------------------------------
-// Models and tests show their main results; the rest goes in a closed <details>.
+// Models and tests show their main results, random effects included; the rest goes in a closed <details>.
 
 function usableTables(data) {
     return list(data.tables).filter((table) => isObject(table) && Array.isArray(table.rows)
@@ -152,6 +152,9 @@ function renderModel(doc) {
             const continued = shownRows(table, FEATURE_LIMIT, ROW_LIMIT).length > 0;
             visible.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, FEATURE_LIMIT, continued ? 'Model details' : null));
             if (continued) rest.push(renderTable(table, true, true, doc, RESULT_PLACES, FEATURE_LIMIT, ROW_LIMIT, null));
+        } else if (table.role === 'random_effects') {
+            // Variance components are as much a result as the fixed effects
+            visible.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
         } else {
             rest.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
         }
@@ -396,12 +399,9 @@ function coefficientTable(table, doc, modifier, columns) {
     const rows = shownRows(table, 0, ROW_LIMIT);
     const term = columnIndex(table, 'term');
     const lines = openTable(table, true, modifier);
-    lines.push('<thead><tr>' + th(columnLabel(table.columns[term], true), false) + columns.map(([header, numeric]) => (Array.isArray(header) ? ratioTh(header) : th(header, numeric))).join('') + '</tr></thead>', '<tbody>');
+    lines.push('<thead><tr>' + th(columnLabel(table.columns[term], true), false) + columns.map(([header, numeric]) => th(header, numeric)).join('') + '</tr></thead>', '<tbody>');
     for (const row of rows) {
-        lines.push('<tr>' + `<th scope="row">${escapeHtml(formatValue(cell(row, term)))}</th>` + columns.map(([, numeric, value]) => {
-            const shown = value(row);
-            return Array.isArray(shown) ? ratioTd(shown) : td(shown, numeric);
-        }).join('') + '</tr>');
+        lines.push('<tr>' + `<th scope="row">${escapeHtml(formatValue(cell(row, term)))}</th>` + columns.map(([, numeric, value]) => td(value(row), numeric)).join('') + '</tr>');
     }
     lines.push('</tbody>', '</table>', '</div>');
     return [...lines, ...tableNotes(table, rows, 0, doc, null)].join('\n');
@@ -427,61 +427,71 @@ function decimalCell(index) {
     return (row) => formatValue(cell(row, index), true, RESULT_PLACES);
 }
 
-function intervalCell(low, high) {
-    return (row) => {
-        const a = cell(row, low);
-        const b = cell(row, high);
-        return a === null && b === null ? EMPTY : `${formatValue(a, true, RESULT_PLACES)} to ${formatValue(b, true, RESULT_PLACES)}`;
-    };
+
+// The log-scale label for each ratio, used as the estimate header and the switch's second option.
+const LOG_SCALES = { 'Odds ratio': 'Log odds', 'Hazard ratio': 'Log hazard', 'Rate ratio': 'Log rate', 'Incidence rate ratio': 'Log rate', 'Time ratio': 'Log time' };
+
+// The coefficient table. A model with an exponentiated scale (odds, hazard, rate ratios) gets the
+// same table twice, on the model scale and the ratio scale, and a switch between them, as Stata's
+// `or` option does: the estimate and interval are exponentiated, the std. error is the delta-method
+// one, exp(b) * se, and the statistic and p-value are unchanged. The switch is radio buttons in a
+// form of their own, so it works without JavaScript and each embed's buttons are separate. Where a
+// host strips the form controls, only the ratio view shows.
+function renderCoefficients(table, model, level, doc) {
+    const ratio = text(model.exponentiate);
+    if (ratio === null) return coefficientTable(table, doc, 'coefficients', coefficientColumns(table, level, 'Estimate', false));
+    const logScale = Object.hasOwn(LOG_SCALES, ratio) ? LOG_SCALES[ratio] : 'Coefficient';
+    return [
+        '<form class="fw-embed__scales">',
+        `<div class="fw-embed__switch" role="radiogroup" aria-label="Scale">`,
+        `<label><input type="radio" name="fw-embed-scale" value="ratio" checked=""> ${escapeHtml(ratio)}</label>`,
+        `<label><input type="radio" name="fw-embed-scale" value="model"> ${escapeHtml(logScale)}</label>`,
+        '</div>',
+        '<div class="fw-embed__scale fw-embed__scale--ratio">', coefficientTable(table, doc, 'coefficients', coefficientColumns(table, level, ratio, true)), '</div>',
+        '<div class="fw-embed__scale fw-embed__scale--model">', coefficientTable(table, doc, 'coefficients', coefficientColumns(table, level, logScale, false)), '</div>',
+        '</form>',
+    ].join('\n');
 }
 
-// The coefficient table: estimate, the exponentiated estimate with its interval when the model has one,
-// std. error, statistic, p-value, and interval.
-function renderCoefficients(table, model, level, doc) {
+// The coefficient columns, on the model scale or exponentiated.
+function coefficientColumns(table, level, estimateLabel, exponentiated) {
     const at = (name) => columnIndex(table, name);
+    const estimate = at('estimate');
     const low = at('conf_low');
     const high = at('conf_high');
-    const interval = low >= 0 && high >= 0;
-    const ratio = text(model.exponentiate);
+    const shown = (value) => (exponentiated ? ratioValue(value) : formatValue(value, true, RESULT_PLACES));
     const columns = extraColumns(table);
-    columns.push(['Estimate', true, decimalCell(at('estimate'))]);
-    if (ratio !== null) {
-        columns.push([interval ? [ratio, intervalLabel(level)] : ratio, true,
-            (row) => ratioCell(cell(row, at('estimate')), interval ? [cell(row, low), cell(row, high)] : null, cell(row, at('term')))]);
+    columns.push([estimateLabel, true, (row) => shown(cell(row, estimate))]);
+    if (at('std_error') >= 0) {
+        const index = at('std_error');
+        columns.push(['Std. error', true, (row) => {
+            const se = cell(row, index);
+            const b = cell(row, estimate);
+            if (!exponentiated) return formatValue(se, true, RESULT_PLACES);
+            return isNumber(se) && isNumber(b) ? formatNumber(exp(b) * se, true, RESULT_PLACES) : formatValue(se, true, RESULT_PLACES);
+        }]);
     }
-    if (at('std_error') >= 0) columns.push(['Std. error', true, decimalCell(at('std_error'))]);
     if (at('statistic') >= 0) columns.push(['Statistic', true, decimalCell(at('statistic'))]);
-    if (at('p_value') >= 0) {
-        const index = at('p_value');
-        columns.push(['p-value', true, (row) => (isNumber(cell(row, index)) ? formatPValue(cell(row, index)) : formatValue(cell(row, index)))]);
+    if (at('p_value') >= 0) columns.push(['p-value', true, pValueCell(at('p_value'))]);
+    if (low >= 0 && high >= 0) {
+        columns.push([intervalLabel(level), true, (row) => {
+            const a = cell(row, low);
+            const b = cell(row, high);
+            return a === null && b === null ? EMPTY : `${shown(a)} to ${shown(b)}`;
+        }]);
     }
-    if (interval) columns.push([intervalLabel(level), true, intervalCell(low, high)]);
-    return coefficientTable(table, doc, 'coefficients', columns);
+    return columns;
 }
 
-// An exponentiated estimate and its exponentiated interval, as [ratio, interval or null].
-// Intercepts show EMPTY.
-function ratioCell(estimate, bounds, term) {
-    if (!isNumber(estimate) || (typeof term === 'string' && isIntercept(term))) return [EMPTY, null];
-    const value = formatNumber(exp(estimate), true, RESULT_PLACES);
-    if (bounds === null) return [value, null];
-    const [low, high] = bounds.map((bound) => (isNumber(bound) ? formatNumber(exp(bound), true, RESULT_PLACES) : EMPTY));
-    return [value, `${low} to ${high}`];
+function pValueCell(index) {
+    return (row) => (isNumber(cell(row, index)) ? formatPValue(cell(row, index)) : formatValue(cell(row, index)));
 }
 
-// The ratio label on one line and its interval label, in parentheses, on the next.
-function ratioTh([label, interval]) {
-    return `<th scope="col" class="fw-embed__num">${escapeHtml(label)} <span class="fw-embed__ci">(${escapeHtml(interval)})</span></th>`;
+// An exponentiated value; non-numbers show as they are.
+function ratioValue(value) {
+    return isNumber(value) ? formatNumber(exp(value), true, RESULT_PLACES) : formatValue(value, true, RESULT_PLACES);
 }
 
-// The ratio on one line and its interval, in parentheses, on the next.
-function ratioTd([value, interval]) {
-    return `<td class="fw-embed__num">${escapeHtml(value)}${interval === null ? '' : ` <span class="fw-embed__ci">(${escapeHtml(interval)})</span>`}</td>`;
-}
-
-function isIntercept(term) {
-    return /^(\(intercept\)|intercept|const|_cons)$/.test(term.replace(/[A-Z]/g, (c) => c.toLowerCase()));
-}
 
 function metricLabel(name) {
     if (Object.hasOwn(METRIC_LABELS, name)) return METRIC_LABELS[name];

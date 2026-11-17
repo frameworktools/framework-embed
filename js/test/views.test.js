@@ -11,19 +11,60 @@ const dom = (doc) => { const host = document.createElement('div'); host.innerHTM
 const headers = (table) => [...table.querySelectorAll('thead th')].map((th) => th.textContent);
 
 describe('model view', () => {
-    it('shows one full coefficient table with the odds ratio after the estimate', () => {
+    it('switches a logit model between odds ratios and log odds, odds ratios first', () => {
         const host = dom(load('r-glm-logit'));
-        const tables = host.querySelectorAll('table');
-        expect(tables).toHaveLength(1);
-        expect(tables[0].closest('details')).toBeNull();
-        expect(headers(tables[0])).toEqual(['Term', 'Estimate', 'Odds ratio (95% CI)', 'Std. error', 'Statistic', 'p-value', '95% CI']);
-        expect([...tables[0].querySelectorAll('tbody tr')].map((tr) => tr.children[2].textContent)).toEqual(['—', '< 0.01 (< 0.01 to 0.13)', '1.04 (1.00 to 1.07)']);
-        expect(tables[0].querySelector('tbody tr:nth-child(3) .fw-embed__ci').textContent).toBe('(1.00 to 1.07)');
+        const scales = host.querySelector('form.fw-embed__scales');
+        expect(scales.closest('details')).toBeNull();
+        const options = [...scales.querySelectorAll('.fw-embed__switch input[type="radio"]')];
+        expect(options.map((input) => [input.value, input.parentElement.textContent.trim(), input.checked])).toEqual([['ratio', 'Odds ratio', true], ['model', 'Log odds', false]]);
+        expect(new Set(options.map((input) => input.name)).size).toBe(1);
+
+        // Both views are the same table; only the estimate, std. error, and interval change scale
+        const ratio = scales.querySelector('.fw-embed__scale--ratio table');
+        const model = scales.querySelector('.fw-embed__scale--model table');
+        expect(headers(ratio)).toEqual(['Term', 'Odds ratio', 'Std. error', 'Statistic', 'p-value', '95% CI']);
+        expect(headers(model)).toEqual(['Term', 'Log odds', 'Std. error', 'Statistic', 'p-value', '95% CI']);
+        const cells = (table) => [...table.querySelectorAll('tbody tr')].map((tr) => [...tr.children].map((c) => c.textContent));
+        const doc = load('r-glm-logit');
+        const rows = doc.data.tables[0].rows;
+        const names = doc.data.tables[0].columns.map((c) => c.name);
+        const at = (row, name) => row[names.indexOf(name)];
+        cells(ratio).forEach((row, i) => {
+            expect(row[0]).toBe(cells(model)[i][0]);
+            expect(row[3]).toBe(cells(model)[i][3]);
+            expect(row[4]).toBe(cells(model)[i][4]);
+            const value = Number(row[1].replaceAll(',', ''));
+            expect(Math.abs(value / Math.exp(at(rows[i], 'estimate')) - 1)).toBeLessThan(0.01);
+        });
+        expect(cells(ratio)[2][1]).toBe('1.04');
+        expect(cells(ratio)[2][5]).toBe('1.00 to 1.07');
+        expect(host.querySelectorAll('table')).toHaveLength(2);
+
         const details = host.querySelector('details.fw-embed__details');
         expect(details.open).toBe(false);
         expect(details.querySelector('summary').textContent).toBe('Model details');
         expect(details.querySelector('table')).toBeNull();
         expect(details.querySelector('dl.fw-embed__stats')).not.toBeNull();
+    });
+
+    it('gives each embed its own switch, so two on one page toggle separately', () => {
+        const page = document.createElement('div');
+        page.innerHTML = render(load('r-glm-logit')) + render(load('r-glm-logit'));
+        const [first, second] = page.querySelectorAll('form.fw-embed__scales');
+        first.querySelector('input[value="model"]').checked = true;
+        expect(second.querySelector('input[value="ratio"]').checked).toBe(true);
+        expect(first.querySelector('input[value="ratio"]').checked).toBe(false);
+    });
+
+    it('labels a Cox model hazard ratio and log hazard', () => {
+        const host = dom(load('stata-stcox'));
+        expect([...host.querySelectorAll('.fw-embed__switch label')].map((label) => label.textContent.trim())).toEqual(['Hazard ratio', 'Log hazard']);
+    });
+
+    it('shows a single table with no switch for a model without a ratio', () => {
+        const host = dom(load('r-lm-penguins'));
+        expect(host.querySelector('form.fw-embed__scales')).toBeNull();
+        expect(headers(host.querySelector('table'))[1]).toBe('Estimate');
     });
 
     it('shows a Stata command in the formula slot and not in the statistics', () => {
@@ -53,10 +94,11 @@ describe('model view', () => {
         expect(host.querySelectorAll('.fw-embed__stat--wide')).toHaveLength(1);
     });
 
-    it('puts random effects in details', () => {
+    it('shows random effects beside the fixed effects, outside the details', () => {
         const host = dom(load('r-lmer'));
-        expect(host.querySelectorAll('.fw-embed__body > .fw-embed__scroll')).toHaveLength(1);
-        expect([...host.querySelectorAll('details caption')].map((c) => c.textContent)).toEqual(['Random effects']);
+        expect([...host.querySelectorAll('.fw-embed__body > .fw-embed__scroll caption')].map((c) => c.textContent)).toEqual(['Fixed effects', 'Random effects']);
+        expect(host.querySelectorAll('details caption')).toHaveLength(0);
+        expect(host.querySelector('details .fw-embed__stats')).not.toBeNull();
     });
 
     it('shows the top 10 features and continues in details', () => {

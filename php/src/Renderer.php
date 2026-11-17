@@ -268,6 +268,9 @@ final class Renderer
                 if ($continued) {
                     $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, self::FEATURE_LIMIT, self::ROW_LIMIT, null);
                 }
+            } elseif (($table['role'] ?? null) === 'random_effects') {
+                // Variance components are as much a result as the fixed effects
+                $visible[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::ROW_LIMIT, null);
             } else {
                 $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::ROW_LIMIT, null);
             }
@@ -695,15 +698,14 @@ final class Renderer
         $lines = self::openTable($table, true, $modifier);
         $head = self::th(self::columnLabel($table['columns'][$term], true), false);
         foreach ($columns as [$header, $numeric]) {
-            $head .= is_array($header) ? self::ratioTh($header) : self::th($header, $numeric);
+            $head .= self::th($header, $numeric);
         }
         $lines[] = '<thead><tr>' . $head . '</tr></thead>';
         $lines[] = '<tbody>';
         foreach ($rows as $row) {
             $cells = '<th scope="row">' . self::e(Format::value(self::cell($row, $term))) . '</th>';
             foreach ($columns as [, $numeric, $value]) {
-                $shown = $value($row);
-                $cells .= is_array($shown) ? self::ratioTd($shown) : self::td($shown, $numeric);
+                $cells .= self::td($value($row), $numeric);
             }
             $lines[] = '<tr>' . $cells . '</tr>';
         }
@@ -739,37 +741,57 @@ final class Renderer
         return fn ($row) => Format::value(self::cell($row, $index), true, Format::RESULT_PLACES);
     }
 
-    private static function intervalCell(int $low, int $high): \Closure
-    {
-        return function ($row) use ($low, $high): string {
-            $a = self::cell($row, $low);
-            $b = self::cell($row, $high);
 
-            return $a === null && $b === null ? Format::EMPTY
-                : Format::value($a, true, Format::RESULT_PLACES) . ' to ' . Format::value($b, true, Format::RESULT_PLACES);
-        };
-    }
+    /** The log-scale label for each ratio, used as the estimate header and the switch's second option. */
+    private const LOG_SCALES = ['Odds ratio' => 'Log odds', 'Hazard ratio' => 'Log hazard', 'Rate ratio' => 'Log rate', 'Incidence rate ratio' => 'Log rate', 'Time ratio' => 'Log time'];
 
     /**
-     * The coefficient table: estimate, the exponentiated estimate with its interval when the model has one,
-     * std. error, statistic, p-value, and interval.
+     * The coefficient table. A model with an exponentiated scale (odds, hazard, rate ratios) gets the
+     * same table twice, on the model scale and the ratio scale, and a switch between them, as Stata's
+     * `or` option does: the estimate and interval are exponentiated, the std. error is the delta-method
+     * one, exp(b) * se, and the statistic and p-value are unchanged. The switch is radio buttons in a
+     * form of their own, so it works without JavaScript and each embed's buttons are separate. Where a
+     * host strips the form controls, only the ratio view shows.
      */
     private static function coefficients(array $table, array $model, int|float|null $level, array $doc): string
     {
+        $ratio = self::text($model['exponentiate'] ?? null);
+        if ($ratio === null) {
+            return self::coefficientTable($table, $doc, 'coefficients', self::coefficientColumns($table, $level, 'Estimate', false));
+        }
+        $logScale = self::LOG_SCALES[$ratio] ?? 'Coefficient';
+
+        return implode("\n", [
+            '<form class="fw-embed__scales">',
+            '<div class="fw-embed__switch" role="radiogroup" aria-label="Scale">',
+            '<label><input type="radio" name="fw-embed-scale" value="ratio" checked=""> ' . self::e($ratio) . '</label>',
+            '<label><input type="radio" name="fw-embed-scale" value="model"> ' . self::e($logScale) . '</label>',
+            '</div>',
+            '<div class="fw-embed__scale fw-embed__scale--ratio">', self::coefficientTable($table, $doc, 'coefficients', self::coefficientColumns($table, $level, $ratio, true)), '</div>',
+            '<div class="fw-embed__scale fw-embed__scale--model">', self::coefficientTable($table, $doc, 'coefficients', self::coefficientColumns($table, $level, $logScale, false)), '</div>',
+            '</form>',
+        ]);
+    }
+
+    /** The coefficient columns, on the model scale or exponentiated. */
+    private static function coefficientColumns(array $table, int|float|null $level, string $estimateLabel, bool $exponentiated): array
+    {
         $estimate = self::columnIndex($table, 'estimate');
-        $term = self::columnIndex($table, 'term');
         $low = self::columnIndex($table, 'conf_low');
         $high = self::columnIndex($table, 'conf_high');
-        $interval = $low >= 0 && $high >= 0;
-        $ratio = self::text($model['exponentiate'] ?? null);
+        $shown = fn ($value) => $exponentiated ? self::ratioValue($value) : Format::value($value, true, Format::RESULT_PLACES);
         $columns = self::extraColumns($table);
-        $columns[] = ['Estimate', true, self::decimalCell($estimate)];
-        if ($ratio !== null) {
-            $columns[] = [$interval ? [$ratio, self::intervalLabel($level)] : $ratio, true,
-                fn ($row) => self::ratioCell(self::cell($row, $estimate), $interval ? [self::cell($row, $low), self::cell($row, $high)] : null, self::cell($row, $term))];
-        }
+        $columns[] = [$estimateLabel, true, fn ($row) => $shown(self::cell($row, $estimate))];
         if (($error = self::columnIndex($table, 'std_error')) >= 0) {
-            $columns[] = ['Std. error', true, self::decimalCell($error)];
+            $columns[] = ['Std. error', true, function ($row) use ($error, $estimate, $exponentiated): string {
+                $se = self::cell($row, $error);
+                $b = self::cell($row, $estimate);
+                if (! $exponentiated || ! Format::isNumber($se) || ! Format::isNumber($b)) {
+                    return Format::value($se, true, Format::RESULT_PLACES);
+                }
+
+                return Format::number(Format::exp($b) * $se, true, Format::RESULT_PLACES);
+            }];
         }
         if (($statistic = self::columnIndex($table, 'statistic')) >= 0) {
             $columns[] = ['Statistic', true, self::decimalCell($statistic)];
@@ -781,48 +803,24 @@ final class Renderer
                 return Format::isNumber($value) ? Format::pValue($value) : Format::value($value);
             }];
         }
-        if ($interval) {
-            $columns[] = [self::intervalLabel($level), true, self::intervalCell($low, $high)];
+        if ($low >= 0 && $high >= 0) {
+            $columns[] = [self::intervalLabel($level), true, function ($row) use ($low, $high, $shown): string {
+                $a = self::cell($row, $low);
+                $b = self::cell($row, $high);
+
+                return $a === null && $b === null ? Format::EMPTY : $shown($a) . ' to ' . $shown($b);
+            }];
         }
 
-        return self::coefficientTable($table, $doc, 'coefficients', $columns);
+        return $columns;
     }
 
-    /** An exponentiated estimate and its exponentiated interval, as [ratio, interval or null]. Intercepts show EMPTY. */
-    private static function ratioCell(mixed $estimate, ?array $bounds, mixed $term): array
+    /** An exponentiated value; non-numbers show as they are. */
+    private static function ratioValue(mixed $value): string
     {
-        if (! Format::isNumber($estimate) || (is_string($term) && self::isIntercept($term))) {
-            return [Format::EMPTY, null];
-        }
-        $value = Format::number(Format::exp($estimate), true, Format::RESULT_PLACES);
-        if ($bounds === null) {
-            return [$value, null];
-        }
-        [$low, $high] = array_map(fn ($bound) => Format::isNumber($bound) ? Format::number(Format::exp($bound), true, Format::RESULT_PLACES) : Format::EMPTY, $bounds);
-
-        return [$value, $low . ' to ' . $high];
+        return Format::isNumber($value) ? Format::number(Format::exp($value), true, Format::RESULT_PLACES) : Format::value($value, true, Format::RESULT_PLACES);
     }
 
-    /** The ratio label on one line and its interval label, in parentheses, on the next. */
-    private static function ratioTh(array $header): string
-    {
-        [$label, $interval] = $header;
-
-        return '<th scope="col" class="fw-embed__num">' . self::e($label) . ' <span class="fw-embed__ci">(' . self::e($interval) . ')</span></th>';
-    }
-
-    /** The ratio on one line and its interval, in parentheses, on the next. */
-    private static function ratioTd(array $shown): string
-    {
-        [$value, $interval] = $shown;
-
-        return '<td class="fw-embed__num">' . self::e($value) . ($interval === null ? '' : ' <span class="fw-embed__ci">(' . self::e($interval) . ')</span>') . '</td>';
-    }
-
-    private static function isIntercept(string $term): bool
-    {
-        return preg_match('/^(\(intercept\)|intercept|const|_cons)$/D', strtolower($term)) === 1;
-    }
 
     private static function metricLabel(string $name): string
     {

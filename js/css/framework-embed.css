@@ -6,8 +6,9 @@
  * text color apply. Muted text and borders derive from the text color, so they
  * work on light and dark pages alike.
  *
- * Sizes are relative to the host text. The figure is 0.875em of it; tables and
- * statistics come to about 0.8125em, captions and notes to about 0.75em.
+ * Sizes are relative to the host text. The figure is 0.875em of it, capped at
+ * 0.9375rem (15px) so a theme with large body text doesn't blow up tables;
+ * tables and statistics come to about 0.8125em, captions and notes to about 0.75em.
  * Inside the figure, calc(X / 0.875) turns a host-relative size X into em.
  *
  * Numbers (.fw-embed__num cells, values, and counts) use --fw-embed-mono, JetBrains Mono
@@ -57,7 +58,7 @@
     margin: 2em 0;
     padding: 0;
     font-family: var(--fw-embed-font);
-    font-size: 0.875em;
+    font-size: min(0.875em, 0.9375rem);
     line-height: 1.55;
     color: var(--fw-embed-fg);
     background: var(--fw-embed-bg);
@@ -139,6 +140,47 @@
 .fw-embed__table .fw-embed__num { text-align: right; }
 /* An exponentiated interval sits under its ratio. */
 .fw-embed__table .fw-embed__ci { display: block; color: var(--fw-embed-muted); font-size: 0.92em; }
+
+/* The ratio or model-scale switch for coefficient tables. CSS alone toggles the views; where a host
+   strips the radio buttons, the switch hides and only the ratio view shows. */
+/* The switch sits at the right end of the table's caption line. The caption keeps room for it, so a
+   long title wraps before it reaches the switch. */
+.fw-embed__scales { position: relative; margin: 0; min-width: 0; }
+.fw-embed__switch {
+    position: absolute;
+    top: -0.25em;
+    right: 0;
+    z-index: 1;
+    display: inline-flex;
+    gap: 0.125em;
+    padding: 0.125em;
+    border: 1px solid var(--fw-embed-border);
+    border-radius: 0.5em;
+    background: var(--fw-embed-bg);
+    font-size: calc(0.6875em / 0.875);
+    line-height: 1.45;
+}
+.fw-embed__scales:has(.fw-embed__switch input) .fw-embed__table caption { padding-right: 13em; }
+.fw-embed__switch:not(:has(input)) { display: none; }
+.fw-embed__switch label {
+    position: relative;
+    padding: 0.25em 0.75em;
+    border-radius: 0.375em;
+    color: var(--fw-embed-muted);
+    cursor: pointer;
+    white-space: nowrap;
+}
+.fw-embed__switch input { position: absolute; inset: 0; margin: 0; opacity: 0; cursor: pointer; }
+.fw-embed__switch label:has(input:checked) {
+    color: var(--fw-embed-fg, currentColor);
+    background: color-mix(in srgb, currentColor 8%, transparent);
+    font-weight: 600;
+}
+.fw-embed__switch label:has(input:focus-visible) { outline: 2px solid var(--fw-embed-accent); outline-offset: 1px; }
+.fw-embed__scale { min-width: 0; }
+.fw-embed__scale--model { display: none; }
+.fw-embed__scales:has(input[value="model"]:checked) .fw-embed__scale--model { display: block; }
+.fw-embed__scales:has(input[value="model"]:checked) .fw-embed__scale--ratio { display: none; }
 
 /* Narrow figures (phones): tighter cells, so short tables fit without scrolling. */
 @container (max-width: 26em) {
