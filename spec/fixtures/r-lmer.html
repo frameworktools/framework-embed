@@ -1,19 +1,7 @@
 <figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="rlmer00000000000" data-fw-embed-version="1">
 <div class="fw-embed__body">
-<p class="fw-embed__meta">Mixed model · gaussian family, identity link · Response: Reaction</p>
+<p class="fw-embed__meta">Linear mixed model · Response: Reaction</p>
 <p class="fw-embed__formula"><code>Reaction ~ Days + (Days | Subject)</code></p>
-<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Fixed effects">
-<table class="fw-embed__table fw-embed__table--estimates">
-<caption>Fixed effects</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
-<tbody>
-<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">251.41</td><td class="fw-embed__num">238.03 to 264.78</td></tr>
-<tr><th scope="row">Days</th><td class="fw-embed__num">10.47</td><td class="fw-embed__num">7.44 to 13.50</td></tr>
-</tbody>
-</table>
-</div>
-<details class="fw-embed__details">
-<summary>Model details</summary>
 <div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Fixed effects">
 <table class="fw-embed__table fw-embed__table--coefficients">
 <caption>Fixed effects</caption>
@@ -24,6 +12,8 @@
 </tbody>
 </table>
 </div>
+<details class="fw-embed__details">
+<summary>Model details</summary>
 <div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Random effects">
 <table class="fw-embed__table">
 <caption>Random effects</caption>
@@ -38,13 +28,13 @@
 </div>
 <dl class="fw-embed__stats">
 <div><dt>Confidence level</dt><dd class="fw-embed__num">95%</dd></div>
-<div><dt>Interval method</dt><dd>Wald normal</dd></div>
+<div class="fw-embed__stat--text"><dt>Interval method</dt><dd>Wald normal</dd></div>
 <div><dt>Observations</dt><dd class="fw-embed__num">180</dd></div>
 <div><dt>AIC</dt><dd class="fw-embed__num">1755.63</dd></div>
 <div><dt>BIC</dt><dd class="fw-embed__num">1774.79</dd></div>
 <div><dt>Log likelihood</dt><dd class="fw-embed__num">-871.81</dd></div>
 <div><dt>Residual std. dev.</dt><dd class="fw-embed__num">25.59</dd></div>
-<div><dt>REML</dt><dd>Yes</dd></div>
+<div class="fw-embed__stat--text"><dt>REML</dt><dd>Yes</dd></div>
 <div><dt>Groups: Subject</dt><dd class="fw-embed__num">18</dd></div>
 </dl>
 </details>

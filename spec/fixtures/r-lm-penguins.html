@@ -1,21 +1,7 @@
 <figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="rlmpenguins00000" data-fw-embed-version="1">
 <div class="fw-embed__body">
-<p class="fw-embed__meta">Linear model · gaussian family, identity link · Response: bill_length_mm</p>
+<p class="fw-embed__meta">Ordinary least squares regression · Response: bill_length_mm</p>
 <p class="fw-embed__formula"><code>bill_length_mm ~ body_mass_g + species</code></p>
-<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
-<table class="fw-embed__table fw-embed__table--estimates">
-<caption>Coefficients</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
-<tbody>
-<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">41.64</td><td class="fw-embed__num">30.34 to 52.93</td></tr>
-<tr><th scope="row">body_mass_g</th><td class="fw-embed__num">&lt; 0.01</td><td class="fw-embed__num">&gt; -0.01 to &lt; 0.01</td></tr>
-<tr><th scope="row">speciesChinstrap</th><td class="fw-embed__num">-1.02</td><td class="fw-embed__num">-6.10 to 4.05</td></tr>
-<tr><th scope="row">speciesGentoo</th><td class="fw-embed__num">2.81</td><td class="fw-embed__num">-2.08 to 7.71</td></tr>
-</tbody>
-</table>
-</div>
-<details class="fw-embed__details">
-<summary>Model details</summary>
 <div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
 <table class="fw-embed__table fw-embed__table--coefficients">
 <caption>Coefficients</caption>
@@ -28,9 +14,11 @@
 </tbody>
 </table>
 </div>
+<details class="fw-embed__details">
+<summary>Model details</summary>
 <dl class="fw-embed__stats">
 <div><dt>Confidence level</dt><dd class="fw-embed__num">95%</dd></div>
-<div><dt>Interval method</dt><dd>Wald t</dd></div>
+<div class="fw-embed__stat--text"><dt>Interval method</dt><dd>Wald t</dd></div>
 <div><dt>Observations</dt><dd class="fw-embed__num">23</dd></div>
 <div><dt>R²</dt><dd class="fw-embed__num">0.12</dd></div>
 <div><dt>Adjusted R²</dt><dd class="fw-embed__num">-0.02</dd></div>

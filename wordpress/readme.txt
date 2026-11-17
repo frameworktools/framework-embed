@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.3.1
+Stable tag: 0.3.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -82,6 +82,12 @@ Yes. The stylesheet uses custom properties such as `--fw-embed-font`, `--fw-embe
 A host name, such as `framework.example.org`, allows HTTPS only. An origin, such as `http://localhost:8000`, allows exactly that scheme, host, and port. IP addresses and paths are rejected.
 
 == Changelog ==
+
+= 0.3.2 =
+* One coefficients table with estimates, ratios, standard errors, p-values, and intervals. Model details hold only fit statistics and other tables.
+* Stata commands appear in the formula slot.
+* Long text statistics take a full row; labels no longer break letter by letter.
+* Models go by their common names, such as Logistic regression and Ordinary least squares regression.
 
 = 0.3.1 =
 * No scientific notation: tiny values read "< 0.01".

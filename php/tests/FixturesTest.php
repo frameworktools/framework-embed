@@ -62,6 +62,18 @@ final class FixturesTest extends TestCase
         $this->assertSame([], $failures);
     }
 
+    public function test_model_names_match_the_shared_cases(): void
+    {
+        $cases = json_decode(file_get_contents(self::SPEC . '/model-names.json'), true);
+        $this->assertGreaterThan(30, count($cases));
+        foreach ($cases as $case) {
+            $html = Renderer::render(['schema' => 'framework.embed/v1', 'kind' => 'model', 'url' => 'https://framework.pub/d/x',
+                'data' => ['model' => $case['model'], 'tables' => [], 'metrics' => [['name' => 'nobs', 'value' => 1]]]]);
+            $meta = preg_match('#<p class="fw-embed__meta">([^<]*)</p>#', $html, $m) === 1 ? html_entity_decode($m[1], ENT_QUOTES) : null;
+            $this->assertSame($case['meta'], $meta, json_encode($case['model']));
+        }
+    }
+
     public function test_decode_rejects_other_documents(): void
     {
         $this->assertNull(Document::decode('{"schema":"framework.artifact/v1"}'));

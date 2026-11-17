@@ -16,6 +16,9 @@ final class Renderer
 
     public const FEATURE_LIMIT = 10;
 
+    /** Text values longer than this many characters take a full row of the statistics grid. */
+    public const WIDE_TEXT = 24;
+
     private const KINDS = ['model', 'table', 'test', 'image', 'vega-lite', 'page'];
 
     private const COLUMN_LABELS = [
@@ -199,6 +202,12 @@ final class Renderer
             && self::columnIndex($table, 'term') >= 0 && self::columnIndex($table, 'estimate') >= 0;
     }
 
+    /** A Stata `command` metric with a string value. It stands in for a formula and never appears in the statistics. */
+    private static function isCommand(array $metric): bool
+    {
+        return $metric['name'] === 'command' && self::text($metric['value'] ?? null) !== null;
+    }
+
     private static function model(array $doc): ?string
     {
         $data = $doc['data'] ?? null;
@@ -210,6 +219,14 @@ final class Renderer
         $formula = self::text($data['formula'] ?? null);
         if ($tables === [] && $metrics === [] && $formula === null) {
             return null;
+        }
+        $stats = [];
+        foreach ($metrics as $metric) {
+            if (self::isCommand($metric)) {
+                $formula ??= $metric['value'];
+            } else {
+                $stats[] = $metric;
+            }
         }
         $model = self::obj($data['model'] ?? null);
         $parts = [];
@@ -240,27 +257,29 @@ final class Renderer
                 }
             }
         }
-        $summary = [];
+        $visible = [];
         $rest = [];
         foreach ($tables as $index => $table) {
             if ($coefficients[$index]) {
-                $summary[] = self::estimates($table, $model, $level, $doc);
-                $rest[] = self::coefficients($table, $level, $doc);
-            } else {
-                if ($index === $importance) {
-                    $summary[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, self::FEATURE_LIMIT, 'Model details');
+                $visible[] = self::coefficients($table, $model, $level, $doc);
+            } elseif ($index === $importance) {
+                $continued = self::shownRows($table, self::FEATURE_LIMIT, self::ROW_LIMIT) !== [];
+                $visible[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::FEATURE_LIMIT, $continued ? 'Model details' : null);
+                if ($continued) {
+                    $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, self::FEATURE_LIMIT, self::ROW_LIMIT, null);
                 }
-                $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, self::ROW_LIMIT, null);
+            } else {
+                $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::ROW_LIMIT, null);
             }
         }
-        if ($metrics !== []) {
-            $rest[] = self::metrics($metrics);
+        if ($stats !== []) {
+            $rest[] = self::metrics($stats);
         }
-        if ($summary === []) {
+        if ($visible === []) {
             return implode("\n", [...$parts, ...$rest]);
         }
 
-        return implode("\n", [...$parts, ...$summary, ...self::details('Model details', $rest)]);
+        return implode("\n", [...$parts, ...$visible, ...self::details('Model details', $rest)]);
     }
 
     private static function tableKind(array $doc): ?string
@@ -275,7 +294,7 @@ final class Renderer
         }
         $parts = [];
         foreach ($tables as $table) {
-            $parts[] = self::table($table, count($tables) > 1, false, $doc, Format::DATA_PLACES, self::ROW_LIMIT, null);
+            $parts[] = self::table($table, count($tables) > 1, false, $doc, Format::DATA_PLACES, 0, self::ROW_LIMIT, null);
         }
         $metrics = self::usableMetrics($data);
         if ($metrics !== []) {
@@ -341,7 +360,7 @@ final class Renderer
             $rest[] = self::pairs($extra);
         }
         foreach (self::usableTables($data) as $table) {
-            $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, self::ROW_LIMIT, null);
+            $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::ROW_LIMIT, null);
         }
         $metrics = self::usableMetrics($data);
         if ($metrics !== []) {
@@ -360,21 +379,140 @@ final class Renderer
         return array_values(array_filter(self::lst($value), fn ($entry) => self::isObject($entry) && self::text($entry['name'] ?? null) !== null));
     }
 
+    private static function familyLink(?string $family, ?string $link): ?string
+    {
+        if ($family !== null && $link !== null) {
+            return $family . ' family, ' . $link . ' link';
+        }
+        if ($family !== null) {
+            return $family . ' family';
+        }
+        if ($link !== null) {
+            return $link . ' link';
+        }
+
+        return null;
+    }
+
+    /**
+     * The common name for a model, from its type, family, link, and exponentiate label.
+     * The family and link appear only when the name does not imply them. Null for an unknown combination.
+     */
+    private static function modelName(array $model): ?string
+    {
+        $lower = fn (mixed $value): ?string => self::text($value) === null ? null : strtolower($value);
+        $type = $lower($model['type'] ?? null);
+        $family = $lower($model['family'] ?? null);
+        $link = $lower($model['link'] ?? null);
+        $withLink = fn (string $name, string $implied): string => $link === null || $link === $implied ? $name : $name . ' (' . $link . ' link)';
+        if ($type === 'linear') {
+            return 'Ordinary least squares regression';
+        }
+        if ($type === 'glm') {
+            if ($family === 'gaussian' && ($link === null || $link === 'identity')) {
+                return 'Ordinary least squares regression';
+            }
+            if ($family === 'binomial') {
+                return match (true) {
+                    $link === null || $link === 'logit' => 'Logistic regression',
+                    $link === 'probit' => 'Probit regression',
+                    $link === 'cloglog' => 'Complementary log-log regression',
+                    default => 'Binomial regression (' . $link . ' link)',
+                };
+            }
+            if ($family === 'poisson') {
+                return $withLink('Poisson regression', 'log');
+            }
+            if ($family === 'negative binomial') {
+                return $withLink('Negative binomial regression', 'log');
+            }
+            if ($family === 'gamma') {
+                return $link === null ? 'Gamma regression' : 'Gamma regression (' . $link . ' link)';
+            }
+            if ($family !== null && str_starts_with($family, 'quasi')) {
+                $rest = preg_replace('/^[- ]+/', '', substr($family, 5));
+
+                return $rest === '' ? 'Quasi-likelihood regression' : 'Quasi-' . ($rest === 'poisson' ? 'Poisson' : $rest) . ' regression';
+            }
+
+            return null;
+        }
+        if ($type === 'mixed') {
+            if ($family === null || $family === 'gaussian') {
+                return $withLink('Linear mixed model', 'identity');
+            }
+            if ($family === 'binomial') {
+                return match (true) {
+                    $link === null || $link === 'logit' => 'Logistic mixed model',
+                    $link === 'probit' => 'Probit mixed model',
+                    default => 'Binomial mixed model (' . $link . ' link)',
+                };
+            }
+            if ($family === 'poisson') {
+                return $withLink('Poisson mixed model', 'log');
+            }
+            if ($family === 'negative binomial') {
+                return $withLink('Negative binomial mixed model', 'log');
+            }
+            if ($family === 'gamma') {
+                return $link === null ? 'Gamma mixed model' : 'Gamma mixed model (' . $link . ' link)';
+            }
+
+            return null;
+        }
+        if ($type === 'survival') {
+            return self::text($model['exponentiate'] ?? null) === 'Hazard ratio' ? 'Cox proportional hazards model' : 'Parametric survival model';
+        }
+        if ($type === 'ordinal') {
+            return match (true) {
+                $link === null || $link === 'logit' => 'Ordinal logistic regression',
+                $link === 'probit' => 'Ordinal probit regression',
+                default => 'Ordinal regression (' . $link . ' link)',
+            };
+        }
+        if ($type === 'multinomial') {
+            return 'Multinomial logistic regression';
+        }
+        if ($type === 'additive') {
+            $detail = $family === null || $family === 'gaussian' ? null : self::familyLink($family, $link);
+
+            return $detail === null ? 'Generalized additive model' : 'Generalized additive model (' . $detail . ')';
+        }
+        if ($type === 'fixed_effects') {
+            if ($family === 'poisson') {
+                return 'Fixed-effects Poisson regression';
+            }
+            if ($family === 'binomial' && ($link === null || $link === 'logit')) {
+                return 'Fixed-effects logistic regression';
+            }
+
+            return 'Fixed-effects regression';
+        }
+
+        return match ($type) {
+            'quantile' => 'Quantile regression',
+            'linear_ml' => 'Linear model (machine learning)',
+            'tree_ensemble' => 'Tree ensemble',
+            default => null,
+        };
+    }
+
     private static function modelMeta(array $model): ?string
     {
         $parts = [];
-        $type = self::text($model['type'] ?? null);
-        if ($type !== null && $type !== 'other') {
-            $parts[] = self::MODEL_TYPES[$type] ?? $type;
-        }
-        $family = self::text($model['family'] ?? null);
-        $link = self::text($model['link'] ?? null);
-        if ($family !== null && $link !== null) {
-            $parts[] = $family . ' family, ' . $link . ' link';
-        } elseif ($family !== null) {
-            $parts[] = $family . ' family';
-        } elseif ($link !== null) {
-            $parts[] = $link . ' link';
+        $name = self::modelName($model);
+        if ($name !== null) {
+            $parts[] = $name;
+        } else {
+            // Unknown combinations: the type label, then the family and link as sent.
+            $type = self::text($model['type'] ?? null);
+            if ($type !== null && $type !== 'other') {
+                $parts[] = self::MODEL_TYPES[$type] ?? $type;
+            }
+            $detail = self::familyLink(self::text($model['family'] ?? null), self::text($model['link'] ?? null));
+            if ($detail !== null) {
+                $parts[] = $detail;
+            }
         }
         if (self::text($model['response'] ?? null) !== null) {
             $parts[] = 'Response: ' . $model['response'];
@@ -399,9 +537,9 @@ final class Renderer
         return is_array($row) && $index >= 0 && $index < count($row) ? $row[$index] : null;
     }
 
-    private static function shownRows(array $table, int $limit): array
+    private static function shownRows(array $table, int $start, int $end): array
     {
-        return array_values(array_filter(array_slice($table['rows'], 0, $limit), fn ($row) => is_array($row) && array_is_list($row)));
+        return array_values(array_filter(array_slice($table['rows'], $start, max(0, $end - $start)), fn ($row) => is_array($row) && array_is_list($row)));
     }
 
     private static function isDecimalColumn(array $rows, int $index): bool
@@ -469,28 +607,32 @@ final class Renderer
         return '<span class="fw-embed__num">' . self::e(Format::number($count)) . '</span>';
     }
 
-    /** $rest names the <details> that holds the remaining rows, or null to link to the artifact. */
-    private static function tableNotes(array $table, array $rows, array $doc, ?string $rest): array
+    /**
+     * $rest names the <details> that holds the remaining rows, or null to link to the artifact.
+     * $start is the index of the first row shown; a continuation names its row range.
+     */
+    private static function tableNotes(array $table, array $rows, int $start, array $doc, ?string $rest): array
     {
         $notes = [];
         $total = Format::isInteger($table['row_count'] ?? null) ? $table['row_count'] : count($table['rows']);
         $columnTotal = Format::isInteger($table['column_count'] ?? null) ? $table['column_count'] : count($table['columns']);
-        $parts = [];
-        if ($total > count($rows)) {
-            $parts[] = self::numberSpan(count($rows)) . ' of ' . self::numberSpan($total) . ' rows';
-        }
-        if ($rest === null && $columnTotal > count($table['columns'])) {
-            $parts[] = self::numberSpan(count($table['columns'])) . ' of ' . self::numberSpan($columnTotal) . ' columns';
-        }
-        if ($parts !== []) {
-            $href = self::safeUrl($doc['url'] ?? null);
-            $more = '';
-            if ($rest !== null) {
-                $more = ' More in ' . $rest . '.';
-            } elseif ($href !== null) {
-                $more = ' <a href="' . self::e($href) . '">View the full table</a>';
+        $href = self::safeUrl($doc['url'] ?? null);
+        $link = $href === null ? '' : ' <a href="' . self::e($href) . '">View the full table</a>';
+        if ($start > 0) {
+            $last = $start + count($rows);
+            $notes[] = '<p class="fw-embed__note">Showing rows ' . self::numberSpan($start + 1) . ' to ' . self::numberSpan($last)
+                . ' of ' . self::numberSpan($total) . '.' . ($total > $last ? $link : '') . '</p>';
+        } else {
+            $parts = [];
+            if ($total > count($rows)) {
+                $parts[] = self::numberSpan(count($rows)) . ' of ' . self::numberSpan($total) . ' rows';
             }
-            $notes[] = '<p class="fw-embed__note">Showing ' . implode(' and ', $parts) . '.' . $more . '</p>';
+            if ($rest === null && $columnTotal > count($table['columns'])) {
+                $parts[] = self::numberSpan(count($table['columns'])) . ' of ' . self::numberSpan($columnTotal) . ' columns';
+            }
+            if ($parts !== []) {
+                $notes[] = '<p class="fw-embed__note">Showing ' . implode(' and ', $parts) . '.' . ($rest !== null ? ' More in ' . $rest . '.' : $link) . '</p>';
+            }
         }
         if ($rest === null && self::text($table['precision_note'] ?? null) !== null) {
             $notes[] = '<p class="fw-embed__note">' . self::e($table['precision_note']) . '</p>';
@@ -499,13 +641,18 @@ final class Renderer
         return $notes;
     }
 
-    private static function table(array $table, bool $showCaption, bool $modelLabels, array $doc, int $places, int $limit, ?string $rest): string
+    /**
+     * Rows $start to $end (exclusive) of a data table. Decimal columns are judged on the first 25 rows,
+     * so a table split across the figure and its details formats both parts alike.
+     */
+    private static function table(array $table, bool $showCaption, bool $modelLabels, array $doc, int $places, int $start, int $end, ?string $rest): string
     {
-        $rows = self::shownRows($table, $limit);
+        $rows = self::shownRows($table, $start, $end);
+        $sample = self::shownRows($table, 0, self::ROW_LIMIT);
         $columns = $table['columns'];
         $decimal = [];
         foreach ($columns as $index => $column) {
-            $decimal[$index] = self::isDecimalColumn($rows, $index);
+            $decimal[$index] = self::isDecimalColumn($sample, $index);
         }
         $lines = self::openTable($table, $showCaption, null);
         $head = '';
@@ -521,7 +668,7 @@ final class Renderer
             }
             $lines[] = '<tr>' . $cells . '</tr>';
         }
-        array_push($lines, '</tbody>', '</table>', '</div>', ...self::tableNotes($table, $rows, $doc, $rest));
+        array_push($lines, '</tbody>', '</table>', '</div>', ...self::tableNotes($table, $rows, $start, $doc, $rest));
 
         return implode("\n", $lines);
     }
@@ -529,23 +676,24 @@ final class Renderer
     /** A coefficient table with the given columns: [header, numeric, fn (row) => text]. */
     private static function coefficientTable(array $table, array $doc, string $modifier, array $columns): string
     {
-        $rows = self::shownRows($table, self::ROW_LIMIT);
+        $rows = self::shownRows($table, 0, self::ROW_LIMIT);
         $term = self::columnIndex($table, 'term');
         $lines = self::openTable($table, true, $modifier);
         $head = self::th(self::columnLabel($table['columns'][$term], true), false);
         foreach ($columns as [$header, $numeric]) {
-            $head .= self::th($header, $numeric);
+            $head .= is_array($header) ? self::ratioTh($header) : self::th($header, $numeric);
         }
         $lines[] = '<thead><tr>' . $head . '</tr></thead>';
         $lines[] = '<tbody>';
         foreach ($rows as $row) {
             $cells = '<th scope="row">' . self::e(Format::value(self::cell($row, $term))) . '</th>';
             foreach ($columns as [, $numeric, $value]) {
-                $cells .= self::td($value($row), $numeric);
+                $shown = $value($row);
+                $cells .= is_array($shown) ? self::ratioTd($shown) : self::td($shown, $numeric);
             }
             $lines[] = '<tr>' . $cells . '</tr>';
         }
-        array_push($lines, '</tbody>', '</table>', '</div>', ...self::tableNotes($table, $rows, $doc, null));
+        array_push($lines, '</tbody>', '</table>', '</div>', ...self::tableNotes($table, $rows, 0, $doc, null));
 
         return implode("\n", $lines);
     }
@@ -553,7 +701,7 @@ final class Renderer
     /** Columns outside the standard set, such as a multinomial outcome, with their own formatting. */
     private static function extraColumns(array $table): array
     {
-        $rows = self::shownRows($table, self::ROW_LIMIT);
+        $rows = self::shownRows($table, 0, self::ROW_LIMIT);
         $columns = [];
         foreach ($table['columns'] as $index => $column) {
             if (in_array($column['name'], self::COEFFICIENT_COLUMNS, true)) {
@@ -588,8 +736,11 @@ final class Renderer
         };
     }
 
-    /** The default view: the estimate and its interval, or only the exponentiated estimate and its interval. */
-    private static function estimates(array $table, array $model, int|float|null $level, array $doc): string
+    /**
+     * The coefficient table: estimate, the exponentiated estimate with its interval when the model has one,
+     * std. error, statistic, p-value, and interval.
+     */
+    private static function coefficients(array $table, array $model, int|float|null $level, array $doc): string
     {
         $estimate = self::columnIndex($table, 'estimate');
         $term = self::columnIndex($table, 'term');
@@ -598,24 +749,11 @@ final class Renderer
         $interval = $low >= 0 && $high >= 0;
         $ratio = self::text($model['exponentiate'] ?? null);
         $columns = self::extraColumns($table);
+        $columns[] = ['Estimate', true, self::decimalCell($estimate)];
         if ($ratio !== null) {
-            $columns[] = [$interval ? $ratio . ' (' . self::intervalLabel($level) . ')' : $ratio, true,
+            $columns[] = [$interval ? [$ratio, self::intervalLabel($level)] : $ratio, true,
                 fn ($row) => self::ratioCell(self::cell($row, $estimate), $interval ? [self::cell($row, $low), self::cell($row, $high)] : null, self::cell($row, $term))];
-        } else {
-            $columns[] = ['Estimate', true, self::decimalCell($estimate)];
-            if ($interval) {
-                $columns[] = [self::intervalLabel($level), true, self::intervalCell($low, $high)];
-            }
         }
-
-        return self::coefficientTable($table, $doc, 'estimates', $columns);
-    }
-
-    /** The full table for Model details: estimate, std. error, statistic, p-value, and interval. */
-    private static function coefficients(array $table, int|float|null $level, array $doc): string
-    {
-        $columns = self::extraColumns($table);
-        $columns[] = ['Estimate', true, self::decimalCell(self::columnIndex($table, 'estimate'))];
         if (($error = self::columnIndex($table, 'std_error')) >= 0) {
             $columns[] = ['Std. error', true, self::decimalCell($error)];
         }
@@ -629,28 +767,42 @@ final class Renderer
                 return Format::isNumber($value) ? Format::pValue($value) : Format::value($value);
             }];
         }
-        $low = self::columnIndex($table, 'conf_low');
-        $high = self::columnIndex($table, 'conf_high');
-        if ($low >= 0 && $high >= 0) {
+        if ($interval) {
             $columns[] = [self::intervalLabel($level), true, self::intervalCell($low, $high)];
         }
 
         return self::coefficientTable($table, $doc, 'coefficients', $columns);
     }
 
-    /** An exponentiated estimate with its exponentiated interval. Intercepts show EMPTY. */
-    private static function ratioCell(mixed $estimate, ?array $bounds, mixed $term): string
+    /** An exponentiated estimate and its exponentiated interval, as [ratio, interval or null]. Intercepts show EMPTY. */
+    private static function ratioCell(mixed $estimate, ?array $bounds, mixed $term): array
     {
         if (! Format::isNumber($estimate) || (is_string($term) && self::isIntercept($term))) {
-            return Format::EMPTY;
+            return [Format::EMPTY, null];
         }
         $value = Format::number(Format::exp($estimate), true, Format::RESULT_PLACES);
         if ($bounds === null) {
-            return $value;
+            return [$value, null];
         }
         [$low, $high] = array_map(fn ($bound) => Format::isNumber($bound) ? Format::number(Format::exp($bound), true, Format::RESULT_PLACES) : Format::EMPTY, $bounds);
 
-        return $value . ' (' . $low . ' to ' . $high . ')';
+        return [$value, $low . ' to ' . $high];
+    }
+
+    /** The ratio label on one line and its interval label, in parentheses, on the next. */
+    private static function ratioTh(array $header): string
+    {
+        [$label, $interval] = $header;
+
+        return '<th scope="col" class="fw-embed__num">' . self::e($label) . ' <span class="fw-embed__ci">(' . self::e($interval) . ')</span></th>';
+    }
+
+    /** The ratio on one line and its interval, in parentheses, on the next. */
+    private static function ratioTd(array $shown): string
+    {
+        [$value, $interval] = $shown;
+
+        return '<td class="fw-embed__num">' . self::e($value) . ($interval === null ? '' : ' <span class="fw-embed__ci">(' . self::e($interval) . ')</span>') . '</td>';
     }
 
     private static function isIntercept(string $term): bool
@@ -694,7 +846,12 @@ final class Renderer
     {
         $lines = ['<dl class="fw-embed__stats">'];
         foreach ($pairs as [$term, $value, $numeric]) {
-            $lines[] = '<div><dt>' . self::e($term) . '</dt><dd' . ($numeric ? ' class="fw-embed__num"' : '') . '>' . self::e($value) . '</dd></div>';
+            if ($numeric) {
+                $lines[] = '<div><dt>' . self::e($term) . '</dt><dd class="fw-embed__num">' . self::e($value) . '</dd></div>';
+                continue;
+            }
+            $wide = preg_match_all('/./su', $value) > self::WIDE_TEXT ? ' fw-embed__stat--wide' : '';
+            $lines[] = '<div class="fw-embed__stat--text' . $wide . '"><dt>' . self::e($term) . '</dt><dd>' . self::e($value) . '</dd></div>';
         }
         $lines[] = '</dl>';
 

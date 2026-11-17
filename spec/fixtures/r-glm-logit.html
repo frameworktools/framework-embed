@@ -1,34 +1,23 @@
 <figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="rglmlogit0000000" data-fw-embed-version="1">
 <div class="fw-embed__body">
-<p class="fw-embed__meta">Generalized linear model · binomial family, logit link · Response: am</p>
+<p class="fw-embed__meta">Logistic regression · Response: am</p>
 <p class="fw-embed__formula"><code>am ~ wt + hp</code></p>
 <div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
-<table class="fw-embed__table fw-embed__table--estimates">
+<table class="fw-embed__table fw-embed__table--coefficients">
 <caption>Coefficients</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Odds ratio (95% CI)</th></tr></thead>
+<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">Odds ratio <span class="fw-embed__ci">(95% CI)</span></th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">Statistic</th><th scope="col" class="fw-embed__num">p-value</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
 <tbody>
-<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">—</td></tr>
-<tr><th scope="row">wt</th><td class="fw-embed__num">&lt; 0.01 (&lt; 0.01 to 0.13)</td></tr>
-<tr><th scope="row">hp</th><td class="fw-embed__num">1.04 (1.00 to 1.07)</td></tr>
+<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">18.87</td><td class="fw-embed__num">—</td><td class="fw-embed__num">7.44</td><td class="fw-embed__num">2.53</td><td class="fw-embed__num">0.011</td><td class="fw-embed__num">4.28 to 33.46</td></tr>
+<tr><th scope="row">wt</th><td class="fw-embed__num">-8.08</td><td class="fw-embed__num">&lt; 0.01 <span class="fw-embed__ci">(&lt; 0.01 to 0.13)</span></td><td class="fw-embed__num">3.07</td><td class="fw-embed__num">-2.63</td><td class="fw-embed__num">0.008</td><td class="fw-embed__num">-14.10 to -2.07</td></tr>
+<tr><th scope="row">hp</th><td class="fw-embed__num">0.04</td><td class="fw-embed__num">1.04 <span class="fw-embed__ci">(1.00 to 1.07)</span></td><td class="fw-embed__num">0.02</td><td class="fw-embed__num">2.04</td><td class="fw-embed__num">0.041</td><td class="fw-embed__num">&lt; 0.01 to 0.07</td></tr>
 </tbody>
 </table>
 </div>
 <details class="fw-embed__details">
 <summary>Model details</summary>
-<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
-<table class="fw-embed__table fw-embed__table--coefficients">
-<caption>Coefficients</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">Statistic</th><th scope="col" class="fw-embed__num">p-value</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
-<tbody>
-<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">18.87</td><td class="fw-embed__num">7.44</td><td class="fw-embed__num">2.53</td><td class="fw-embed__num">0.011</td><td class="fw-embed__num">4.28 to 33.46</td></tr>
-<tr><th scope="row">wt</th><td class="fw-embed__num">-8.08</td><td class="fw-embed__num">3.07</td><td class="fw-embed__num">-2.63</td><td class="fw-embed__num">0.008</td><td class="fw-embed__num">-14.10 to -2.07</td></tr>
-<tr><th scope="row">hp</th><td class="fw-embed__num">0.04</td><td class="fw-embed__num">0.02</td><td class="fw-embed__num">2.04</td><td class="fw-embed__num">0.041</td><td class="fw-embed__num">&lt; 0.01 to 0.07</td></tr>
-</tbody>
-</table>
-</div>
 <dl class="fw-embed__stats">
 <div><dt>Confidence level</dt><dd class="fw-embed__num">95%</dd></div>
-<div><dt>Interval method</dt><dd>Wald normal</dd></div>
+<div class="fw-embed__stat--text"><dt>Interval method</dt><dd>Wald normal</dd></div>
 <div><dt>Observations</dt><dd class="fw-embed__num">32</dd></div>
 <div><dt>AIC</dt><dd class="fw-embed__num">16.06</dd></div>
 <div><dt>BIC</dt><dd class="fw-embed__num">20.46</dd></div>
@@ -37,7 +26,7 @@
 <div><dt>Dispersion</dt><dd class="fw-embed__num">1</dd></div>
 <div><dt>Deviance</dt><dd class="fw-embed__num">10.06</dd></div>
 <div><dt>Null deviance</dt><dd class="fw-embed__num">43.23</dd></div>
-<div><dt>Converged</dt><dd>Yes</dd></div>
+<div class="fw-embed__stat--text"><dt>Converged</dt><dd>Yes</dd></div>
 </dl>
 </details>
 </div>

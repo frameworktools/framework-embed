@@ -129,39 +129,82 @@ The `<figure>` carries `data-fw-embed-key` when `key` is a non-empty string and 
 
 ### `model`
 
-A model shows its estimates. Everything else goes in a closed `<details class="fw-embed__details">` whose `<summary>` reads `Model details`. Readers can open it without JavaScript.
+A model shows each coefficient table once, in full. Everything else goes in a closed `<details class="fw-embed__details">` whose `<summary>` reads `Model details`. Readers can open it without JavaScript.
 
 Inside `fw-embed__body`, in order:
 
-1. `<p class="fw-embed__meta">`: the model type, family and link, and response, joined by ` · `. For example, `Generalized linear model · binomial family, logit link · Response: am`. Type labels: `linear` Linear model, `glm` Generalized linear model, `mixed` Mixed model, `survival` Survival model, `ordinal` Ordinal model, `multinomial` Multinomial model, `additive` Additive model, `fixed_effects` Fixed-effects model, `quantile` Quantile regression, `linear_ml` Linear model, `tree_ensemble` Tree ensemble. `other` is left out. Unknown types appear as sent.
-2. `<p class="fw-embed__formula"><code>`: `formula`, when present.
-3. An estimates table (`fw-embed__table--estimates`) for each coefficient table.
-4. The `Model details` disclosure, holding:
-   - the full coefficient table (`fw-embed__table--coefficients`) for each coefficient table;
-   - every other table (random effects, importance, smooth terms, ANOVA, and others) as a data table with model column labels, up to 25 rows;
+1. `<p class="fw-embed__meta">`: the model's common name and its response, joined by ` · `. For example, `Logistic regression · Response: am`. "Model names" below has the mapping.
+2. `<p class="fw-embed__formula"><code>`: `formula`, when present. Without a formula, a `command` metric with a string value takes this slot. That is how Stata models show the command that fit them, such as `regress price mpg weight i.foreign`. A string `command` metric never appears in the statistics, even when a formula is present.
+3. Each coefficient table (`fw-embed__table--coefficients`).
+4. The `Model details` disclosure, holding only what is left:
+   - every other table (random effects, smooth terms, ANOVA, and others) as a data table with model column labels, up to 25 rows;
    - `<dl class="fw-embed__stats">` with the metrics.
+
+   When nothing is left, the disclosure is omitted.
+
+#### Model names
+
+The name comes from `model.type`, `model.family`, and `model.link`, compared in ASCII lower case. The family and link appear only when the name does not imply them.
+
+| Type | Family and link | Name |
+|---|---|---|
+| `linear` | any | Ordinary least squares regression |
+| `glm` | gaussian, identity or no link | Ordinary least squares regression |
+| `glm` | binomial, logit or no link | Logistic regression |
+| `glm` | binomial, probit | Probit regression |
+| `glm` | binomial, cloglog | Complementary log-log regression |
+| `glm` | binomial, other link | Binomial regression ({link} link) |
+| `glm` | poisson | Poisson regression, with ({link} link) unless the link is log or absent |
+| `glm` | negative binomial | Negative binomial regression, with ({link} link) unless the link is log or absent |
+| `glm` | gamma | Gamma regression ({link} link), or Gamma regression without a link |
+| `glm` | quasi{rest} | Quasi-{rest} regression (Quasi-Poisson for quasipoisson), or Quasi-likelihood regression for `quasi` |
+| `mixed` | gaussian or no family | Linear mixed model, with ({link} link) unless the link is identity or absent |
+| `mixed` | binomial, logit or no link; probit; other | Logistic mixed model; Probit mixed model; Binomial mixed model ({link} link) |
+| `mixed` | poisson; negative binomial; gamma | Poisson mixed model; Negative binomial mixed model; Gamma mixed model, with the link as for `glm` |
+| `survival` | `exponentiate` is `Hazard ratio` | Cox proportional hazards model |
+| `survival` | otherwise | Parametric survival model |
+| `ordinal` | logit or no link; probit; other | Ordinal logistic regression; Ordinal probit regression; Ordinal regression ({link} link) |
+| `multinomial` | any | Multinomial logistic regression |
+| `additive` | gaussian or no family | Generalized additive model |
+| `additive` | other family | Generalized additive model ({family} family, {link} link) |
+| `fixed_effects` | poisson; binomial with logit or no link; other | Fixed-effects Poisson regression; Fixed-effects logistic regression; Fixed-effects regression |
+| `quantile` | any | Quantile regression |
+| `linear_ml` | any | Linear model (machine learning) |
+| `tree_ensemble` | any | Tree ensemble |
+
+Any other combination falls back to the type label, then `{family} family, {link} link` as sent. Type labels: `linear` Linear model, `glm` Generalized linear model, `mixed` Mixed model, `survival` Survival model, `ordinal` Ordinal model, `multinomial` Multinomial model, `additive` Additive model, `fixed_effects` Fixed-effects model, `quantile` Quantile regression, `linear_ml` Linear model, `tree_ensemble` Tree ensemble. Other types appear as sent, and `other` is left out. `spec/model-names.json` holds cases both renderers must reproduce.
 
 A table is a coefficient table when its `role` is `coefficients` (or it is the first table and has no role) and it has `term` and `estimate` columns.
 
-A model with no coefficient table but with an `importance` table shows that table's first 10 rows in place of item 3. Its note reads `Showing 10 of {row_count} rows. More in Model details.` The full table is also in the disclosure.
+A model with no coefficient table but with an `importance` table shows that table's first 10 rows in place of item 3. When the document has more rows, the disclosure continues the same table with rows 11 to 25 and the note `Showing rows 11 to 25 of {row_count}.`, linked to the artifact when rows remain. The visible part's note reads `Showing 10 of {row_count} rows. More in Model details.` Both parts judge decimal columns on the first 25 rows, so they format alike.
 
 A model with no coefficient or importance table shows its tables and metrics without a disclosure.
 
-Both coefficient tables start with Term, a row header (`<th scope="row">`). Next come any columns outside the standard set (`term`, `estimate`, `std_error`, `statistic`, `p_value`, `conf_low`, `conf_high`, `df`). The remaining columns depend on the table. Columns whose data is absent are left out.
+A coefficient table has these columns, in order. Columns whose data is absent are left out.
 
-- **Estimates table, without `model.exponentiate`:** Estimate, and the interval as `low to high` under `95% CI`.
-- **Estimates table, with `model.exponentiate`:** one column for the exponentiated estimate with its exponentiated interval. The header is the label with the interval, such as `Odds ratio (95% CI)`. The cell reads `exp(estimate) (exp(low) to exp(high))`, such as `1.04 (1.00 to 1.07)`. Without interval columns, the header is the label alone and the cell is `exp(estimate)`. The model-scale estimate is not shown. Intercept rows show `—`. A term is an intercept when, in ASCII lower case, it is `(intercept)`, `intercept`, `const`, or `_cons`.
-- **Full coefficient table:** Estimate, Std. error, Statistic, p-value, and the interval on the model's scale.
+- Term, a row header (`<th scope="row">`).
+- Any columns outside the standard set (`term`, `estimate`, `std_error`, `statistic`, `p_value`, `conf_low`, `conf_high`, `df`).
+- Estimate, on the model's scale.
+- When `model.exponentiate` is set, the exponentiated estimate with its exponentiated interval. The header is the label with the interval, such as `Odds ratio (95% CI)`, with the interval part in `<span class="fw-embed__ci">` as in the cells. The cell reads `exp(estimate) (exp(low) to exp(high))`, such as `1.04 (1.00 to 1.07)`. The interval part sits in `<span class="fw-embed__ci">`, which the stylesheet places on a second line: `<td class="fw-embed__num">1.04 <span class="fw-embed__ci">(1.00 to 1.07)</span></td>`. Without interval columns, the header is the label alone and the cell is `exp(estimate)`. Intercept rows show `—`. A term is an intercept when, in ASCII lower case, it is `(intercept)`, `intercept`, `const`, or `_cons`.
+- Std. error.
+- Statistic.
+- p-value.
+- The interval on the model's scale, as `low to high`.
 
-The interval header takes its level from the `confidence_level` metric. Without that metric, the header is `CI`. Estimates, ratios, standard errors, statistics, and bounds use result formatting with forced decimals. The ratio cell for the glm fixture's `wt` reads `< 0.01 (< 0.01 to 0.13)`.
-
-Statistic values (`<dd>`) carry `class="fw-embed__num"` when the value is a number: metric numbers and percents, and every test value except `Alternative`.
+The interval header takes its level from the `confidence_level` metric. Without that metric, the header is `CI`. Estimates, ratios, standard errors, statistics, and bounds use result formatting with forced decimals. The ratio cell for the glm fixture's `wt` reads `< 0.01 (< 0.01 to 0.13)`. On narrow screens the table scrolls inside its figure.
 
 `exp` is fdlibm's `exp`, computed with IEEE basic operations only, so the JS and PHP renderers agree bit for bit. Platform `exp` functions can differ in the last place.
 
 Metric labels: `nobs` Observations, `df_resid` Residual df, `df_model` Model df, `aic` AIC, `bic` BIC, `rsquared` and `r.squared` R², `rsquared_adj` and `adj.r.squared` Adjusted R², `pseudo_rsquared` Pseudo R², `sigma` Residual std. dev., `llf` and `log_likelihood` Log likelihood, `deviance` Deviance, `null.deviance` Null deviance, `dispersion` Dispersion, `converged` Converged, `reml` REML, `confidence_level` Confidence level, `interval_method` Interval method, `vcov_type` Standard errors, `n_estimators` Trees, `max_depth` Maximum depth, `learning_rate` Learning rate, `n_features` Features, `importance_type` Importance type, `objective` Objective, `n_events` Events, `concordance` Concordance, `theta` Theta, `command` Command. `n_groups.<factor>` becomes `Groups: <factor>`. Other names replace `_` and `.` with spaces and capitalize an initial ASCII letter.
 
 Metric values: `confidence_level` as a percent, `interval_method` `wald-t` as Wald t, `wald-normal` as Wald normal, `profile` as Profile likelihood, and `bootstrap` as Bootstrap. p-value names use p-value formatting. Other numbers use result formatting.
+
+Statistic pairs come in two forms:
+
+- a number, as `<div><dt>…</dt><dd class="fw-embed__num">…</dd></div>`, for metric numbers and percents and every test value except `Alternative`;
+- text, as `<div class="fw-embed__stat--text">`, for other values such as Standard errors and Interval method. The value uses the host font. When the value is longer than 24 characters (Unicode code points), the `<div>` also has `fw-embed__stat--wide`. That pair spans the grid row, with the label above the value.
+
+Labels wrap only between words.
 
 ### `table`
 

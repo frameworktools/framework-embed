@@ -1,20 +1,7 @@
 <figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="stataregress0000" data-fw-embed-version="1">
 <div class="fw-embed__body">
-<p class="fw-embed__meta">Linear model · gaussian family, identity link · Response: price</p>
-<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
-<table class="fw-embed__table fw-embed__table--estimates">
-<caption>Coefficients</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
-<tbody>
-<tr><th scope="row">mpg</th><td class="fw-embed__num">21.85</td><td class="fw-embed__num">-126.18 to 169.88</td></tr>
-<tr><th scope="row">weight</th><td class="fw-embed__num">3.46</td><td class="fw-embed__num">2.21 to 4.72</td></tr>
-<tr><th scope="row">1.foreign</th><td class="fw-embed__num">3673.06</td><td class="fw-embed__num">2308.91 to 5037.21</td></tr>
-<tr><th scope="row">(Intercept)</th><td class="fw-embed__num">-5853.70</td><td class="fw-embed__num">-12,588.88 to 881.49</td></tr>
-</tbody>
-</table>
-</div>
-<details class="fw-embed__details">
-<summary>Model details</summary>
+<p class="fw-embed__meta">Ordinary least squares regression · Response: price</p>
+<p class="fw-embed__formula"><code>regress price mpg weight i.foreign</code></p>
 <div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
 <table class="fw-embed__table fw-embed__table--coefficients">
 <caption>Coefficients</caption>
@@ -27,6 +14,8 @@
 </tbody>
 </table>
 </div>
+<details class="fw-embed__details">
+<summary>Model details</summary>
 <dl class="fw-embed__stats">
 <div><dt>Observations</dt><dd class="fw-embed__num">74</dd></div>
 <div><dt>Model df</dt><dd class="fw-embed__num">3</dd></div>
@@ -37,10 +26,9 @@
 <div><dt>AIC</dt><dd class="fw-embed__num">1348.20</dd></div>
 <div><dt>BIC</dt><dd class="fw-embed__num">1357.41</dd></div>
 <div><dt>Log likelihood</dt><dd class="fw-embed__num">-670.10</dd></div>
-<div><dt>Standard errors</dt><dd>ols</dd></div>
+<div class="fw-embed__stat--text"><dt>Standard errors</dt><dd>ols</dd></div>
 <div><dt>Confidence level</dt><dd class="fw-embed__num">95%</dd></div>
-<div><dt>Interval method</dt><dd>Wald t</dd></div>
-<div><dt>Command</dt><dd>regress price mpg weight i.foreign</dd></div>
+<div class="fw-embed__stat--text"><dt>Interval method</dt><dd>Wald t</dd></div>
 </dl>
 </details>
 </div>

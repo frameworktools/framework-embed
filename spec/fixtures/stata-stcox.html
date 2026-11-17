@@ -1,30 +1,20 @@
 <figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="statastcox000000" data-fw-embed-version="1">
 <div class="fw-embed__body">
-<p class="fw-embed__meta">Survival model · Response: _t</p>
+<p class="fw-embed__meta">Cox proportional hazards model · Response: _t</p>
+<p class="fw-embed__formula"><code>stcox i.drug age</code></p>
 <div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
-<table class="fw-embed__table fw-embed__table--estimates">
+<table class="fw-embed__table fw-embed__table--coefficients">
 <caption>Coefficients</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Hazard ratio (95% CI)</th></tr></thead>
+<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">Hazard ratio <span class="fw-embed__ci">(95% CI)</span></th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">Statistic</th><th scope="col" class="fw-embed__num">p-value</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
 <tbody>
-<tr><th scope="row">2.drug</th><td class="fw-embed__num">0.18 (0.07 to 0.48)</td></tr>
-<tr><th scope="row">3.drug</th><td class="fw-embed__num">0.05 (0.01 to 0.19)</td></tr>
-<tr><th scope="row">age</th><td class="fw-embed__num">1.12 (1.04 to 1.20)</td></tr>
+<tr><th scope="row">2.drug</th><td class="fw-embed__num">-1.71</td><td class="fw-embed__num">0.18 <span class="fw-embed__ci">(0.07 to 0.48)</span></td><td class="fw-embed__num">0.49</td><td class="fw-embed__num">-3.46</td><td class="fw-embed__num">&lt; 0.001</td><td class="fw-embed__num">-2.68 to -0.74</td></tr>
+<tr><th scope="row">3.drug</th><td class="fw-embed__num">-2.96</td><td class="fw-embed__num">0.05 <span class="fw-embed__ci">(0.01 to 0.19)</span></td><td class="fw-embed__num">0.66</td><td class="fw-embed__num">-4.51</td><td class="fw-embed__num">&lt; 0.001</td><td class="fw-embed__num">-4.24 to -1.67</td></tr>
+<tr><th scope="row">age</th><td class="fw-embed__num">0.11</td><td class="fw-embed__num">1.12 <span class="fw-embed__ci">(1.04 to 1.20)</span></td><td class="fw-embed__num">0.04</td><td class="fw-embed__num">3.06</td><td class="fw-embed__num">0.002</td><td class="fw-embed__num">0.04 to 0.18</td></tr>
 </tbody>
 </table>
 </div>
 <details class="fw-embed__details">
 <summary>Model details</summary>
-<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
-<table class="fw-embed__table fw-embed__table--coefficients">
-<caption>Coefficients</caption>
-<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Estimate</th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">Statistic</th><th scope="col" class="fw-embed__num">p-value</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
-<tbody>
-<tr><th scope="row">2.drug</th><td class="fw-embed__num">-1.71</td><td class="fw-embed__num">0.49</td><td class="fw-embed__num">-3.46</td><td class="fw-embed__num">&lt; 0.001</td><td class="fw-embed__num">-2.68 to -0.74</td></tr>
-<tr><th scope="row">3.drug</th><td class="fw-embed__num">-2.96</td><td class="fw-embed__num">0.66</td><td class="fw-embed__num">-4.51</td><td class="fw-embed__num">&lt; 0.001</td><td class="fw-embed__num">-4.24 to -1.67</td></tr>
-<tr><th scope="row">age</th><td class="fw-embed__num">0.11</td><td class="fw-embed__num">0.04</td><td class="fw-embed__num">3.06</td><td class="fw-embed__num">0.002</td><td class="fw-embed__num">0.04 to 0.18</td></tr>
-</tbody>
-</table>
-</div>
 <dl class="fw-embed__stats">
 <div><dt>Observations</dt><dd class="fw-embed__num">48</dd></div>
 <div><dt>Events</dt><dd class="fw-embed__num">31</dd></div>
@@ -32,11 +22,10 @@
 <div><dt>AIC</dt><dd class="fw-embed__num">169.31</dd></div>
 <div><dt>BIC</dt><dd class="fw-embed__num">174.92</dd></div>
 <div><dt>Log likelihood</dt><dd class="fw-embed__num">-81.65</dd></div>
-<div><dt>Converged</dt><dd>Yes</dd></div>
-<div><dt>Standard errors</dt><dd>oim</dd></div>
+<div class="fw-embed__stat--text"><dt>Converged</dt><dd>Yes</dd></div>
+<div class="fw-embed__stat--text"><dt>Standard errors</dt><dd>oim</dd></div>
 <div><dt>Confidence level</dt><dd class="fw-embed__num">95%</dd></div>
-<div><dt>Interval method</dt><dd>Wald normal</dd></div>
-<div><dt>Command</dt><dd>stcox i.drug age</dd></div>
+<div class="fw-embed__stat--text"><dt>Interval method</dt><dd>Wald normal</dd></div>
 </dl>
 </details>
 </div>

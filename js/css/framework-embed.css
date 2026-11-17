@@ -108,7 +108,6 @@
     font-variant-numeric: tabular-nums lining-nums;
     margin: 0;
 }
-.fw-embed__table--estimates { width: auto; min-width: min(100%, 24em); }
 .fw-embed__table caption {
     position: sticky;
     left: 0;
@@ -119,7 +118,7 @@
 }
 .fw-embed__table th,
 .fw-embed__table td {
-    padding: 0.5em 0.875em;
+    padding: 0.5em 0.625em;
     border-bottom: 1px solid var(--fw-embed-rule);
     text-align: left;
     vertical-align: top;
@@ -138,13 +137,14 @@
 .fw-embed__table tbody th { font-weight: 500; }
 .fw-embed__table tbody tr:last-child > * { border-bottom: 0; }
 .fw-embed__table .fw-embed__num { text-align: right; }
+/* An exponentiated interval sits under its ratio. */
+.fw-embed__table .fw-embed__ci { display: block; color: var(--fw-embed-muted); font-size: 0.92em; }
 
 /* Narrow figures (phones): tighter cells, so short tables fit without scrolling. */
 @container (max-width: 26em) {
     .fw-embed__table th,
     .fw-embed__table td { padding: 0.5em 0.375em; }
     .fw-embed td.fw-embed__num { font-size: 0.88em; letter-spacing: -0.02em; }
-    .fw-embed__table--estimates { width: 100%; min-width: 0; }
 }
 
 /* Statistics: label and value pairs in a responsive grid. */
@@ -154,9 +154,15 @@
     gap: 0.25em 2em;
     font-size: calc(0.8125em / 0.875);
 }
-.fw-embed__stats > div { display: flex; justify-content: space-between; gap: 1em; border-bottom: 1px solid var(--fw-embed-rule); padding: 0.375em 0; min-width: 0; }
-.fw-embed__stats dt { color: var(--fw-embed-muted); overflow-wrap: anywhere; }
-.fw-embed__stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums lining-nums; }
+.fw-embed__stats > div { display: flex; align-items: baseline; justify-content: space-between; gap: 0.25em 1em; border-bottom: 1px solid var(--fw-embed-rule); padding: 0.375em 0; min-width: 0; }
+/* Labels wrap only between words. */
+.fw-embed__stats dt { flex: 1 1 auto; color: var(--fw-embed-muted); overflow-wrap: normal; word-break: normal; hyphens: none; }
+.fw-embed__stats dd { flex: 0 0 auto; margin: 0; text-align: right; white-space: nowrap; }
+/* Text values (Standard errors, Interval method) use the host font and may wrap. */
+.fw-embed__stats .fw-embed__stat--text dd { flex: 0 1 auto; min-width: 0; white-space: normal; overflow-wrap: break-word; }
+/* Long text values take a full row, with the label above the value. */
+.fw-embed__stats .fw-embed__stat--wide { grid-column: 1 / -1; flex-direction: column; align-items: flex-start; }
+.fw-embed__stats .fw-embed__stat--wide dd { text-align: left; overflow-wrap: anywhere; }
 
 /* Secondary results: a native disclosure, closed by default. */
 .fw-embed__details { min-width: 0; }

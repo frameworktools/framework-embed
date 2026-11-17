@@ -4,7 +4,7 @@ Renderers that show Framework artifacts on any website without iframes. A Framew
 
 Supported artifacts:
 
-- regression models: estimates with their confidence intervals, or odds, hazard, and rate ratios with theirs. Standard errors, test statistics, p-values, other tables, and fit statistics sit in a closed "Model details" disclosure;
+- regression models: one coefficient table with estimates, odds, hazard, or rate ratios when the model has them, standard errors, statistics, p-values, and confidence intervals. Fit statistics and other tables sit in a closed "Model details" disclosure;
 - tables, with the first 25 rows;
 - hypothesis tests: the statistic, p-value, and estimate with its interval, with the rest under "Test details";
 - figures (SVG, PNG, JPEG, GIF, and WebP);
@@ -62,13 +62,15 @@ mount(document.querySelector('#figure'), doc); // render and draw charts
 
 See `js/index.d.ts` for the full API.
 
-For the logistic regression in `spec/fixtures/r-glm-logit.json`, the visible table reads:
+For the logistic regression in `spec/fixtures/r-glm-logit.json`, the coefficient table reads:
 
-| Term | Odds ratio (95% CI) |
-|---|---|
-| (Intercept) | — |
-| wt | < 0.01 (< 0.01 to 0.13) |
-| hp | 1.04 (1.00 to 1.07) |
+| Term | Estimate | Odds ratio (95% CI) | Std. error | Statistic | p-value | 95% CI |
+|---|---|---|---|---|---|---|
+| (Intercept) | 18.87 | — | 7.44 | 2.53 | 0.011 | 4.28 to 33.46 |
+| wt | -8.08 | < 0.01 (< 0.01 to 0.13) | 3.07 | -2.63 | 0.008 | -14.10 to -2.07 |
+| hp | 0.04 | 1.04 (1.00 to 1.07) | 0.02 | 2.04 | 0.041 | < 0.01 to 0.07 |
+
+The fit statistics sit in a closed "Model details" disclosure below it.
 
 Model and test results use two decimal places. Data tables use three. Nothing uses scientific notation. `SPEC.md` defines both rules.
 
