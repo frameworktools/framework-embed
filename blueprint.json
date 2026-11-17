@@ -1,0 +1,10 @@
+{
+  "$schema": "https://playground.wordpress.net/blueprint-schema.json",
+  "landingPage": "/wp-admin/post-new.php",
+  "login": true,
+  "features": { "networking": true },
+  "preferredVersions": { "php": "8.3", "wp": "latest" },
+  "steps": [
+    { "step": "installPlugin", "pluginData": { "resource": "url", "url": "https://frameworktools.github.io/framework-embed/framework-embed-0.2.0.zip" } }
+  ]
+}

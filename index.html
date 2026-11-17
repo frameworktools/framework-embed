@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Framework embeds demo</title>
+<link rel="stylesheet" href="framework-embed.css">
+<style>
+:root{color-scheme:light dark}
+body{font-family:Georgia,serif;line-height:1.6;max-width:760px;margin:2rem auto;padding:0 16px;background:#fff;color:#1f2229}
+@media (prefers-color-scheme:dark){body{background:#111317;color:#e6e6e6}}
+code{font-size:.9em}
+</style>
+</head>
+<body>
+<h1>Framework embeds demo</h1>
+<p>This page loads <code>framework-embed.iife.js</code> and fetches each artifact live from framework.pub.</p>
+<pre><code>&lt;framework-artifact src="https://framework.pub/d/KEY"&gt;&lt;/framework-artifact&gt;</code></pre>
+<h2>Model</h2>
+<framework-artifact src="https://framework.pub/d/fkbeu8cmjsx7qd9tiv4ozgpg"><a href="https://framework.pub/d/fkbeu8cmjsx7qd9tiv4ozgpg">Penguin body mass model</a></framework-artifact>
+<h2>Figure</h2>
+<framework-artifact src="https://framework.pub/d/n5phleru2veruae2m9glxrjg"><a href="https://framework.pub/d/n5phleru2veruae2m9glxrjg">Flipper length and body mass</a></framework-artifact>
+<p><a href="https://playground.wordpress.net/?blueprint-url=https://frameworktools.github.io/framework-embed/blueprint.json">Try the WordPress plugin in Playground</a></p>
+<script src="framework-embed.iife.js" defer></script>
+</body>
+</html>
