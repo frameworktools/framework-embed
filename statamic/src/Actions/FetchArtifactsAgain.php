@@ -15,7 +15,7 @@ use Statamic\Contracts\Entries\Entry;
  */
 class FetchArtifactsAgain extends Action
 {
-    protected static $title = 'Fetch Framework artifacts again';
+    protected static $title = 'Fetch stored Framework artifact versions again';
 
     /** Fetch the newest version instead of the pinned one. */
     protected bool $newest = false;
@@ -34,7 +34,7 @@ class FetchArtifactsAgain extends Action
     {
         return $this->newest
             ? 'Fetch the newest version of each Framework artifact in this entry and replace its stored copy?|Fetch the newest version of each Framework artifact in these :count entries and replace their stored copies?'
-            : 'Fetch each Framework artifact in this entry again and replace its stored copy?|Fetch each Framework artifact in these :count entries again and replace their stored copies?';
+            : 'Fetch the stored version of each Framework artifact in this entry again and replace its stored copy?|Fetch the stored version of each Framework artifact in these :count entries again and replace their stored copies?';
     }
 
     /** @return list<string> Handles of framework_artifact fields that hold a URL. */

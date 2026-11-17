@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 6.9
 Requires PHP: 8.1
-Stable tag: 0.3.3
+Stable tag: 0.3.4
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -21,7 +21,7 @@ Supported URLs:
 
 You can embed an artifact in three ways:
 
-* Insert the **Framework artifact** block and enter the artifact URL to store a copy with the post.
+* Insert the **Framework artifact** block and enter the artifact URL to store a copy of that version with the post.
 * Paste the artifact URL on its own line in the block editor or classic editor.
 * Add the shortcode `[framework_artifact url="https://framework.pub/d/…"]`.
 
@@ -82,6 +82,9 @@ Yes. Override custom properties such as `--fw-embed-font`, `--fw-embed-mono`, `-
 A bare host name such as `framework.example.org` allows HTTPS on the default port. An origin such as `http://localhost:8000` allows that exact scheme, host, and port. IP addresses and URL paths are rejected.
 
 == Changelog ==
+
+= 0.3.4 =
+* Clearer wording in the block, the settings page, and the documentation.
 
 = 0.3.3 =
 * SVG figures fill the width of the embed, and tall figures stop at 80 percent of the window height.

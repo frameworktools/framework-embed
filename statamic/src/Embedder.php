@@ -165,7 +165,7 @@ class Embedder
     public static function message(EmbedException $e): string
     {
         return match ($e->reason) {
-            EmbedException::NOT_ALLOWED => __('This URL is not a Framework artifact on an allowed host.'),
+            EmbedException::NOT_ALLOWED => __('This URL is not a Framework artifact on an allowed host. Add self-hosted Framework Cloud servers in config/framework-embed.php.'),
             self::GONE => __('This Framework artifact is private, password-protected, or deleted.'),
             default => __('The Framework Cloud server could not be reached, or it returned an invalid embed response. Try again later.'),
         };

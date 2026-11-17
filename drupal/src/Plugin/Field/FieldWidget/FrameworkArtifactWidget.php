@@ -42,7 +42,7 @@ final class FrameworkArtifactWidget extends WidgetBase {
       '#title' => $this->t('Artifact URL'),
       '#default_value' => $url,
       '#maxlength' => 2048,
-      '#description' => $this->t('Enter the URL of a public or unlisted artifact on framework.pub or an allowed Framework Cloud server. Saving fetches the artifact and stores a copy with this content.'),
+      '#description' => $this->t('Enter the URL of a public or unlisted artifact on framework.pub or an allowed Framework Cloud server. Saving fetches the artifact and stores a copy of that version with this content.'),
       '#required' => $element['#required'] ?? FALSE,
     ];
     foreach (['embed_url', 'document', 'fetched_at', 'removed'] as $property) {
@@ -128,7 +128,7 @@ final class FrameworkArtifactWidget extends WidgetBase {
       $target = $embedder->newestUrl($target) ?? $target;
     }
     if (!$embedder->isArtifactUrl($target)) {
-      $form_state->setError($element['url'], t('This URL is not a Framework artifact on an allowed host.'));
+      $form_state->setError($element['url'], t('This URL is not a Framework artifact on an allowed host. Administrators add Framework Cloud servers under Configuration → Content authoring → Framework embeds.'));
       return;
     }
     try {

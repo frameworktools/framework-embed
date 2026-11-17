@@ -46,10 +46,10 @@ Enable **Embed Framework artifacts** on a text format after **Limit allowed HTML
 
 Live embeds never block page rendering on network requests:
 
-- **No cached copy.** Renders a plain link and queues a refresh. The refresh runs after the response is sent (`needs_destruction`), with cron processing the `framework_embed_refresh` queue as a fallback.
-- **Fresh copy.** Renders the artifact with `max-age` set to the remaining `Cache-Control` lifetime.
-- **Expired copy.** Renders the cached artifact and schedules a background refresh. Copies persist for seven days past `max-age` to support stale-while-revalidate rendering.
-- **`404` or `410` response.** Removes the cached copy and renders a plain link.
+- **No cached copy.** The module renders a plain link and queues a refresh. The refresh runs after the response is sent (`needs_destruction`), with cron processing the `framework_embed_refresh` queue as a fallback.
+- **Fresh copy.** The module renders the artifact with `max-age` set to the remaining `Cache-Control` lifetime.
+- **Expired copy.** The module renders the cached artifact and schedules a background refresh. Copies persist for seven days past `max-age` to support stale-while-revalidate rendering.
+- **`404` or `410` response.** The refresh removes the cached copy and leaves a plain link.
 
 Each embed carries the cache tag `framework_embed_url:<hash>`, invalidated when its cached copy updates. Because Drupal's Internal Page Cache ignores `max-age`, `hook_cron` also invalidates the `framework_embed` tag once per configured cache lifetime.
 

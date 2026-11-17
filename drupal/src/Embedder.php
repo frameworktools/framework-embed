@@ -185,7 +185,7 @@ class Embedder implements TrustedCallbackInterface, DestructableInterface {
       'max-age' => 0,
     ];
     if (!$this->isArtifactUrl($url)) {
-      return ['link' => $this->link($url)] + $this->notice($this->t('This URL is not a Framework artifact on an allowed host.'), $url, $cache);
+      return ['link' => $this->link($url)] + $this->notice($this->t('This URL is not a Framework artifact on an allowed host. Administrators add Framework Cloud servers under Configuration → Content authoring → Framework embeds.'), $url, $cache);
     }
 
     $entry = $this->cache->get($this->cid('live', $url));

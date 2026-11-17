@@ -44,7 +44,7 @@ artifact:
 
 `document` holds the raw embed JSON, and `embed_url` pins the version URL. Saving an entry without changing the URL preserves the stored copy. Missing, unreachable, or disallowed URLs fail validation.
 
-Two entry actions update stored copies after confirmation: **Fetch Framework artifacts again** re-fetches the pinned version, and **Use newest Framework artifact versions** fetches the latest version. Both appear in the entry listing and the entry actions menu.
+Two entry actions update stored copies after confirmation: **Fetch stored Framework artifact versions again** re-fetches the pinned version, and **Use newest Framework artifact versions** fetches the latest version. Both appear in the entry listing and the entry actions menu.
 
 Render a stored artifact in Antlers:
 
@@ -65,10 +65,10 @@ The `framework_embeds` modifier replaces any paragraph in rendered Bard or Markd
 
 Live embeds never block page rendering on network requests:
 
-- **No cached copy.** Renders a link and dispatches a refresh via `dispatch()->afterResponse()`, or onto the queue when `refresh` is `queue`.
-- **Fresh copy.** Renders the cached artifact.
-- **Expired copy.** Renders the cached artifact and schedules a background refresh. Copies persist for seven days past `max-age` to support stale-while-revalidate rendering.
-- **`404` or `410` response.** Removes the cached copy and renders a plain link.
+- **No cached copy.** The addon renders a link and dispatches a refresh via `dispatch()->afterResponse()`, or onto the queue when `refresh` is `queue`.
+- **Fresh copy.** The addon renders the cached artifact.
+- **Expired copy.** The addon renders the cached artifact and schedules a background refresh. Copies persist for seven days past `max-age` to support stale-while-revalidate rendering.
+- **`404` or `410` response.** The refresh removes the cached copy and leaves a plain link.
 
 With static caching enabled, a page cached while showing a link retains that link until the static cache is cleared. Prefer the `framework_artifact` fieldtype on statically cached pages.
 

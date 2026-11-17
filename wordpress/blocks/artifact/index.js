@@ -147,7 +147,7 @@
 						{
 							icon: 'chart-bar',
 							label: __( 'Framework artifact', 'framework-embed' ),
-							instructions: __( 'Paste the URL of a public or unlisted artifact. A copy is stored with the post.', 'framework-embed' ),
+							instructions: __( 'Paste the URL of a public or unlisted artifact. The block stores a copy of that version with the post.', 'framework-embed' ),
 						},
 						error,
 						el( UrlForm, { url: '', busy: busy, onSubmit: insert } )
@@ -159,7 +159,7 @@
 			var stored = doc
 				? sprintf(
 						/* translators: 1: version number, 2: date and time the copy was fetched. */
-						__( 'Version %1$s, fetched %2$s.', 'framework-embed' ),
+						__( 'This block stores version %1$s, fetched %2$s.', 'framework-embed' ),
 						doc.version,
 						attributes.fetchedAt ? new Date( attributes.fetchedAt ).toLocaleString() : '—'
 				  )

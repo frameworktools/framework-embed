@@ -161,7 +161,7 @@ final class Framework_Embed_Settings {
 						<td>
 							<input type="hidden" name="<?php echo esc_attr( Framework_Embed_Stored::TAKEDOWN_OPTION ); ?>" value="0">
 							<label><input type="checkbox" name="<?php echo esc_attr( Framework_Embed_Stored::TAKEDOWN_OPTION ); ?>" value="1" <?php checked( Framework_Embed_Stored::takedown_enabled() ); ?>> <?php esc_html_e( 'Remove stored copies when an artifact is deleted or restricted', 'framework-embed' ); ?></label>
-							<p class="description"><?php esc_html_e( 'Checks stored artifacts on allowed hosts once a day. If the server returns 404 or 410, the stored copy is replaced with a link. Timeouts and server errors leave the stored copy unchanged.', 'framework-embed' ); ?></p>
+							<p class="description"><?php esc_html_e( 'WP-Cron checks stored artifacts on allowed hosts once a day. If the server returns 404 or 410, the stored copy is replaced with a link. Timeouts and server errors leave the stored copy unchanged.', 'framework-embed' ); ?></p>
 						</td>
 					</tr>
 				</table>

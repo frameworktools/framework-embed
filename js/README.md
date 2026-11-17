@@ -1,6 +1,6 @@
 # @framework-cloud/embed
 
-`@framework-cloud/embed` renders Framework Cloud embed documents (`framework.embed/v1`) as static HTML with no runtime dependencies. The package includes a `<framework-artifact>` custom element, a lazy Vega-Lite chart loader, and a stylesheet.
+`@framework-cloud/embed` renders Framework Cloud embed documents (`framework.embed/v1`) as static HTML with no npm dependencies. The package includes a `<framework-artifact>` custom element, a lazy Vega-Lite chart loader, and a stylesheet.
 
 ## Builds
 

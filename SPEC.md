@@ -14,10 +14,10 @@ A Framework Cloud server serves these public, cookie-free routes:
 | `GET /api/embed/v1/artifacts/{key}` | Embed document for the newest version |
 | `GET /api/embed/v1/artifacts/{key}/versions/{n}` | Embed document for version `n` |
 | `GET /api/embed/v1/artifacts/{key}/versions/{n}/image` | Figure file for image artifacts, which may redirect to a signed file URL |
-| `GET /api/oembed?url=…&format=json` | oEmbed 1.0 `photo` response for images, or `link` for other kinds |
+| `GET /api/oembed?url=…&format=json` | oEmbed 1.0 `photo` response for images with known dimensions, or `link` for other artifacts |
 | `GET /.well-known/framework.json` | Discovery document listing the routes above |
 
-Private, password-protected, missing, and deleted artifacts return `404` with `Cache-Control: no-store`. Version URLs send `Cache-Control: public, max-age=3600`. Newest-version and resolve URLs send `Cache-Control: public, max-age=300`.
+Private, password-protected, missing, and deleted artifacts return `404` with `Cache-Control: no-store`. Version URLs send `Cache-Control: public, max-age=3600`. Newest-version URLs send `Cache-Control: public, max-age=300`. Resolve and oEmbed responses send `max-age=3600` when the requested URL names a version and `max-age=300` otherwise.
 
 ## Embed document: `framework.embed/v1`
 
