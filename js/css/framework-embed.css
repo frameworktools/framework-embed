@@ -106,8 +106,8 @@
     font-size: 0.875em;
 }
 .fw-embed__stats > div { display: flex; justify-content: space-between; gap: 1em; border-bottom: 1px solid var(--fw-embed-border); padding-bottom: 0.25em; min-width: 0; }
-.fw-embed__stats dt { color: var(--fw-embed-muted); overflow-wrap: anywhere; }
-.fw-embed__stats dd { margin: 0; text-align: right; font-variant-numeric: tabular-nums lining-nums; white-space: nowrap; }
+.fw-embed__stats dt { color: var(--fw-embed-muted); flex: 0 1 auto; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.fw-embed__stats dd { margin: 0; min-width: 0; text-align: right; font-variant-numeric: tabular-nums lining-nums; overflow-wrap: anywhere; }
 
 /* Figures assume a white background in both themes. */
 .fw-embed__media { background: #fff; border-radius: 0.375em; padding: 0.5em; line-height: 0; }

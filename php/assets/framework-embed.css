@@ -150,13 +150,17 @@
 }
 .fw-embed__stats dt {
   color: var(--fw-embed-muted);
-  overflow-wrap: anywhere;
+  flex: 0 1 auto;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 .fw-embed__stats dd {
   margin: 0;
+  min-width: 0;
   text-align: right;
   font-variant-numeric: tabular-nums lining-nums;
-  white-space: nowrap;
+  overflow-wrap: anywhere;
 }
 .fw-embed__media {
   background: #fff;
