@@ -293,5 +293,32 @@
    "response": "y"
   },
   "meta": "Spline · log link · Outcome: y"
+ },
+ {
+  "model": {
+   "type": "glm",
+   "family": "binomial",
+   "link": "logit",
+   "response": "voted",
+   "inference": "bayesian"
+  },
+  "meta": "Bayesian logistic regression · Outcome: voted"
+ },
+ {
+  "model": {
+   "type": "glm",
+   "family": "poisson",
+   "link": "log",
+   "response": "visits",
+   "inference": "bayesian"
+  },
+  "meta": "Bayesian Poisson regression · Outcome: visits"
+ },
+ {
+  "model": {
+   "type": "other",
+   "inference": "bayesian"
+  },
+  "meta": "Bayesian model"
  }
 ]

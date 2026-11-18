@@ -25,7 +25,11 @@ final class Renderer
         'term' => 'Term', 'estimate' => 'Estimate', 'std_error' => 'Std. error', 'statistic' => 'Statistic', 'p_value' => 'p-value',
         'conf_low' => 'CI lower', 'conf_high' => 'CI upper', 'group' => 'Group', 'variance' => 'Variance', 'std_dev' => 'Std. dev.',
         'correlation' => 'Correlation', 'feature' => 'Feature', 'importance' => 'Importance', 'edf' => 'EDF', 'ref_df' => 'Ref. df', 'df' => 'df',
+        'rhat' => 'R-hat', 'ess_bulk' => 'Bulk ESS', 'ess_tail' => 'Tail ESS', 'parameter' => 'Parameter', 'prior' => 'Prior', 'source' => 'Source',
     ];
+
+    /** Bayesian models summarize the posterior: the same columns, named for what they hold. */
+    private const BAYESIAN_LABELS = ['estimate' => 'Posterior mean', 'std_error' => 'Posterior SD', 'conf_low' => 'CrI lower', 'conf_high' => 'CrI upper'];
 
     private const METRIC_LABELS = [
         'nobs' => 'Observations', 'df_resid' => 'Residual df', 'df_model' => 'Model df', 'aic' => 'AIC', 'bic' => 'BIC',
@@ -36,6 +40,9 @@ final class Renderer
         'n_estimators' => 'Trees', 'max_depth' => 'Maximum depth', 'learning_rate' => 'Learning rate', 'n_features' => 'Features',
         'importance_type' => 'Importance type', 'objective' => 'Objective', 'n_events' => 'Events', 'concordance' => 'Concordance',
         'theta' => 'Theta', 'command' => 'Command',
+        'chains' => 'Chains', 'draws' => 'Draws', 'warmup' => 'Warmup', 'sampler' => 'Sampler', 'divergent_transitions' => 'Divergent transitions',
+        'max_treedepth_hits' => 'Max treedepth hits', 'bayes_r2' => 'Bayes R²', 'elpd_loo' => 'ELPD (LOO)', 'elpd_loo_se' => 'ELPD (LOO) SE',
+        'looic' => 'LOOIC', 'p_loo' => 'p (LOO)', 'waic' => 'WAIC',
     ];
 
     private const INTERVAL_METHODS = ['wald-t' => 'Wald t', 'wald-normal' => 'Wald normal', 'profile' => 'Profile likelihood', 'bootstrap' => 'Bootstrap'];
@@ -48,7 +55,17 @@ final class Renderer
 
     private const ALTERNATIVES = ['two.sided' => 'Two-sided', 'less' => 'One-sided (less)', 'greater' => 'One-sided (greater)'];
 
-    private const COEFFICIENT_COLUMNS = ['term', 'estimate', 'std_error', 'statistic', 'p_value', 'conf_low', 'conf_high', 'df'];
+    private const COEFFICIENT_COLUMNS = ['term', 'estimate', 'std_error', 'statistic', 'p_value', 'conf_low', 'conf_high', 'df',
+        'rhat', 'ess_bulk', 'ess_tail', 'ratio_estimate', 'ratio_std_error', 'ratio_conf_low', 'ratio_conf_high'];
+
+    /** Above this, R-hat says the chains may not have converged. */
+    private const RHAT_LIMIT = 1.01;
+
+    /** Effective sample sizes are counts of draws, shown whole. */
+    private const WHOLE_COLUMNS = ['ess_bulk', 'ess_tail'];
+
+    /** Whether the model being rendered was fit by posterior sampling. */
+    private static bool $bayesian = false;
 
     /** Render a decoded embed document. Pass `spec` as a stdClass (Document::decode does) to keep empty JSON objects. */
     public static function render(array|stdClass $doc): string
@@ -63,6 +80,7 @@ final class Renderer
         }
         $kind = in_array($doc['kind'] ?? null, self::KINDS, true) ? $doc['kind'] : 'page';
         self::$tips = ['prefix' => self::tipPrefix($doc), 'count' => 0];
+        self::$bayesian = ($doc['kind'] ?? null) === 'model' && (self::obj(self::obj($doc['data'] ?? null)['model'] ?? null)['inference'] ?? null) === 'bayesian';
         $body = match ($kind) {
             'model' => self::model($doc),
             'table' => self::tableKind($doc),
@@ -480,8 +498,10 @@ final class Renderer
                     $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, self::FEATURE_LIMIT, self::ROW_LIMIT, null);
                 }
             } elseif (($table['role'] ?? null) === 'random_effects') {
-                // Variance components are as much a result as the fixed effects
-                $visible[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::ROW_LIMIT, null);
+                // Variance components are as much a result as the fixed effects; a posterior's read like its coefficients
+                $visible[] = self::$bayesian && self::columnIndex($table, 'term') >= 0 && self::columnIndex($table, 'estimate') >= 0
+                    ? self::coefficientTable($table, $doc, 'random-effects', self::posteriorColumns($table, $level, 'Posterior mean', false))
+                    : self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::ROW_LIMIT, null);
             } else {
                 $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::ROW_LIMIT, null);
             }
@@ -493,6 +513,9 @@ final class Renderer
             return implode("\n", [...$parts, ...$rest]);
         }
 
+        if (self::$bayesian) {
+            array_push($visible, ...self::samplingWarnings($tables, $metrics));
+        }
         // The model type, response, and formula are details: the coefficients show the terms, and the post names the model
         return implode("\n", [...$visible, ...self::details('Model details', [...$parts, ...$rest])]);
     }
@@ -753,6 +776,14 @@ final class Renderer
                 $parts[] = $detail;
             }
         }
+        if (($model['inference'] ?? null) === 'bayesian') {
+            // Proper nouns keep their capital: Bayesian Poisson regression
+            if ($parts === []) {
+                $parts[] = 'Bayesian model';
+            } else {
+                $parts[0] = 'Bayesian ' . (preg_match('/^(Poisson|Cox)\b/', $parts[0]) === 1 ? $parts[0] : strtolower(substr($parts[0], 0, 1)) . substr($parts[0], 1));
+            }
+        }
         if (self::text($model['response'] ?? null) !== null) {
             $parts[] = 'Outcome: ' . $model['response'];
         }
@@ -798,6 +829,12 @@ final class Renderer
         if (Format::isNumber($value) && Format::isPValueName($column['name'])) {
             return Format::pValue($value);
         }
+        if (Format::isNumber($value) && in_array($column['name'], self::WHOLE_COLUMNS, true)) {
+            return Format::number((int) round($value));
+        }
+        if (Format::isNumber($value) && $column['name'] === 'rhat') {
+            return Format::value($value, true, Format::RESULT_PLACES);
+        }
 
         return Format::value($value, $decimal, $places);
     }
@@ -806,6 +843,9 @@ final class Renderer
     {
         if (self::text($column['label'] ?? null) !== null) {
             return $column['label'];
+        }
+        if ($modelLabels && self::$bayesian && array_key_exists($column['name'], self::BAYESIAN_LABELS)) {
+            return self::BAYESIAN_LABELS[$column['name']];
         }
         if ($modelLabels && array_key_exists($column['name'], self::COLUMN_LABELS)) {
             return self::COLUMN_LABELS[$column['name']];
@@ -957,7 +997,9 @@ final class Renderer
 
     private static function intervalLabel(int|float|null $level): string
     {
-        return $level === null ? 'CI' : Format::percent($level) . ' CI';
+        $name = self::$bayesian ? 'CrI' : 'CI';
+
+        return $level === null ? $name : Format::percent($level) . ' ' . $name;
     }
 
     private static function decimalCell(int $index): \Closure
@@ -980,8 +1022,12 @@ final class Renderer
     private static function coefficients(array $table, array $model, int|float|null $level, array $doc): string
     {
         $ratio = self::text($model['exponentiate'] ?? null);
+        // A posterior's ratio scale comes from the exponentiated draws, which only the package has
+        if (self::$bayesian && self::columnIndex($table, 'ratio_estimate') < 0) {
+            $ratio = null;
+        }
         if ($ratio === null) {
-            return self::coefficientTable($table, $doc, 'coefficients', self::coefficientColumns($table, $level, 'Estimate', false));
+            return self::coefficientTable($table, $doc, 'coefficients', self::coefficientColumns($table, $level, self::$bayesian ? 'Posterior mean' : 'Estimate', false));
         }
         $logScale = self::LOG_SCALES[$ratio] ?? 'Coefficient';
 
@@ -1000,6 +1046,9 @@ final class Renderer
     /** The coefficient columns, on the model scale or exponentiated. */
     private static function coefficientColumns(array $table, int|float|null $level, string $estimateLabel, bool $exponentiated): array
     {
+        if (self::$bayesian) {
+            return self::posteriorColumns($table, $level, $estimateLabel, $exponentiated);
+        }
         $estimate = self::columnIndex($table, 'estimate');
         $low = self::columnIndex($table, 'conf_low');
         $high = self::columnIndex($table, 'conf_high');
@@ -1039,6 +1088,80 @@ final class Renderer
         return $columns;
     }
 
+    /**
+     * A posterior summary: the package's own ratio-scale columns on the ratio scale, then the
+     * sampling diagnostics.
+     */
+    private static function posteriorColumns(array $table, int|float|null $level, string $estimateLabel, bool $exponentiated): array
+    {
+        $at = fn (string $name) => self::columnIndex($table, $exponentiated ? 'ratio_' . $name : $name);
+        $columns = self::extraColumns($table);
+        if (($estimate = $at('estimate')) >= 0) {
+            $columns[] = [$estimateLabel, true, self::decimalCell($estimate)];
+        }
+        if (($error = $at('std_error')) >= 0) {
+            $columns[] = ['Posterior SD', true, self::decimalCell($error)];
+        }
+        $low = $at('conf_low');
+        $high = $at('conf_high');
+        if ($low >= 0 && $high >= 0) {
+            $columns[] = [self::intervalLabel($level), true, function ($row) use ($low, $high): string {
+                $a = self::cell($row, $low);
+                $b = self::cell($row, $high);
+
+                return $a === null && $b === null ? Format::EMPTY : Format::value($a, true, Format::RESULT_PLACES) . ' to ' . Format::value($b, true, Format::RESULT_PLACES);
+            }];
+        }
+        if (($rhat = self::columnIndex($table, 'rhat')) >= 0) {
+            $columns[] = ['R-hat', true, self::decimalCell($rhat)];
+        }
+        foreach (['ess_bulk', 'ess_tail'] as $name) {
+            if (($index = self::columnIndex($table, $name)) >= 0) {
+                $columns[] = [self::COLUMN_LABELS[$name], true, function ($row) use ($index): string {
+                    $value = self::cell($row, $index);
+
+                    return Format::isNumber($value) ? Format::number((int) round($value)) : Format::value($value);
+                }];
+            }
+        }
+
+        return $columns;
+    }
+
+    /**
+     * Warnings a reader should see beside a posterior: unconverged chains and divergent transitions.
+     *
+     * @return list<string>
+     */
+    private static function samplingWarnings(array $tables, array $metrics): array
+    {
+        $high = 0;
+        foreach ($tables as $table) {
+            $index = self::columnIndex($table, 'rhat');
+            if ($index < 0) {
+                continue;
+            }
+            foreach (self::lst($table['rows'] ?? null) as $row) {
+                $value = self::cell($row, $index);
+                if (Format::isNumber($value) && $value > self::RHAT_LIMIT) {
+                    $high++;
+                }
+            }
+        }
+        $notes = [];
+        if ($high > 0) {
+            $notes[] = 'R-hat above 1.01 for ' . self::plural($high, 'parameter', 'parameters') . ': the chains may not have converged.';
+        }
+        foreach ($metrics as $metric) {
+            if ($metric['name'] === 'divergent_transitions' && Format::isNumber($metric['value'] ?? null) && $metric['value'] > 0) {
+                $notes[] = self::plural($metric['value'], 'divergent transition', 'divergent transitions') . ': the posterior may be biased.';
+                break;
+            }
+        }
+
+        return array_map(fn ($note) => '<p class="fw-embed__note fw-embed__warning">' . self::e($note) . '</p>', $notes);
+    }
+
     /** An exponentiated value; non-numbers show as they are. */
     private static function ratioValue(mixed $value): string
     {
@@ -1048,6 +1171,9 @@ final class Renderer
 
     private static function metricLabel(string $name): string
     {
+        if (self::$bayesian && $name === 'confidence_level') {
+            return 'Credible level';
+        }
         if (array_key_exists($name, self::METRIC_LABELS)) {
             return self::METRIC_LABELS[$name];
         }

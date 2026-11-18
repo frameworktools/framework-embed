@@ -184,8 +184,15 @@ var COLUMN_LABELS = {
   importance: "Importance",
   edf: "EDF",
   ref_df: "Ref. df",
-  df: "df"
+  df: "df",
+  rhat: "R-hat",
+  ess_bulk: "Bulk ESS",
+  ess_tail: "Tail ESS",
+  parameter: "Parameter",
+  prior: "Prior",
+  source: "Source"
 };
+var BAYESIAN_LABELS = { estimate: "Posterior mean", std_error: "Posterior SD", conf_low: "CrI lower", conf_high: "CrI upper" };
 var METRIC_LABELS = {
   nobs: "Observations",
   df_resid: "Residual df",
@@ -217,7 +224,19 @@ var METRIC_LABELS = {
   n_events: "Events",
   concordance: "Concordance",
   theta: "Theta",
-  command: "Command"
+  command: "Command",
+  chains: "Chains",
+  draws: "Draws",
+  warmup: "Warmup",
+  sampler: "Sampler",
+  divergent_transitions: "Divergent transitions",
+  max_treedepth_hits: "Max treedepth hits",
+  bayes_r2: "Bayes R\xB2",
+  elpd_loo: "ELPD (LOO)",
+  elpd_loo_se: "ELPD (LOO) SE",
+  looic: "LOOIC",
+  p_loo: "p (LOO)",
+  waic: "WAIC"
 };
 var INTERVAL_METHODS = { "wald-t": "Wald t", "wald-normal": "Wald normal", profile: "Profile likelihood", bootstrap: "Bootstrap" };
 var MODEL_TYPES = {
@@ -234,7 +253,25 @@ var MODEL_TYPES = {
   tree_ensemble: "Tree ensemble model"
 };
 var ALTERNATIVES = { "two.sided": "Two-sided", less: "One-sided (less)", greater: "One-sided (greater)" };
-var COEFFICIENT_COLUMNS = /* @__PURE__ */ new Set(["term", "estimate", "std_error", "statistic", "p_value", "conf_low", "conf_high", "df"]);
+var COEFFICIENT_COLUMNS = /* @__PURE__ */ new Set([
+  "term",
+  "estimate",
+  "std_error",
+  "statistic",
+  "p_value",
+  "conf_low",
+  "conf_high",
+  "df",
+  "rhat",
+  "ess_bulk",
+  "ess_tail",
+  "ratio_estimate",
+  "ratio_std_error",
+  "ratio_conf_low",
+  "ratio_conf_high"
+]);
+var RHAT_LIMIT = 1.01;
+var WHOLE_COLUMNS = /* @__PURE__ */ new Set(["ess_bulk", "ess_tail"]);
 var ESCAPES = { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" };
 var escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ESCAPES[c]);
 var isObject = (value) => value !== null && typeof value === "object" && !Array.isArray(value);
@@ -249,6 +286,7 @@ function scriptJson(value) {
 function render(doc) {
   if (!isObject(doc)) return "";
   tips = { prefix: tipPrefix(doc), count: 0 };
+  bayesian = doc.kind === "model" && isObject(doc.data) && isObject(doc.data.model) && doc.data.model.inference === "bayesian";
   let kind = KINDS.has(doc.kind) ? doc.kind : "page";
   let body = null;
   if (kind === "model") body = renderModel(doc);
@@ -290,6 +328,7 @@ function renderAbout(doc) {
   return parts.length === 0 ? [] : ['<div class="fw-embed__about">', ...parts, "</div>"];
 }
 var tips = { prefix: "fw-embed-tip-", count: 0 };
+var bayesian = false;
 function tipPrefix(doc) {
   const key = text(doc.key);
   if (key === null || !/^[A-Za-z0-9_-]+$/.test(key)) return "fw-embed-tip-";
@@ -431,13 +470,14 @@ function renderModel(doc) {
       visible.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, FEATURE_LIMIT, continued ? "Model details" : null));
       if (continued) rest.push(renderTable(table, true, true, doc, RESULT_PLACES, FEATURE_LIMIT, ROW_LIMIT, null));
     } else if (table.role === "random_effects") {
-      visible.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
+      visible.push(bayesian && columnIndex(table, "term") >= 0 && columnIndex(table, "estimate") >= 0 ? coefficientTable(table, doc, "random-effects", posteriorColumns(table, level, "Posterior mean", false)) : renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
     } else {
       rest.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
     }
   });
   if (stats.length > 0) rest.push(renderMetrics(stats));
   if (visible.length === 0) return [...parts, ...rest].join("\n");
+  if (bayesian) visible.push(...samplingWarnings(tables, metrics));
   return [...visible, ...details("Model details", [...parts, ...rest])].join("\n");
 }
 function renderTableKind(doc) {
@@ -573,6 +613,10 @@ function modelMeta(model) {
     const detail = familyLink(text(model.family), text(model.link));
     if (detail !== null) parts.push(detail);
   }
+  if (model.inference === "bayesian") {
+    if (parts.length === 0) parts.push("Bayesian model");
+    else parts[0] = `Bayesian ${/^(Poisson|Cox)\b/.test(parts[0]) ? parts[0] : asciiLower(parts[0].slice(0, 1)) + parts[0].slice(1)}`;
+  }
   if (text(model.response) !== null) parts.push(`Outcome: ${model.response}`);
   return parts.length > 0 ? asciiCapitalize(parts.join(" \xB7 ")) : null;
 }
@@ -590,10 +634,13 @@ function isDecimalColumn(rows, index) {
 }
 function formatCell(value, column, decimal, places) {
   if (isNumber(value) && isPValueName(column.name)) return formatPValue(value);
+  if (isNumber(value) && WHOLE_COLUMNS.has(column.name)) return formatNumber(Math.round(value));
+  if (isNumber(value) && column.name === "rhat") return formatValue(value, true, RESULT_PLACES);
   return formatValue(value, decimal, places);
 }
 function columnLabel(column, modelLabels) {
   if (text(column.label) !== null) return column.label;
+  if (modelLabels && bayesian && Object.hasOwn(BAYESIAN_LABELS, column.name)) return BAYESIAN_LABELS[column.name];
   if (modelLabels && Object.hasOwn(COLUMN_LABELS, column.name)) return COLUMN_LABELS[column.name];
   return column.name;
 }
@@ -669,15 +716,17 @@ function extraColumns(table) {
   return columns;
 }
 function intervalLabel(level) {
-  return level === null ? "CI" : `${formatPercent(level)} CI`;
+  const name = bayesian ? "CrI" : "CI";
+  return level === null ? name : `${formatPercent(level)} ${name}`;
 }
 function decimalCell(index) {
   return (row) => formatValue(cell(row, index), true, RESULT_PLACES);
 }
 var LOG_SCALES = { "Odds ratio": "Log odds", "Hazard ratio": "Log hazard", "Rate ratio": "Log rate", "Incidence rate ratio": "Log rate", "Time ratio": "Log time" };
 function renderCoefficients(table, model, level, doc) {
-  const ratio = text(model.exponentiate);
-  if (ratio === null) return coefficientTable(table, doc, "coefficients", coefficientColumns(table, level, "Estimate", false));
+  let ratio = text(model.exponentiate);
+  if (bayesian && columnIndex(table, "ratio_estimate") < 0) ratio = null;
+  if (ratio === null) return coefficientTable(table, doc, "coefficients", coefficientColumns(table, level, bayesian ? "Posterior mean" : "Estimate", false));
   const logScale = Object.hasOwn(LOG_SCALES, ratio) ? LOG_SCALES[ratio] : "Coefficient";
   return [
     '<form class="fw-embed__scales">',
@@ -696,6 +745,7 @@ function renderCoefficients(table, model, level, doc) {
 }
 function coefficientColumns(table, level, estimateLabel, exponentiated) {
   const at = (name) => columnIndex(table, name);
+  if (bayesian) return posteriorColumns(table, level, estimateLabel, exponentiated);
   const estimate = at("estimate");
   const low = at("conf_low");
   const high = at("conf_high");
@@ -722,6 +772,44 @@ function coefficientColumns(table, level, estimateLabel, exponentiated) {
   }
   return columns;
 }
+function posteriorColumns(table, level, estimateLabel, exponentiated) {
+  const at = (name) => columnIndex(table, exponentiated ? `ratio_${name}` : name);
+  const decimal = (index) => (row) => formatValue(cell(row, index), true, RESULT_PLACES);
+  const columns = extraColumns(table);
+  if (at("estimate") >= 0) columns.push([estimateLabel, true, decimal(at("estimate"))]);
+  if (at("std_error") >= 0) columns.push(["Posterior SD", true, decimal(at("std_error"))]);
+  const low = at("conf_low");
+  const high = at("conf_high");
+  if (low >= 0 && high >= 0) {
+    columns.push([intervalLabel(level), true, (row) => {
+      const a = cell(row, low);
+      const b = cell(row, high);
+      return a === null && b === null ? EMPTY : `${formatValue(a, true, RESULT_PLACES)} to ${formatValue(b, true, RESULT_PLACES)}`;
+    }]);
+  }
+  const rhat = columnIndex(table, "rhat");
+  if (rhat >= 0) columns.push(["R-hat", true, decimal(rhat)]);
+  for (const name of ["ess_bulk", "ess_tail"]) {
+    const index = columnIndex(table, name);
+    if (index >= 0) columns.push([COLUMN_LABELS[name], true, (row) => isNumber(cell(row, index)) ? formatNumber(Math.round(cell(row, index))) : formatValue(cell(row, index))]);
+  }
+  return columns;
+}
+function samplingWarnings(tables, metrics) {
+  let high = 0;
+  for (const table of tables) {
+    const index = columnIndex(table, "rhat");
+    if (index < 0) continue;
+    for (const row of list(table.rows)) if (isNumber(cell(row, index)) && cell(row, index) > RHAT_LIMIT) high += 1;
+  }
+  const notes = [];
+  if (high > 0) notes.push(`R-hat above 1.01 for ${plural(high, "parameter", "parameters")}: the chains may not have converged.`);
+  const divergent = metrics.find((metric) => metric.name === "divergent_transitions");
+  if (divergent !== void 0 && isNumber(divergent.value) && divergent.value > 0) {
+    notes.push(`${plural(divergent.value, "divergent transition", "divergent transitions")}: the posterior may be biased.`);
+  }
+  return notes.map((note) => `<p class="fw-embed__note fw-embed__warning">${escapeHtml(note)}</p>`);
+}
 function pValueCell(index) {
   return (row) => isNumber(cell(row, index)) ? formatPValue(cell(row, index)) : formatValue(cell(row, index));
 }
@@ -729,6 +817,7 @@ function ratioValue(value) {
   return isNumber(value) ? formatNumber(exp(value), true, RESULT_PLACES) : formatValue(value, true, RESULT_PLACES);
 }
 function metricLabel(name) {
+  if (bayesian && name === "confidence_level") return "Credible level";
   if (Object.hasOwn(METRIC_LABELS, name)) return METRIC_LABELS[name];
   if (name.startsWith("n_groups.") && name.length > 9) return `Groups: ${name.slice(9)}`;
   return asciiCapitalize(name.replace(/[_.]/g, " "));

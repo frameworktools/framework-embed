@@ -232,3 +232,40 @@ describe('variable tips', () => {
         }
     });
 });
+
+describe('bayesian models', () => {
+    it('labels the posterior summary and uses the package ratio columns', () => {
+        const host = dom(load('r-brms-logit'));
+        const ratio = host.querySelector('.fw-embed__scale--ratio table');
+        const model = host.querySelector('.fw-embed__scale--model table');
+        expect(headers(ratio)).toEqual(['Term', 'Odds ratio', 'Posterior SD', '95% CrI', 'R-hat', 'Bulk ESS', 'Tail ESS']);
+        expect(headers(model)).toEqual(['Term', 'Log odds', 'Posterior SD', '95% CrI', 'R-hat', 'Bulk ESS', 'Tail ESS']);
+        const row = (table, n) => [...table.querySelectorAll('tbody tr')[n].children].map((c) => c.textContent);
+        // The ratio values are the package's, not exp() of the posterior mean
+        expect(row(ratio, 2)).toEqual(['educationcollege', '1.80', '0.22', '1.42 to 2.27', '1.02', '613', '880']);
+        expect(row(model, 2)).toEqual(['educationcollege', '0.58', '0.12', '0.35 to 0.82', '1.02', '613', '880']);
+    });
+
+    it('warns about R-hat and divergences, and keeps the priors in Model details', () => {
+        const host = dom(load('r-brms-logit'));
+        expect([...host.querySelectorAll('.fw-embed__body > .fw-embed__warning')].map((p) => p.textContent)).toEqual([
+            'R-hat above 1.01 for 1 parameter: the chains may not have converged.',
+            '3 divergent transitions: the posterior may be biased.',
+        ]);
+        const details = host.querySelector('details');
+        expect(details.querySelector('.fw-embed__meta').textContent).toBe('Bayesian logistic mixed model · Outcome: voted');
+        expect([...details.querySelectorAll('caption')].map((c) => c.textContent)).toContain('Priors');
+        expect([...details.querySelectorAll('dt')].map((dt) => dt.textContent)).toContain('Credible level');
+    });
+
+    it('shows only the model scale when the package sent no ratio columns', () => {
+        const doc = load('r-brms-logit');
+        const table = doc.data.tables[0];
+        const keep = table.columns.map((c, i) => [c, i]).filter(([c]) => !c.name.startsWith('ratio_'));
+        table.columns = keep.map(([c]) => c);
+        table.rows = table.rows.map((row) => keep.map(([, i]) => row[i]));
+        const host = dom(doc);
+        expect(host.querySelector('.fw-embed__switch')).toBeNull();
+        expect(headers(host.querySelector('.fw-embed__table--coefficients'))[1]).toBe('Posterior mean');
+    });
+});

@@ -87,6 +87,35 @@ A `model` representation may carry two optional fields that describe the data be
 
 Framework Cloud keeps both fields when they fit this contract and drops entries that don't, as it does for column summaries.
 
+## Bayesian models
+
+A `model` representation fit by posterior sampling sets `model.inference` to `"bayesian"`. Everything else in the representation keeps its meaning, with these differences. Representations without `inference` are frequentist.
+
+Coefficient tables (`role: "coefficients"`, and `random_effects` for group-level terms) use these columns, summarized over the posterior draws:
+
+| Column | Contents |
+|---|---|
+| `term` | The parameter, named as the package prints it (`speciesChinstrap`, `sd(Intercept)` with `group` set for group-level terms). |
+| `estimate` | Posterior mean. |
+| `std_error` | Posterior standard deviation. |
+| `conf_low`, `conf_high` | Equal-tailed credible interval, at the level in the `confidence_level` metric (0.95 unless the user asked otherwise). |
+| `rhat` | R-hat (rank-normalized split R-hat where the package computes it). |
+| `ess_bulk`, `ess_tail` | Bulk and tail effective sample sizes. |
+| `ratio_estimate`, `ratio_std_error`, `ratio_conf_low`, `ratio_conf_high` | Only when `model.exponentiate` is set: the same summaries of the exponentiated draws. Never the exponent of the summaries. |
+
+No `statistic` or `p_value`. `interval_method` names the interval, such as `Equal-tailed`; an HDI is allowed and named `HDI`.
+
+Metrics a Bayesian model may carry, beside `nobs`, `confidence_level`, and `interval_method`: `chains`, `draws` (post-warmup draws, all chains), `warmup` (per chain), `sampler` (such as `NUTS (Stan)`), `divergent_transitions`, `max_treedepth_hits`, `bayes_r2`, `elpd_loo`, `elpd_loo_se`, `looic`, `p_loo`, `waic`.
+
+A `priors` table (`role: "priors"`) lists the priors: `parameter` (the class, coefficient, and group, as the package names them), `prior` (the distribution as text, such as `student_t(3, 0, 2.5)`), and `source` (`default` or `user`) when known.
+
+Renderers:
+
+- Name the model with `Bayesian ` before the usual name: `Bayesian logistic regression · Outcome: am`.
+- Label the coefficient columns Posterior mean, Posterior SD, and `{level} CrI`, and show R-hat (two decimals) and Bulk ESS and Tail ESS (whole numbers) after the interval. On the ratio scale, the estimate column takes the ratio's label and the four `ratio_` columns supply the values; without them, the table shows only the model scale.
+- Flag an R-hat above 1.01 and any divergent transitions in a note under the coefficients: `R-hat above 1.01 for {n} parameters: the chains may not have converged.` and `{n} divergent transitions: the posterior may be biased.`
+- Put the priors table in Model details with the other extra tables, titled Priors.
+
 ## Renderer markup
 
 The JavaScript and PHP renderers produce identical HTML for each embed document, verified against the shared fixtures in `spec/fixtures`. All artifact text is escaped before insertion. Every CSS class begins with `fw-embed`.

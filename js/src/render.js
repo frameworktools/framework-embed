@@ -13,7 +13,11 @@ const COLUMN_LABELS = {
     term: 'Term', estimate: 'Estimate', std_error: 'Std. error', statistic: 'Statistic', p_value: 'p-value',
     conf_low: 'CI lower', conf_high: 'CI upper', group: 'Group', variance: 'Variance', std_dev: 'Std. dev.',
     correlation: 'Correlation', feature: 'Feature', importance: 'Importance', edf: 'EDF', ref_df: 'Ref. df', df: 'df',
+    rhat: 'R-hat', ess_bulk: 'Bulk ESS', ess_tail: 'Tail ESS', parameter: 'Parameter', prior: 'Prior', source: 'Source',
 };
+
+// Bayesian models summarize the posterior: the same columns, named for what they hold
+const BAYESIAN_LABELS = { estimate: 'Posterior mean', std_error: 'Posterior SD', conf_low: 'CrI lower', conf_high: 'CrI upper' };
 
 const METRIC_LABELS = {
     nobs: 'Observations', df_resid: 'Residual df', df_model: 'Model df', aic: 'AIC', bic: 'BIC',
@@ -24,6 +28,9 @@ const METRIC_LABELS = {
     n_estimators: 'Trees', max_depth: 'Maximum depth', learning_rate: 'Learning rate', n_features: 'Features',
     importance_type: 'Importance type', objective: 'Objective', n_events: 'Events', concordance: 'Concordance',
     theta: 'Theta', command: 'Command',
+    chains: 'Chains', draws: 'Draws', warmup: 'Warmup', sampler: 'Sampler', divergent_transitions: 'Divergent transitions',
+    max_treedepth_hits: 'Max treedepth hits', bayes_r2: 'Bayes R²', elpd_loo: 'ELPD (LOO)', elpd_loo_se: 'ELPD (LOO) SE',
+    looic: 'LOOIC', p_loo: 'p (LOO)', waic: 'WAIC',
 };
 
 const INTERVAL_METHODS = { 'wald-t': 'Wald t', 'wald-normal': 'Wald normal', profile: 'Profile likelihood', bootstrap: 'Bootstrap' };
@@ -36,7 +43,12 @@ const MODEL_TYPES = {
 
 const ALTERNATIVES = { 'two.sided': 'Two-sided', less: 'One-sided (less)', greater: 'One-sided (greater)' };
 
-const COEFFICIENT_COLUMNS = new Set(['term', 'estimate', 'std_error', 'statistic', 'p_value', 'conf_low', 'conf_high', 'df']);
+const COEFFICIENT_COLUMNS = new Set(['term', 'estimate', 'std_error', 'statistic', 'p_value', 'conf_low', 'conf_high', 'df',
+    'rhat', 'ess_bulk', 'ess_tail', 'ratio_estimate', 'ratio_std_error', 'ratio_conf_low', 'ratio_conf_high']);
+// Above this, R-hat says the chains may not have converged
+const RHAT_LIMIT = 1.01;
+// Effective sample sizes are counts of draws, shown whole
+const WHOLE_COLUMNS = new Set(['ess_bulk', 'ess_tail']);
 
 const ESCAPES = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' };
 export const escapeHtml = (value) => String(value).replace(/[&<>"']/g, (c) => ESCAPES[c]);
@@ -58,6 +70,7 @@ export function scriptJson(value) {
 export function render(doc) {
     if (!isObject(doc)) return '';
     tips = { prefix: tipPrefix(doc), count: 0 };
+    bayesian = doc.kind === 'model' && isObject(doc.data) && isObject(doc.data.model) && doc.data.model.inference === 'bayesian';
     let kind = KINDS.has(doc.kind) ? doc.kind : 'page';
     let body = null;
     if (kind === 'model') body = renderModel(doc);
@@ -113,6 +126,8 @@ function renderAbout(doc) {
 // for one copy of an embed; the bundle renumbers repeats.
 
 let tips = { prefix: 'fw-embed-tip-', count: 0 };
+// Whether the model being rendered was fit by posterior sampling
+let bayesian = false;
 
 function tipPrefix(doc) {
     const key = text(doc.key);
@@ -278,14 +293,17 @@ function renderModel(doc) {
             visible.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, FEATURE_LIMIT, continued ? 'Model details' : null));
             if (continued) rest.push(renderTable(table, true, true, doc, RESULT_PLACES, FEATURE_LIMIT, ROW_LIMIT, null));
         } else if (table.role === 'random_effects') {
-            // Variance components are as much a result as the fixed effects
-            visible.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
+            // Variance components are as much a result as the fixed effects; a posterior's read like its coefficients
+            visible.push(bayesian && columnIndex(table, 'term') >= 0 && columnIndex(table, 'estimate') >= 0
+                ? coefficientTable(table, doc, 'random-effects', posteriorColumns(table, level, 'Posterior mean', false))
+                : renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
         } else {
             rest.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, ROW_LIMIT, null));
         }
     });
     if (stats.length > 0) rest.push(renderMetrics(stats));
     if (visible.length === 0) return [...parts, ...rest].join('\n');
+    if (bayesian) visible.push(...samplingWarnings(tables, metrics));
     // The model type, response, and formula are details: the coefficients show the terms, and the post names the model
     return [...visible, ...details('Model details', [...parts, ...rest])].join('\n');
 }
@@ -437,6 +455,11 @@ function modelMeta(model) {
         const detail = familyLink(text(model.family), text(model.link));
         if (detail !== null) parts.push(detail);
     }
+    if (model.inference === 'bayesian') {
+        // Proper nouns keep their capital: Bayesian Poisson regression
+        if (parts.length === 0) parts.push('Bayesian model');
+        else parts[0] = `Bayesian ${/^(Poisson|Cox)\b/.test(parts[0]) ? parts[0] : asciiLower(parts[0].slice(0, 1)) + parts[0].slice(1)}`;
+    }
     if (text(model.response) !== null) parts.push(`Outcome: ${model.response}`);
     return parts.length > 0 ? asciiCapitalize(parts.join(' · ')) : null;
 }
@@ -459,11 +482,14 @@ function isDecimalColumn(rows, index) {
 
 function formatCell(value, column, decimal, places) {
     if (isNumber(value) && isPValueName(column.name)) return formatPValue(value);
+    if (isNumber(value) && WHOLE_COLUMNS.has(column.name)) return formatNumber(Math.round(value));
+    if (isNumber(value) && column.name === 'rhat') return formatValue(value, true, RESULT_PLACES);
     return formatValue(value, decimal, places);
 }
 
 function columnLabel(column, modelLabels) {
     if (text(column.label) !== null) return column.label;
+    if (modelLabels && bayesian && Object.hasOwn(BAYESIAN_LABELS, column.name)) return BAYESIAN_LABELS[column.name];
     if (modelLabels && Object.hasOwn(COLUMN_LABELS, column.name)) return COLUMN_LABELS[column.name];
     return column.name;
 }
@@ -554,7 +580,8 @@ function extraColumns(table) {
 }
 
 function intervalLabel(level) {
-    return level === null ? 'CI' : `${formatPercent(level)} CI`;
+    const name = bayesian ? 'CrI' : 'CI';
+    return level === null ? name : `${formatPercent(level)} ${name}`;
 }
 
 function decimalCell(index) {
@@ -572,8 +599,10 @@ const LOG_SCALES = { 'Odds ratio': 'Log odds', 'Hazard ratio': 'Log hazard', 'Ra
 // form of their own, so it works without JavaScript and each embed's buttons are separate. Where a
 // host strips the form controls, only the ratio view shows.
 function renderCoefficients(table, model, level, doc) {
-    const ratio = text(model.exponentiate);
-    if (ratio === null) return coefficientTable(table, doc, 'coefficients', coefficientColumns(table, level, 'Estimate', false));
+    let ratio = text(model.exponentiate);
+    // A posterior's ratio scale comes from the exponentiated draws, which only the package has
+    if (bayesian && columnIndex(table, 'ratio_estimate') < 0) ratio = null;
+    if (ratio === null) return coefficientTable(table, doc, 'coefficients', coefficientColumns(table, level, bayesian ? 'Posterior mean' : 'Estimate', false));
     const logScale = Object.hasOwn(LOG_SCALES, ratio) ? LOG_SCALES[ratio] : 'Coefficient';
     return [
         '<form class="fw-embed__scales">',
@@ -590,6 +619,7 @@ function renderCoefficients(table, model, level, doc) {
 // The coefficient columns, on the model scale or exponentiated.
 function coefficientColumns(table, level, estimateLabel, exponentiated) {
     const at = (name) => columnIndex(table, name);
+    if (bayesian) return posteriorColumns(table, level, estimateLabel, exponentiated);
     const estimate = at('estimate');
     const low = at('conf_low');
     const high = at('conf_high');
@@ -617,6 +647,49 @@ function coefficientColumns(table, level, estimateLabel, exponentiated) {
     return columns;
 }
 
+// A posterior summary: the package's own ratio-scale columns on the ratio scale, then the
+// sampling diagnostics, with R-hat flagged above its limit.
+function posteriorColumns(table, level, estimateLabel, exponentiated) {
+    const at = (name) => columnIndex(table, exponentiated ? `ratio_${name}` : name);
+    const decimal = (index) => (row) => formatValue(cell(row, index), true, RESULT_PLACES);
+    const columns = extraColumns(table);
+    if (at('estimate') >= 0) columns.push([estimateLabel, true, decimal(at('estimate'))]);
+    if (at('std_error') >= 0) columns.push(['Posterior SD', true, decimal(at('std_error'))]);
+    const low = at('conf_low');
+    const high = at('conf_high');
+    if (low >= 0 && high >= 0) {
+        columns.push([intervalLabel(level), true, (row) => {
+            const a = cell(row, low);
+            const b = cell(row, high);
+            return a === null && b === null ? EMPTY : `${formatValue(a, true, RESULT_PLACES)} to ${formatValue(b, true, RESULT_PLACES)}`;
+        }]);
+    }
+    const rhat = columnIndex(table, 'rhat');
+    if (rhat >= 0) columns.push(['R-hat', true, decimal(rhat)]);
+    for (const name of ['ess_bulk', 'ess_tail']) {
+        const index = columnIndex(table, name);
+        if (index >= 0) columns.push([COLUMN_LABELS[name], true, (row) => (isNumber(cell(row, index)) ? formatNumber(Math.round(cell(row, index))) : formatValue(cell(row, index)))]);
+    }
+    return columns;
+}
+
+// Warnings a reader should see beside a posterior: unconverged chains and divergent transitions.
+function samplingWarnings(tables, metrics) {
+    let high = 0;
+    for (const table of tables) {
+        const index = columnIndex(table, 'rhat');
+        if (index < 0) continue;
+        for (const row of list(table.rows)) if (isNumber(cell(row, index)) && cell(row, index) > RHAT_LIMIT) high += 1;
+    }
+    const notes = [];
+    if (high > 0) notes.push(`R-hat above 1.01 for ${plural(high, 'parameter', 'parameters')}: the chains may not have converged.`);
+    const divergent = metrics.find((metric) => metric.name === 'divergent_transitions');
+    if (divergent !== undefined && isNumber(divergent.value) && divergent.value > 0) {
+        notes.push(`${plural(divergent.value, 'divergent transition', 'divergent transitions')}: the posterior may be biased.`);
+    }
+    return notes.map((note) => `<p class="fw-embed__note fw-embed__warning">${escapeHtml(note)}</p>`);
+}
+
 function pValueCell(index) {
     return (row) => (isNumber(cell(row, index)) ? formatPValue(cell(row, index)) : formatValue(cell(row, index)));
 }
@@ -628,6 +701,7 @@ function ratioValue(value) {
 
 
 function metricLabel(name) {
+    if (bayesian && name === 'confidence_level') return 'Credible level';
     if (Object.hasOwn(METRIC_LABELS, name)) return METRIC_LABELS[name];
     if (name.startsWith('n_groups.') && name.length > 9) return `Groups: ${name.slice(9)}`;
     return asciiCapitalize(name.replace(/[_.]/g, ' '));
