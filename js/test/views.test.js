@@ -33,7 +33,9 @@ describe('model view', () => {
             expect(row[0]).toBe(cells(model)[i][0]);
             expect(row[3]).toBe(cells(model)[i][3]);
             expect(row[4]).toBe(cells(model)[i][4]);
-            const value = Number(row[1].replaceAll(',', ''));
+            // A rounded cell keeps its full value in the title
+            const td = ratio.querySelectorAll('tbody tr')[i].children[1];
+            const value = Number((td.getAttribute('title') ?? row[1]).replaceAll(',', ''));
             expect(Math.abs(value / Math.exp(at(rows[i], 'estimate')) - 1)).toBeLessThan(0.01);
         });
         expect(cells(ratio)[2][1]).toBe('1.04');
@@ -238,8 +240,8 @@ describe('bayesian models', () => {
         const host = dom(load('r-brms-logit'));
         const ratio = host.querySelector('.fw-embed__scale--ratio table');
         const model = host.querySelector('.fw-embed__scale--model table');
-        expect(headers(ratio)).toEqual(['Term', 'Odds ratio', 'Posterior SD', '95% CrI', 'R-hat', 'Bulk ESS', 'Tail ESS']);
-        expect(headers(model)).toEqual(['Term', 'Log odds', 'Posterior SD', '95% CrI', 'R-hat', 'Bulk ESS', 'Tail ESS']);
+        expect(headers(ratio)).toEqual(['Term', 'Odds ratio', 'Posterior SD', '95% interval', 'R-hat', 'Bulk ESS', 'Tail ESS']);
+        expect(headers(model)).toEqual(['Term', 'Log odds', 'Posterior SD', '95% interval', 'R-hat', 'Bulk ESS', 'Tail ESS']);
         const row = (table, n) => [...table.querySelectorAll('tbody tr')[n].children].map((c) => c.textContent);
         // The ratio values are the package's, not exp() of the posterior mean
         expect(row(ratio, 2)).toEqual(['educationcollege', '1.80', '0.22', '1.42 to 2.27', '1.02', '613', '880']);

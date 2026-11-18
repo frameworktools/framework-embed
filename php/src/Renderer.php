@@ -29,7 +29,7 @@ final class Renderer
     ];
 
     /** Bayesian models summarize the posterior: the same columns, named for what they hold. */
-    private const BAYESIAN_LABELS = ['estimate' => 'Posterior mean', 'std_error' => 'Posterior SD', 'conf_low' => 'CrI lower', 'conf_high' => 'CrI upper'];
+    private const BAYESIAN_LABELS = ['estimate' => 'Posterior mean', 'std_error' => 'Posterior SD', 'conf_low' => 'Interval lower', 'conf_high' => 'Interval upper'];
 
     private const METRIC_LABELS = [
         'nobs' => 'Observations', 'df_resid' => 'Residual df', 'df_model' => 'Model df', 'aic' => 'AIC', 'bic' => 'BIC',
@@ -544,15 +544,19 @@ final class Renderer
         return implode("\n", $parts);
     }
 
-    private static function intervalText(mixed $low, mixed $high): string
+    /** A test's interval; a missing end is unbounded. */
+    private static function intervalText(mixed $low, mixed $high): string|array
     {
-        return (Format::isNumber($low) ? Format::number($low, true, Format::RESULT_PLACES) : '-∞')
-            . ' to ' . (Format::isNumber($high) ? Format::number($high, true, Format::RESULT_PLACES) : '∞');
+        $a = Format::isNumber($low) ? Format::number($low, true, Format::RESULT_PLACES) : '-∞';
+        $b = Format::isNumber($high) ? Format::number($high, true, Format::RESULT_PLACES) : '∞';
+        $full = fn ($x, $text) => Format::isNumber($x) ? Format::exact($x) : $text;
+
+        return self::titled($a . ' to ' . $b, Format::dropsDigits($low, $a) || Format::dropsDigits($high, $b) ? $full($low, $a) . ' to ' . $full($high, $b) : null);
     }
 
-    private static function result(mixed $value): string
+    private static function result(mixed $value): string|array
     {
-        return Format::number($value, false, Format::RESULT_PLACES);
+        return self::shown($value, Format::number($value, false, Format::RESULT_PLACES));
     }
 
     private static function test(array $doc): ?string
@@ -568,14 +572,18 @@ final class Renderer
             $main[] = [$statistic['name'], self::result($statistic['value'] ?? null), true];
         }
         if (Format::isNumber($test['p_value'] ?? null)) {
-            $main[] = ['p-value', Format::pValue($test['p_value']), true];
+            $main[] = ['p-value', self::shown($test['p_value'], Format::pValue($test['p_value'])), true];
         }
         $estimates = self::named($test['estimates'] ?? null);
         $interval = self::isObject($test['conf_int'] ?? null) && Format::isNumber($test['conf_int']['level'] ?? null) ? $test['conf_int'] : null;
         $ci = $interval === null ? null : Format::percent($interval['level']) . ' CI';
         if (count($estimates) === 1 && $interval !== null) {
+            $estimate = self::result($estimates[0]['value'] ?? null);
+            $range = self::intervalText($interval['low'] ?? null, $interval['high'] ?? null);
+            $rounded = ! is_string($estimate) || ! is_string($range);
+            $text = self::pieces($estimate)['text'] . ' (' . self::pieces($range)['text'] . ')';
             $main[] = [Format::asciiCapitalize($estimates[0]['name']) . ' (' . $ci . ')',
-                self::result($estimates[0]['value'] ?? null) . ' (' . self::intervalText($interval['low'] ?? null, $interval['high'] ?? null) . ')', true];
+                self::titled($text, $rounded ? self::pieces($estimate)['title'] . ' (' . self::pieces($range)['title'] . ')' : null), true];
         } else {
             foreach ($estimates as $entry) {
                 $main[] = [Format::asciiCapitalize($entry['name']), self::result($entry['value'] ?? null), true];
@@ -826,19 +834,19 @@ final class Renderer
         return false;
     }
 
-    private static function formatCell(mixed $value, array $column, bool $decimal, int $places): string
+    private static function formatCell(mixed $value, array $column, bool $decimal, int $places): string|array
     {
         if (Format::isNumber($value) && Format::isPValueName($column['name'])) {
-            return Format::pValue($value);
+            return self::shown($value, Format::pValue($value));
         }
         if (Format::isNumber($value) && in_array($column['name'], self::WHOLE_COLUMNS, true)) {
-            return Format::number((int) round($value));
+            return self::shown($value, Format::number((int) round($value)));
         }
         if (Format::isNumber($value) && $column['name'] === 'rhat') {
-            return Format::value($value, true, Format::RESULT_PLACES);
+            return self::shown($value, Format::value($value, true, Format::RESULT_PLACES));
         }
 
-        return Format::value($value, $decimal, $places);
+        return self::shown($value, Format::value($value, $decimal, $places));
     }
 
     private static function columnLabel(array $column, bool $modelLabels): string
@@ -861,9 +869,39 @@ final class Renderer
         return '<th scope="col"' . ($numeric ? ' class="fw-embed__num"' : '') . '>' . self::e($label) . '</th>';
     }
 
-    private static function td(string $value, bool $numeric): string
+    /** A cell's text, or [text, title] when the text rounds its number: the title holds the full value. */
+    private static function td(string|array $value, bool $numeric): string
     {
-        return '<td' . ($numeric ? ' class="fw-embed__num"' : '') . '>' . self::e($value) . '</td>';
+        [$text, $title] = is_string($value) ? [$value, null] : $value;
+
+        return '<td' . ($numeric ? ' class="fw-embed__num"' : '') . ($title === null ? '' : ' title="' . self::e($title) . '"') . '>' . self::e($text) . '</td>';
+    }
+
+    private static function titled(string $text, ?string $title): string|array
+    {
+        return $title === null ? $text : [$text, $title];
+    }
+
+    /** A number as shown, with its full value as the title when the text drops digits. */
+    private static function shown(mixed $x, string $text): string|array
+    {
+        return self::titled($text, Format::dropsDigits($x, $text) ? Format::exact($x) : null);
+    }
+
+    /** "a to b", titled with both full values when either end drops digits. */
+    private static function shownRange(mixed $a, mixed $b, \Closure $format): string|array
+    {
+        $low = $format($a);
+        $high = $format($b);
+        $full = fn ($x, $text) => Format::isNumber($x) ? Format::exact($x) : $text;
+
+        return self::titled($low . ' to ' . $high, Format::dropsDigits($a, $low) || Format::dropsDigits($b, $high) ? $full($a, $low) . ' to ' . $full($b, $high) : null);
+    }
+
+    /** @return array{text: string, title: string} Text or [text, title] as plain parts, to build a longer value. */
+    private static function pieces(string|array $value): array
+    {
+        return is_string($value) ? ['text' => $value, 'title' => $value] : ['text' => $value[0], 'title' => $value[1]];
     }
 
     private static function isNumeric(array $column): bool
@@ -999,14 +1037,15 @@ final class Renderer
 
     private static function intervalLabel(int|float|null $level): string
     {
-        $name = self::$bayesian ? 'CrI' : 'CI';
+        // A credible interval is just the interval: readers needn't learn CrI
+        $name = self::$bayesian ? 'interval' : 'CI';
 
         return $level === null ? $name : Format::percent($level) . ' ' . $name;
     }
 
     private static function decimalCell(int $index): \Closure
     {
-        return fn ($row) => Format::value(self::cell($row, $index), true, Format::RESULT_PLACES);
+        return fn ($row) => self::shown(self::cell($row, $index), Format::value(self::cell($row, $index), true, Format::RESULT_PLACES));
     }
 
 
@@ -1054,36 +1093,36 @@ final class Renderer
         $estimate = self::columnIndex($table, 'estimate');
         $low = self::columnIndex($table, 'conf_low');
         $high = self::columnIndex($table, 'conf_high');
-        $shown = fn ($value) => $exponentiated ? self::ratioValue($value) : Format::value($value, true, Format::RESULT_PLACES);
+        // On the ratio scale the shown number is exp(value)
+        $scaled = fn ($value) => $exponentiated && Format::isNumber($value) ? Format::exp($value) : $value;
+        $text = fn ($value) => Format::value($value, true, Format::RESULT_PLACES);
         $columns = self::extraColumns($table);
-        $columns[] = [$estimateLabel, true, fn ($row) => $shown(self::cell($row, $estimate))];
+        $columns[] = [$estimateLabel, true, fn ($row) => self::shown($scaled(self::cell($row, $estimate)), $text($scaled(self::cell($row, $estimate))))];
         if (($error = self::columnIndex($table, 'std_error')) >= 0) {
-            $columns[] = ['Std. error', true, function ($row) use ($error, $estimate, $exponentiated): string {
+            $columns[] = ['Std. error', true, function ($row) use ($error, $estimate, $exponentiated): string|array {
                 $se = self::cell($row, $error);
                 $b = self::cell($row, $estimate);
-                if (! $exponentiated || ! Format::isNumber($se) || ! Format::isNumber($b)) {
-                    return Format::value($se, true, Format::RESULT_PLACES);
-                }
+                $value = $exponentiated && Format::isNumber($se) && Format::isNumber($b) ? Format::exp($b) * $se : $se;
 
-                return Format::number(Format::exp($b) * $se, true, Format::RESULT_PLACES);
+                return self::shown($value, Format::value($value, true, Format::RESULT_PLACES));
             }];
         }
         if (($statistic = self::columnIndex($table, 'statistic')) >= 0) {
             $columns[] = ['Statistic', true, self::decimalCell($statistic)];
         }
         if (($p = self::columnIndex($table, 'p_value')) >= 0) {
-            $columns[] = ['p-value', true, function ($row) use ($p): string {
+            $columns[] = ['p-value', true, function ($row) use ($p): string|array {
                 $value = self::cell($row, $p);
 
-                return Format::isNumber($value) ? Format::pValue($value) : Format::value($value);
+                return Format::isNumber($value) ? self::shown($value, Format::pValue($value)) : Format::value($value);
             }];
         }
         if ($low >= 0 && $high >= 0) {
-            $columns[] = [self::intervalLabel($level), true, function ($row) use ($low, $high, $shown): string {
+            $columns[] = [self::intervalLabel($level), true, function ($row) use ($low, $high, $scaled, $text): string|array {
                 $a = self::cell($row, $low);
                 $b = self::cell($row, $high);
 
-                return $a === null && $b === null ? Format::EMPTY : $shown($a) . ' to ' . $shown($b);
+                return $a === null && $b === null ? Format::EMPTY : self::shownRange($scaled($a), $scaled($b), $text);
             }];
         }
 
@@ -1107,11 +1146,11 @@ final class Renderer
         $low = $at('conf_low');
         $high = $at('conf_high');
         if ($low >= 0 && $high >= 0) {
-            $columns[] = [self::intervalLabel($level), true, function ($row) use ($low, $high): string {
+            $columns[] = [self::intervalLabel($level), true, function ($row) use ($low, $high): string|array {
                 $a = self::cell($row, $low);
                 $b = self::cell($row, $high);
 
-                return $a === null && $b === null ? Format::EMPTY : Format::value($a, true, Format::RESULT_PLACES) . ' to ' . Format::value($b, true, Format::RESULT_PLACES);
+                return $a === null && $b === null ? Format::EMPTY : self::shownRange($a, $b, fn ($x) => Format::value($x, true, Format::RESULT_PLACES));
             }];
         }
         if (($rhat = self::columnIndex($table, 'rhat')) >= 0) {
@@ -1119,10 +1158,10 @@ final class Renderer
         }
         foreach (['ess_bulk', 'ess_tail'] as $name) {
             if (($index = self::columnIndex($table, $name)) >= 0) {
-                $columns[] = [self::COLUMN_LABELS[$name], true, function ($row) use ($index): string {
+                $columns[] = [self::COLUMN_LABELS[$name], true, function ($row) use ($index): string|array {
                     $value = self::cell($row, $index);
 
-                    return Format::isNumber($value) ? Format::number((int) round($value)) : Format::value($value);
+                    return Format::isNumber($value) ? self::shown($value, Format::number((int) round($value))) : Format::value($value);
                 }];
             }
         }
@@ -1164,11 +1203,6 @@ final class Renderer
         return array_map(fn ($note) => '<p class="fw-embed__note fw-embed__warning">' . self::e($note) . '</p>', $notes);
     }
 
-    /** An exponentiated value; non-numbers show as they are. */
-    private static function ratioValue(mixed $value): string
-    {
-        return Format::isNumber($value) ? Format::number(Format::exp($value), true, Format::RESULT_PLACES) : Format::value($value, true, Format::RESULT_PLACES);
-    }
 
 
     private static function metricLabel(string $name): string
@@ -1186,7 +1220,7 @@ final class Renderer
         return Format::asciiCapitalize(strtr($name, '_.', '  '));
     }
 
-    private static function metricValue(string $name, mixed $value): string
+    private static function metricValue(string $name, mixed $value): string|array
     {
         if ($name === 'confidence_level' && Format::isNumber($value)) {
             return Format::percent($value);
@@ -1195,10 +1229,10 @@ final class Renderer
             return self::INTERVAL_METHODS[$value];
         }
         if (Format::isNumber($value) && Format::isPValueName($name)) {
-            return Format::pValue($value);
+            return self::shown($value, Format::pValue($value));
         }
 
-        return Format::value($value, false, Format::RESULT_PLACES);
+        return self::shown($value, Format::value($value, false, Format::RESULT_PLACES));
     }
 
     private static function metrics(array $metrics): string
@@ -1210,12 +1244,15 @@ final class Renderer
     {
         $lines = ['<dl class="fw-embed__stats">'];
         foreach ($pairs as [$term, $value, $numeric]) {
+            // A value is text, or [text, title] when it rounds its number
+            [$text, $title] = is_string($value) ? [$value, null] : $value;
+            $tip = $title === null ? '' : ' title="' . self::e($title) . '"';
             if ($numeric) {
-                $lines[] = '<div><dt>' . self::e($term) . '</dt><dd class="fw-embed__num">' . self::e($value) . '</dd></div>';
+                $lines[] = '<div><dt>' . self::e($term) . '</dt><dd class="fw-embed__num"' . $tip . '>' . self::e($text) . '</dd></div>';
                 continue;
             }
-            $wide = preg_match_all('/./su', $value) > self::WIDE_TEXT ? ' fw-embed__stat--wide' : '';
-            $lines[] = '<div class="fw-embed__stat--text' . $wide . '"><dt>' . self::e($term) . '</dt><dd>' . self::e($value) . '</dd></div>';
+            $wide = preg_match_all('/./su', $text) > self::WIDE_TEXT ? ' fw-embed__stat--wide' : '';
+            $lines[] = '<div class="fw-embed__stat--text' . $wide . '"><dt>' . self::e($term) . '</dt><dd' . $tip . '>' . self::e($text) . '</dd></div>';
         }
         $lines[] = '</dl>';
 

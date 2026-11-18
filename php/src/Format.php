@@ -153,14 +153,10 @@ final class Format
     /** Decimal places for model and test results. */
     public const RESULT_PLACES = 2;
 
-    /** The most decimals a small nonzero number gets before it is written as "< 0.0000000001". */
-    public const SMALL_PLACES = 10;
-
     /**
      * A number in a table cell, statistic, or metric. $decimal forces $places decimals for whole numbers.
-     * No scientific notation: large numbers are written in full. A nonzero number that rounds to zero
-     * at $places gets the decimals it needs for two significant digits (0.00031, not "< 0.01"), up to
-     * SMALL_PLACES; past that it is written as "< 0.0000000001" (or "> -0.0000000001").
+     * No scientific notation: large numbers are written in full. Small numbers round like any other
+     * (0.0000006 is 0.00); renderers put the full value in a title attribute when the text drops digits.
      */
     public static function number(mixed $x, bool $decimal = false, int $places = self::DATA_PLACES): string
     {
@@ -170,20 +166,33 @@ final class Format
         if (! $decimal && self::isInteger($x)) {
             return self::fixed($x, 0);
         }
-        $fixed = self::fixed($x, $places);
-        if ($x == 0 || preg_match('/[1-9]/', $fixed) === 1) {
-            return $fixed;
-        }
-        for ($more = $places + 1; $more <= self::SMALL_PLACES; $more++) {
-            $small = self::fixed($x, $more);
-            $significant = (string) preg_replace('/^-?0\.0*/', '', $small);
-            if (strlen($significant) >= 2 || ($more === self::SMALL_PLACES && preg_match('/[1-9]/', $significant) === 1)) {
-                return rtrim($small, '0');
-            }
-        }
-        $smallest = '0.' . str_repeat('0', self::SMALL_PLACES - 1) . '1';
 
-        return $x > 0 ? '< ' . $smallest : '> -' . $smallest;
+        return self::fixed($x, $places);
+    }
+
+    /** x in full, from its shortest round-trip digits, without scientific notation: 0.0000006, -4,031.4812. */
+    public static function exact(mixed $x): string
+    {
+        if (! self::isNumber($x)) {
+            return self::EMPTY;
+        }
+        if ($x == 0) {
+            return '0';
+        }
+        [$digits, $exp] = self::decompose((float) $x);
+
+        return self::fixed($x, max(0, strlen($digits) - $exp - 1));
+    }
+
+    /** Whether the shown text stands for a different number than x: rounded, or "< 0.001". */
+    public static function dropsDigits(mixed $x, string $text): bool
+    {
+        if (! self::isNumber($x)) {
+            return false;
+        }
+        $plain = str_replace(',', '', $text);
+
+        return preg_match('/^-?\d+(\.\d+)?$/D', $plain) !== 1 || (float) $plain !== (float) $x;
     }
 
     public static function pValue(mixed $p): string

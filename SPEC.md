@@ -112,7 +112,7 @@ A `priors` table (`role: "priors"`) lists the priors: `parameter` (the class, co
 Renderers:
 
 - Name the model with `Bayesian ` before the usual name: `Bayesian logistic regression · Outcome: am`.
-- Label the coefficient columns Posterior mean, Posterior SD, and `{level} CrI`, and show R-hat (two decimals) and Bulk ESS and Tail ESS (whole numbers) after the interval. On the ratio scale, the estimate column takes the ratio's label and the four `ratio_` columns supply the values; without them, the table shows only the model scale.
+- Label the coefficient columns Posterior mean, Posterior SD, and `{level} interval` (such as `95% interval`), and show R-hat (two decimals) and Bulk ESS and Tail ESS (whole numbers) after the interval. On the ratio scale, the estimate column takes the ratio's label and the four `ratio_` columns supply the values; without them, the table shows only the model scale.
 - Flag an R-hat above 1.01 and any divergent transitions in a note under the coefficients: `R-hat above 1.01 for {n} parameters: the chains may not have converged.` and `{n} divergent transitions: the posterior may be biased.`
 - Put the priors table in Model details with the other extra tables, titled Priors.
 
@@ -424,16 +424,16 @@ There are two contexts, which differ only in the number of places `p`:
 |---|---|---|---|
 | Missing value | `null` | `—` | `—` |
 | Booleans | `true`, `false` | `Yes`, `No` | `Yes`, `No` |
-| Below the precision | nonzero numbers that round to zero at `p` decimals | `< 0.001`, `> -0.001` | `< 0.01`, `> -0.01` |
 | Whole number | whole numbers outside decimal columns | `32`, `2026` | `32`, `2026` |
-| `p` decimals | everything else | `0.036`, `-5.030` | `0.04`, `-5.03` |
+| `p` decimals | everything else, including small numbers | `0.036`, `-5.030`, `0.000` | `0.04`, `-5.03`, `0.00` |
 | Grouping | integer parts of five or more digits get commas, at any size | `12,345.679`, `9999`, `1,000,000,000,000,000` | `12,345.68` |
 | p-value | `p_value` columns and metrics (also `p.value`, `p-value`, `pvalue`, `Pr(>|t|)`, `Pr(>|z|)`, `Pr(>Chisq)`, `P>|t|`, `P>|z|`, any ASCII case) and test p-values, in both contexts | `< 0.001` below 0.001, else three decimals | the same |
 | Percent | confidence levels, in both contexts | `x * 100` rounded to one decimal, with `.0` dropped: `95%`, `97.5%` | the same |
 
 - Values never use scientific notation.
 - Large numbers are written in full. Beyond 2^53, digits come from the shortest round-trip form padded with zeros, so `123456789012345678` formats as `123,456,789,012,345,680`.
-- Precision thresholds apply cell by cell, including interval bounds: `< 0.01 (< 0.01 to 0.13)`. A value that rounds to `0.01` displays as `0.01`.
+- Small numbers round like any other: 0.0000006 displays as `0.00` in result formatting.
+- A table cell, interval, or statistic whose text stands for a different number than its value (it was rounded, or reads `< 0.001`) gets a `title` attribute with the full value: the shortest round-trip digits, without scientific notation, grouped like the text (`0.0000006`, `-4,031.4812`). An interval's title holds both ends: `0.0000019 to 0.000293`. A value shown exactly gets no title.
 - `Infinity`, `-Infinity`, `NaN`, and non-finite results display as `—`.
 - A negative number that rounds to zero omits its minus sign.
 - The minus sign is ASCII `-`.

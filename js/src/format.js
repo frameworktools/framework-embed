@@ -95,22 +95,27 @@ export function formatScientific(x, significant = 3) {
 export const DATA_PLACES = 3;
 export const RESULT_PLACES = 2;
 // A number in a table cell, statistic, or metric. `decimal` forces `places` decimals for whole numbers.
-// No scientific notation: large numbers are written in full. A nonzero number that rounds to zero
-// at `places` gets the decimals it needs for two significant digits (0.00031, not "< 0.01"), up to
-// SMALL_PLACES; past that it is written as "< 0.0000000001" (or "> -0.0000000001").
-export const SMALL_PLACES = 10;
+// No scientific notation: large numbers are written in full. Small numbers round like any other
+// (0.0000006 is 0.00); renderers put the full value in a title attribute when the text drops digits.
 export function formatNumber(x, decimal = false, places = DATA_PLACES) {
     if (!isNumber(x)) return EMPTY;
     if (!decimal && Number.isInteger(x)) return formatFixed(x, 0);
-    const fixed = formatFixed(x, places);
-    if (x === 0 || /[1-9]/.test(fixed)) return fixed;
-    for (let more = places + 1; more <= SMALL_PLACES; more++) {
-        const small = formatFixed(x, more);
-        const significant = small.replace(/^-?0\.0*/, '');
-        if (significant.length >= 2 || (more === SMALL_PLACES && /[1-9]/.test(significant))) return small.replace(/0+$/, '');
-    }
-    const smallest = '0.' + '0'.repeat(SMALL_PLACES - 1) + '1';
-    return x > 0 ? `< ${smallest}` : `> -${smallest}`;
+    return formatFixed(x, places);
+}
+
+// x in full, from its shortest round-trip digits, without scientific notation: 0.0000006, -4,031.4812.
+export function formatExact(x) {
+    if (!isNumber(x)) return EMPTY;
+    if (x === 0) return '0';
+    const { digits, exp } = decompose(x);
+    return formatFixed(x, Math.max(0, digits.length - exp - 1));
+}
+
+// Whether the shown text stands for a different number than x: rounded, or "< 0.001".
+export function dropsDigits(x, text) {
+    if (!isNumber(x)) return false;
+    const plain = text.replace(/,/g, '');
+    return !/^-?\d+(\.\d+)?$/.test(plain) || Number(plain) !== x;
 }
 
 export function formatPValue(p) {

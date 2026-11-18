@@ -84,19 +84,21 @@ function formatScientific(x, significant = 3) {
 }
 var DATA_PLACES = 3;
 var RESULT_PLACES = 2;
-var SMALL_PLACES = 10;
 function formatNumber(x, decimal = false, places = DATA_PLACES) {
   if (!isNumber(x)) return EMPTY;
   if (!decimal && Number.isInteger(x)) return formatFixed(x, 0);
-  const fixed = formatFixed(x, places);
-  if (x === 0 || /[1-9]/.test(fixed)) return fixed;
-  for (let more = places + 1; more <= SMALL_PLACES; more++) {
-    const small = formatFixed(x, more);
-    const significant = small.replace(/^-?0\.0*/, "");
-    if (significant.length >= 2 || more === SMALL_PLACES && /[1-9]/.test(significant)) return small.replace(/0+$/, "");
-  }
-  const smallest = "0." + "0".repeat(SMALL_PLACES - 1) + "1";
-  return x > 0 ? `< ${smallest}` : `> -${smallest}`;
+  return formatFixed(x, places);
+}
+function formatExact(x) {
+  if (!isNumber(x)) return EMPTY;
+  if (x === 0) return "0";
+  const { digits, exp: exp2 } = decompose(x);
+  return formatFixed(x, Math.max(0, digits.length - exp2 - 1));
+}
+function dropsDigits(x, text2) {
+  if (!isNumber(x)) return false;
+  const plain = text2.replace(/,/g, "");
+  return !/^-?\d+(\.\d+)?$/.test(plain) || Number(plain) !== x;
 }
 function formatPValue(p) {
   if (!isNumber(p)) return formatValue(p);
@@ -192,7 +194,7 @@ var COLUMN_LABELS = {
   prior: "Prior",
   source: "Source"
 };
-var BAYESIAN_LABELS = { estimate: "Posterior mean", std_error: "Posterior SD", conf_low: "CrI lower", conf_high: "CrI upper" };
+var BAYESIAN_LABELS = { estimate: "Posterior mean", std_error: "Posterior SD", conf_low: "Interval lower", conf_high: "Interval upper" };
 var METRIC_LABELS = {
   nobs: "Observations",
   df_resid: "Residual df",
@@ -498,21 +500,31 @@ function renderTableKind(doc) {
   return parts.join("\n");
 }
 function intervalText(low, high) {
-  return `${isNumber(low) ? formatNumber(low, true, RESULT_PLACES) : "-\u221E"} to ${isNumber(high) ? formatNumber(high, true, RESULT_PLACES) : "\u221E"}`;
+  const a = isNumber(low) ? formatNumber(low, true, RESULT_PLACES) : "-\u221E";
+  const b = isNumber(high) ? formatNumber(high, true, RESULT_PLACES) : "\u221E";
+  const full = (x, text2) => isNumber(x) ? formatExact(x) : text2;
+  return titled(`${a} to ${b}`, dropsDigits(low, a) || dropsDigits(high, b) ? `${full(low, a)} to ${full(high, b)}` : null);
+}
+function pieces(value) {
+  return typeof value === "string" ? { text: value, title: value } : value;
 }
 function renderTest(doc) {
   const data = doc.data;
   if (!isObject(data) || !isObject(data.test) || text(data.test.method) === null) return null;
   const test = data.test;
-  const result = (value) => formatNumber(value, false, RESULT_PLACES);
+  const result = (value) => shown(value, formatNumber(value, false, RESULT_PLACES));
   const main = [];
   if (isObject(test.statistic) && text(test.statistic.name) !== null) main.push([test.statistic.name, result(test.statistic.value), true]);
-  if (isNumber(test.p_value)) main.push(["p-value", formatPValue(test.p_value), true]);
+  if (isNumber(test.p_value)) main.push(["p-value", shown(test.p_value, formatPValue(test.p_value)), true]);
   const estimates = named(test.estimates);
   const interval = isObject(test.conf_int) && isNumber(test.conf_int.level) ? test.conf_int : null;
   const ci = interval === null ? null : `${formatPercent(interval.level)} CI`;
   if (estimates.length === 1 && interval !== null) {
-    main.push([`${asciiCapitalize(estimates[0].name)} (${ci})`, `${result(estimates[0].value)} (${intervalText(interval.low, interval.high)})`, true]);
+    const estimate = result(estimates[0].value);
+    const range = intervalText(interval.low, interval.high);
+    const rounded = typeof estimate !== "string" || typeof range !== "string";
+    const text2 = `${pieces(estimate).text} (${pieces(range).text})`;
+    main.push([`${asciiCapitalize(estimates[0].name)} (${ci})`, titled(text2, rounded ? `${pieces(estimate).title} (${pieces(range).title})` : null), true]);
   } else {
     for (const entry of estimates) main.push([asciiCapitalize(entry.name), result(entry.value), true]);
     if (interval !== null) main.push([ci, intervalText(interval.low, interval.high), true]);
@@ -640,10 +652,10 @@ function isDecimalColumn(rows, index) {
   return rows.some((row) => isNumber(cell(row, index)) && !Number.isInteger(cell(row, index)));
 }
 function formatCell(value, column, decimal, places) {
-  if (isNumber(value) && isPValueName(column.name)) return formatPValue(value);
-  if (isNumber(value) && WHOLE_COLUMNS.has(column.name)) return formatNumber(Math.round(value));
-  if (isNumber(value) && column.name === "rhat") return formatValue(value, true, RESULT_PLACES);
-  return formatValue(value, decimal, places);
+  if (isNumber(value) && isPValueName(column.name)) return shown(value, formatPValue(value));
+  if (isNumber(value) && WHOLE_COLUMNS.has(column.name)) return shown(value, formatNumber(Math.round(value)));
+  if (isNumber(value) && column.name === "rhat") return shown(value, formatValue(value, true, RESULT_PLACES));
+  return shown(value, formatValue(value, decimal, places));
 }
 function columnLabel(column, modelLabels) {
   if (text(column.label) !== null) return column.label;
@@ -655,7 +667,20 @@ function th(label, numeric) {
   return `<th scope="col"${numeric ? ' class="fw-embed__num"' : ""}>${escapeHtml(label)}</th>`;
 }
 function td(value, numeric) {
-  return `<td${numeric ? ' class="fw-embed__num"' : ""}>${escapeHtml(value)}</td>`;
+  const { text: text2, title } = typeof value === "string" ? { text: value, title: null } : value;
+  return `<td${numeric ? ' class="fw-embed__num"' : ""}${title === null ? "" : ` title="${escapeHtml(title)}"`}>${escapeHtml(text2)}</td>`;
+}
+function titled(text2, title) {
+  return title === null ? text2 : { text: text2, title };
+}
+function shown(x, text2) {
+  return titled(text2, dropsDigits(x, text2) ? formatExact(x) : null);
+}
+function shownRange(a, b, format) {
+  const low = format(a);
+  const high = format(b);
+  const full = (x, text2) => isNumber(x) ? formatExact(x) : text2;
+  return titled(`${low} to ${high}`, dropsDigits(a, low) || dropsDigits(b, high) ? `${full(a, low)} to ${full(b, high)}` : null);
 }
 function openTable(table, showCaption, modifier) {
   const title = text(table.title) ?? "Table";
@@ -723,11 +748,11 @@ function extraColumns(table) {
   return columns;
 }
 function intervalLabel(level) {
-  const name = bayesian ? "CrI" : "CI";
+  const name = bayesian ? "interval" : "CI";
   return level === null ? name : `${formatPercent(level)} ${name}`;
 }
 function decimalCell(index) {
-  return (row) => formatValue(cell(row, index), true, RESULT_PLACES);
+  return (row) => shown(cell(row, index), formatValue(cell(row, index), true, RESULT_PLACES));
 }
 var LOG_SCALES = { "Odds ratio": "Log odds", "Hazard ratio": "Log hazard", "Rate ratio": "Log rate", "Incidence rate ratio": "Log rate", "Time ratio": "Log time" };
 function renderCoefficients(table, model, level, doc) {
@@ -756,16 +781,17 @@ function coefficientColumns(table, level, estimateLabel, exponentiated) {
   const estimate = at("estimate");
   const low = at("conf_low");
   const high = at("conf_high");
-  const shown = (value) => exponentiated ? ratioValue(value) : formatValue(value, true, RESULT_PLACES);
+  const scaled = (value) => exponentiated && isNumber(value) ? exp(value) : value;
+  const text2 = (value) => formatValue(value, true, RESULT_PLACES);
   const columns = extraColumns(table);
-  columns.push([estimateLabel, true, (row) => shown(cell(row, estimate))]);
+  columns.push([estimateLabel, true, (row) => shown(scaled(cell(row, estimate)), text2(scaled(cell(row, estimate))))]);
   if (at("std_error") >= 0) {
     const index = at("std_error");
     columns.push(["Std. error", true, (row) => {
       const se = cell(row, index);
       const b = cell(row, estimate);
-      if (!exponentiated) return formatValue(se, true, RESULT_PLACES);
-      return isNumber(se) && isNumber(b) ? formatNumber(exp(b) * se, true, RESULT_PLACES) : formatValue(se, true, RESULT_PLACES);
+      const value = exponentiated && isNumber(se) && isNumber(b) ? exp(b) * se : se;
+      return shown(value, formatValue(value, true, RESULT_PLACES));
     }]);
   }
   if (at("statistic") >= 0) columns.push(["Statistic", true, decimalCell(at("statistic"))]);
@@ -774,14 +800,15 @@ function coefficientColumns(table, level, estimateLabel, exponentiated) {
     columns.push([intervalLabel(level), true, (row) => {
       const a = cell(row, low);
       const b = cell(row, high);
-      return a === null && b === null ? EMPTY : `${shown(a)} to ${shown(b)}`;
+      return a === null && b === null ? EMPTY : shownRange(scaled(a), scaled(b), text2);
     }]);
   }
   return columns;
 }
 function posteriorColumns(table, level, estimateLabel, exponentiated) {
   const at = (name) => columnIndex(table, exponentiated ? `ratio_${name}` : name);
-  const decimal = (index) => (row) => formatValue(cell(row, index), true, RESULT_PLACES);
+  const text2 = (value) => formatValue(value, true, RESULT_PLACES);
+  const decimal = (index) => (row) => shown(cell(row, index), text2(cell(row, index)));
   const columns = extraColumns(table);
   if (at("estimate") >= 0) columns.push([estimateLabel, true, decimal(at("estimate"))]);
   if (at("std_error") >= 0) columns.push(["Posterior SD", true, decimal(at("std_error"))]);
@@ -791,14 +818,14 @@ function posteriorColumns(table, level, estimateLabel, exponentiated) {
     columns.push([intervalLabel(level), true, (row) => {
       const a = cell(row, low);
       const b = cell(row, high);
-      return a === null && b === null ? EMPTY : `${formatValue(a, true, RESULT_PLACES)} to ${formatValue(b, true, RESULT_PLACES)}`;
+      return a === null && b === null ? EMPTY : shownRange(a, b, text2);
     }]);
   }
   const rhat = columnIndex(table, "rhat");
   if (rhat >= 0) columns.push(["R-hat", true, decimal(rhat)]);
   for (const name of ["ess_bulk", "ess_tail"]) {
     const index = columnIndex(table, name);
-    if (index >= 0) columns.push([COLUMN_LABELS[name], true, (row) => isNumber(cell(row, index)) ? formatNumber(Math.round(cell(row, index))) : formatValue(cell(row, index))]);
+    if (index >= 0) columns.push([COLUMN_LABELS[name], true, (row) => isNumber(cell(row, index)) ? shown(cell(row, index), formatNumber(Math.round(cell(row, index)))) : formatValue(cell(row, index))]);
   }
   return columns;
 }
@@ -818,10 +845,7 @@ function samplingWarnings(tables, metrics) {
   return notes.map((note) => `<p class="fw-embed__note fw-embed__warning">${escapeHtml(note)}</p>`);
 }
 function pValueCell(index) {
-  return (row) => isNumber(cell(row, index)) ? formatPValue(cell(row, index)) : formatValue(cell(row, index));
-}
-function ratioValue(value) {
-  return isNumber(value) ? formatNumber(exp(value), true, RESULT_PLACES) : formatValue(value, true, RESULT_PLACES);
+  return (row) => isNumber(cell(row, index)) ? shown(cell(row, index), formatPValue(cell(row, index))) : formatValue(cell(row, index));
 }
 function metricLabel(name) {
   if (bayesian && name === "confidence_level") return "Credible level";
@@ -832,17 +856,19 @@ function metricLabel(name) {
 function metricValue(name, value) {
   if (name === "confidence_level" && isNumber(value)) return formatPercent(value);
   if (name === "interval_method" && typeof value === "string" && Object.hasOwn(INTERVAL_METHODS, value)) return INTERVAL_METHODS[value];
-  if (isNumber(value) && isPValueName(name)) return formatPValue(value);
-  return formatValue(value, false, RESULT_PLACES);
+  if (isNumber(value) && isPValueName(name)) return shown(value, formatPValue(value));
+  return shown(value, formatValue(value, false, RESULT_PLACES));
 }
 function renderMetrics(metrics) {
   return renderPairs(metrics.map((metric) => [metricLabel(metric.name), metricValue(metric.name, metric.value), isNumber(metric.value)]));
 }
 function renderPairs(pairs) {
   return ['<dl class="fw-embed__stats">', ...pairs.map(([term, value, numeric]) => {
-    if (numeric) return `<div><dt>${escapeHtml(term)}</dt><dd class="fw-embed__num">${escapeHtml(value)}</dd></div>`;
-    const wide = [...value].length > WIDE_TEXT ? " fw-embed__stat--wide" : "";
-    return `<div class="fw-embed__stat--text${wide}"><dt>${escapeHtml(term)}</dt><dd>${escapeHtml(value)}</dd></div>`;
+    const { text: text2, title } = typeof value === "string" ? { text: value, title: null } : value;
+    const tip2 = title === null ? "" : ` title="${escapeHtml(title)}"`;
+    if (numeric) return `<div><dt>${escapeHtml(term)}</dt><dd class="fw-embed__num"${tip2}>${escapeHtml(text2)}</dd></div>`;
+    const wide = [...text2].length > WIDE_TEXT ? " fw-embed__stat--wide" : "";
+    return `<div class="fw-embed__stat--text${wide}"><dt>${escapeHtml(term)}</dt><dd${tip2}>${escapeHtml(text2)}</dd></div>`;
   }), "</dl>"].join("\n");
 }
 function renderImage(doc) {
