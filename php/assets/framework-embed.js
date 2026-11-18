@@ -169,7 +169,7 @@ function exp(x) {
 var ROW_LIMIT = 25;
 var FEATURE_LIMIT = 10;
 var WIDE_TEXT = 24;
-var KINDS = /* @__PURE__ */ new Set(["model", "table", "test", "image", "vega-lite", "page"]);
+var KINDS = /* @__PURE__ */ new Set(["model", "table", "test", "code_snippet", "image", "vega-lite", "page"]);
 var COLUMN_LABELS = {
   term: "Term",
   estimate: "Estimate",
@@ -301,6 +301,7 @@ function render(doc) {
   if (kind === "model") body = renderModel(doc);
   else if (kind === "table") body = renderTableKind(doc);
   else if (kind === "test") body = renderTest(doc);
+  else if (kind === "code_snippet") body = renderSnippet(doc);
   else if (kind === "image") body = renderImage(doc);
   else if (kind === "vega-lite") body = renderChart(doc);
   if (body === null) {
@@ -871,6 +872,92 @@ function renderPairs(pairs) {
     return `<div class="fw-embed__stat--text${wide}"><dt>${escapeHtml(term)}</dt><dd${tip2}>${escapeHtml(text2)}</dd></div>`;
   }), "</dl>"].join("\n");
 }
+var SNIPPET_LANGUAGES = { r: "R", python: "Python", stata: "Stata" };
+var SNIPPET_BLOCKS = { code: "Code", output: "Output", message: "Message", warning: "Warning", error: "Error" };
+var SNIPPET_LINKS = { notebook: "Full notebook", model: "Model" };
+var known = (names, value) => typeof value === "string" && Object.hasOwn(names, value);
+function segmentClasses(classes) {
+  return classes.split(" ").filter((token) => /^[a-z0-9-]+$/.test(token)).map((token) => `fw-t-${token}`).join(" ");
+}
+function snippetLines(block) {
+  if (!Array.isArray(block.lines)) return null;
+  for (const line of block.lines) {
+    if (!Array.isArray(line)) return null;
+    for (const segment of line) {
+      if (!Array.isArray(segment) || segment.length !== 2 || typeof segment[0] !== "string" || typeof segment[1] !== "string") return null;
+    }
+  }
+  return block.lines;
+}
+function snippetHtml(block) {
+  const lines = snippetLines(block);
+  if (lines === null) return typeof block.text === "string" ? block.text.split("\n").map(escapeHtml) : null;
+  return lines.map((line) => line.map(([classes, value]) => {
+    const names = segmentClasses(classes);
+    return names === "" ? escapeHtml(value) : `<span class="${names}">${escapeHtml(value)}</span>`;
+  }).join(""));
+}
+function snippetHead(source, output, shown2) {
+  const parts = [
+    '<div class="fw-embed__snippet-head">',
+    `<span class="fw-embed__lang">${known(SNIPPET_LANGUAGES, source.language) ? SNIPPET_LANGUAGES[source.language] : "Code"}</span>`
+  ];
+  const file = text(source.file);
+  const name = [file === null ? null : file.split("/").pop(), text(source.label)].filter((part) => part !== null && part !== "");
+  if (name.length > 0) parts.push(`<span class="fw-embed__source">${escapeHtml(name.join(" \xB7 "))}</span>`);
+  const range = list(source.lines);
+  if (range.length === 2 && Number.isInteger(range[0]) && Number.isInteger(range[1]) && range[0] >= 1 && range[1] >= range[0]) {
+    const label = range[0] === range[1] ? `Line ${count(range[0])}` : `Lines ${count(range[0])}\u2013${count(range[1])}`;
+    const href = safeUrl(source.permalink);
+    parts.push(href === null ? `<span class="fw-embed__lines">${label}</span>` : `<a class="fw-embed__lines" href="${escapeHtml(href)}" target="_blank" rel="noopener">${label}</a>`);
+  }
+  if (output) parts.push(`<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>${shown2 ? "Hide output" : "Show output"}</button>`);
+  parts.push('<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', "</div>");
+  return parts.join("\n");
+}
+function snippetBlock(block, shown2) {
+  const html = snippetHtml(block);
+  if (html === null) return null;
+  if (block.type === "code") return `<pre class="fw-embed__code"><code>${html.join("\n")}</code></pre>`;
+  const truncated = isObject(block.truncated) && Number.isInteger(block.truncated.lines) && block.truncated.lines > 0 ? block.truncated.lines : 0;
+  const parts = [`<div class="fw-embed__block fw-embed__block--${block.type}"${shown2 ? "" : " hidden"}>`];
+  const body = [`<pre class="fw-embed__output"><code>${html.join("\n")}</code></pre>`];
+  if (truncated > 0) body.push(`<p class="fw-embed__more">${plural(truncated, "more line", "more lines")} not shown.</p>`);
+  if (block.folded === true) {
+    parts.push('<details class="fw-embed__fold">', `<summary>${SNIPPET_BLOCKS[block.type]}, ${plural(html.length + truncated, "line", "lines")}</summary>`, ...body, "</details>");
+  } else {
+    parts.push(...body);
+  }
+  parts.push("</div>");
+  return parts.join("\n");
+}
+function renderSnippet(doc) {
+  const data = doc.data;
+  if (!isObject(data) || !isObject(data.snippet)) return null;
+  const source = isObject(data.source) ? data.source : {};
+  const shown2 = !(isObject(data.display) && data.display.output === false);
+  const blocks = [];
+  let code = false;
+  let output = false;
+  for (const block of list(data.snippet.blocks)) {
+    if (!isObject(block) || !known(SNIPPET_BLOCKS, block.type)) continue;
+    const html = snippetBlock(block, shown2);
+    if (html === null) continue;
+    code = code || block.type === "code";
+    output = output || block.type !== "code";
+    blocks.push(html);
+  }
+  if (!code) return null;
+  const parts = ['<div class="fw-embed__snippet">', snippetHead(source, output, shown2), ...blocks];
+  const links = list(isObject(data.display) ? data.display.links : null).flatMap((link) => {
+    if (!isObject(link) || !known(SNIPPET_LINKS, link.rel)) return [];
+    const href = safeUrl(link.url);
+    return href === null ? [] : [`<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${SNIPPET_LINKS[link.rel]}</a>`];
+  });
+  if (links.length > 0) parts.push(`<p class="fw-embed__links">${links.join(" ")}</p>`);
+  parts.push("</div>");
+  return parts.join("\n");
+}
 function renderImage(doc) {
   const image = isObject(doc.image) ? doc.image : null;
   const src = image === null ? null : safeUrl(image.url);
@@ -966,18 +1053,22 @@ function allowedOrigin(url, hosts = DEFAULT_HOSTS) {
 function isAllowedUrl(url, hosts = DEFAULT_HOSTS) {
   return allowedOrigin(url, hosts) !== null;
 }
+function optionOf(query) {
+  return query.slice(1).split("&").includes("output=none") ? "?output=none" : "";
+}
 function matchArtifactUrl(url, hosts = DEFAULT_HOSTS) {
   const origin = allowedOrigin(url, hosts);
   if (!origin) return null;
-  const { path } = parse(url);
+  const { path, query } = parse(url);
+  const option = optionOf(query);
   for (const [type, pattern] of PATHS) {
     const m = pattern.exec(path);
     if (!m) continue;
     if (type === "path") {
       if ([m[1], m[2], m[3]].some((part) => part === "." || part === "..")) return null;
-      return { type, origin, url: origin + path, handle: m[1], project: m[2], slug: m[3], key: null, version: m[4] ? Number(m[4]) : null };
+      return { type, origin, url: origin + path + option, handle: m[1], project: m[2], slug: m[3], key: null, version: m[4] ? Number(m[4]) : null };
     }
-    return { type, origin, url: origin + path, handle: null, project: null, slug: null, key: m[1], version: m[2] ? Number(m[2]) : null };
+    return { type, origin, url: origin + path + option, handle: null, project: null, slug: null, key: m[1], version: m[2] ? Number(m[2]) : null };
   }
   return null;
 }
@@ -1040,7 +1131,52 @@ function mount(element, doc, options = {}) {
   element.innerHTML = render(doc);
   enhanceCharts(element, options);
   enhanceTips(element);
+  enhanceCopy(element);
+  enhanceOutput(element);
   return element.firstElementChild;
+}
+function enhanceCopy(root = document) {
+  if (typeof document === "undefined") return;
+  for (const button of root.querySelectorAll("[data-fw-copy]:not([data-fw-copy-ready])")) {
+    const snippet = button.closest(".fw-embed__snippet");
+    if (!snippet) continue;
+    button.setAttribute("data-fw-copy-ready", "");
+    button.hidden = false;
+    let timer = null;
+    button.addEventListener("click", async () => {
+      const code = [...snippet.querySelectorAll(".fw-embed__code")].map((pre) => pre.textContent).join("\n");
+      try {
+        await navigator.clipboard.writeText(code);
+        button.textContent = "Copied";
+      } catch {
+        button.textContent = "Copy failed";
+      }
+      clearTimeout(timer);
+      timer = setTimeout(() => {
+        button.textContent = "Copy code";
+      }, 2e3);
+    });
+  }
+}
+function enhanceOutput(root = document) {
+  if (typeof document === "undefined") return;
+  for (const button of root.querySelectorAll("[data-fw-output]:not([data-fw-output-ready])")) {
+    const snippet = button.closest(".fw-embed__snippet");
+    if (!snippet) continue;
+    button.setAttribute("data-fw-output-ready", "");
+    button.hidden = false;
+    const blocks = [...snippet.querySelectorAll(".fw-embed__block")];
+    const sync = () => {
+      const shown2 = blocks.some((block) => !block.hidden);
+      button.textContent = shown2 ? "Hide output" : "Show output";
+    };
+    sync();
+    button.addEventListener("click", () => {
+      const show2 = blocks.every((block) => block.hidden);
+      for (const block of blocks) block.hidden = !show2;
+      sync();
+    });
+  }
 }
 var tipsWatched = false;
 var tipSerial = 0;
@@ -1483,7 +1619,7 @@ function expandDetailsForPrint() {
   printing = true;
   let opened = [];
   window.addEventListener("beforeprint", () => {
-    opened = [...document.querySelectorAll("details.fw-embed__details:not([open])")];
+    opened = [...document.querySelectorAll("details.fw-embed__details:not([open]), details.fw-embed__fold:not([open])")];
     for (const details2 of opened) details2.open = true;
   });
   window.addEventListener("afterprint", () => {
@@ -1509,6 +1645,8 @@ export {
   defineElement,
   embedRequestUrl,
   enhanceCharts,
+  enhanceCopy,
+  enhanceOutput,
   enhanceTips,
   escapeHtml,
   expandDetailsForPrint,

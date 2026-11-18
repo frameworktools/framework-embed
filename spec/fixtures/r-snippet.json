@@ -1,0 +1,400 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "rsnippet00000001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "code_snippet",
+    "title": "Partial pooling across schools",
+    "description": "The model behind the second post.",
+    "alt": "R code from 02-partial-pooling.qmd, with its output.",
+    "url": "https://framework.pub/@ada/schools/r-snippet/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/rsnippet00000001/versions/1",
+    "published_at": "2026-11-18T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/schools/r-snippet/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "code_snippet",
+        "source": {
+            "language": "r",
+            "file": "notebooks/02-partial-pooling.qmd",
+            "label": "fit-bayes",
+            "lines": [
+                41,
+                44
+            ],
+            "commit": "3f2c9e1d4b5a69788796a5b4c3d2e1f0a9b8c7d6",
+            "repository": "https://github.com/frameworktools/bayesian-social-statistics",
+            "permalink": "https://github.com/frameworktools/bayesian-social-statistics/blob/3f2c9e1d4b5a69788796a5b4c3d2e1f0a9b8c7d6/notebooks/02-partial-pooling.qmd#L41-L44"
+        },
+        "snippet": {
+            "width": 80,
+            "blocks": [
+                {
+                    "type": "code",
+                    "text": "# Partial pooling: schools share a common mean\nfit <- brm(score ~ 1 + (1 | school), data = schools,\n           seed = 2026, refresh = 0)",
+                    "lines": [
+                        [
+                            [
+                                "com",
+                                "# Partial pooling: schools share a common mean"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "fit "
+                            ],
+                            [
+                                "op",
+                                "<-"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "fn",
+                                "brm"
+                            ],
+                            [
+                                "",
+                                "(score "
+                            ],
+                            [
+                                "kw",
+                                "~"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "num",
+                                "1"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "op",
+                                "+"
+                            ],
+                            [
+                                "",
+                                " ("
+                            ],
+                            [
+                                "num",
+                                "1"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "op",
+                                "|"
+                            ],
+                            [
+                                "",
+                                " school), "
+                            ],
+                            [
+                                "var",
+                                "data"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "op",
+                                "="
+                            ],
+                            [
+                                "",
+                                " schools,"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "           "
+                            ],
+                            [
+                                "var",
+                                "seed"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "op",
+                                "="
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "num",
+                                "2026"
+                            ],
+                            [
+                                "",
+                                ", "
+                            ],
+                            [
+                                "var",
+                                "refresh"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "op",
+                                "="
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "num",
+                                "0"
+                            ],
+                            [
+                                "",
+                                ")"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "message",
+                    "text": "Compiling Stan program...\nStart sampling",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "Compiling Stan program..."
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "Start sampling"
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                },
+                {
+                    "type": "code",
+                    "text": "summary(fit)",
+                    "lines": [
+                        [
+                            [
+                                "fn",
+                                "summary"
+                            ],
+                            [
+                                "",
+                                "(fit)"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "output",
+                    "text": " Family: gaussian \n  Links: mu = identity; sigma = identity \nFormula: score ~ 1 + (1 | school) \n   Data: schools (Number of observations: 400) \n  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;\n         total post-warmup draws = 4000\n\nMultilevel Hyperparameters:\n~school (Number of levels: 20) \n              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS\nsd(Intercept)     4.82      0.93     3.31     6.97 1.00     1012     1673\n\nRegression Coefficients:\n          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS\nIntercept    51.37      1.15    49.08    53.62 1.00      794     1259\n\nFurther Distributional Parameters:\n      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS\nsigma     9.94      0.36     9.27    10.67 1.00     5521     2968",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                " Family: gaussian "
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "  Links: mu = identity; sigma = identity "
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "Formula: score ~ 1 + (1 | school) "
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "   Data: schools (Number of observations: 400) "
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "         total post-warmup draws = 4000"
+                            ]
+                        ],
+                        [],
+                        [
+                            [
+                                "",
+                                "Multilevel Hyperparameters:"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "~school (Number of levels: 20) "
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "sd(Intercept)     4.82      0.93     3.31     6.97 1.00     1012     1673"
+                            ]
+                        ],
+                        [],
+                        [
+                            [
+                                "",
+                                "Regression Coefficients:"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "Intercept    51.37      1.15    49.08    53.62 1.00      794     1259"
+                            ]
+                        ],
+                        [],
+                        [
+                            [
+                                "",
+                                "Further Distributional Parameters:"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "sigma     9.94      0.36     9.27    10.67 1.00     5521     2968"
+                            ]
+                        ]
+                    ],
+                    "folded": true
+                },
+                {
+                    "type": "code",
+                    "text": "fixef(fit)[\"Intercept\", \"Estimate\"]",
+                    "lines": [
+                        [
+                            [
+                                "fn",
+                                "fixef"
+                            ],
+                            [
+                                "",
+                                "(fit)["
+                            ],
+                            [
+                                "str",
+                                "\"Intercept\""
+                            ],
+                            [
+                                "",
+                                ", "
+                            ],
+                            [
+                                "str",
+                                "\"Estimate\""
+                            ],
+                            [
+                                "",
+                                "]"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "output",
+                    "text": "[1] 51.37",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "[1] 51.37"
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                },
+                {
+                    "type": "warning",
+                    "text": "Warning: There were 3 divergent transitions after warmup.",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "Warning: There were 3 divergent transitions after warmup."
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                }
+            ]
+        },
+        "display": {
+            "links": [
+                {
+                    "rel": "notebook",
+                    "url": "https://example.academic.page/notebooks/partial-pooling"
+                }
+            ]
+        },
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

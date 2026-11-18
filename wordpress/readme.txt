@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.4.1
+Stable tag: 0.5.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -93,6 +93,10 @@ Yes. Override custom properties such as `--fw-embed-font`, `--fw-embed-mono`, `-
 A bare host name such as `framework.example.org` allows HTTPS on the default port. An origin such as `http://localhost:8000` allows that exact scheme, host, and port. IP addresses and URL paths are rejected.
 
 == Changelog ==
+
+= 0.5.0 =
+* Code snippets: a chunk's code with syntax colors, and the text it printed. Long output folds, and a button copies the code.
+* A Show output button hides or shows a snippet's output. Add ?output=none to a snippet's link to start with the output hidden.
 
 = 0.4.1 =
 * Numbers round to two decimals in results and three in data tables, however small: 0.0000006 shows as 0.00. Hover a rounded number to see its full value.

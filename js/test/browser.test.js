@@ -105,3 +105,27 @@ describe('<framework-artifact>', () => {
         expect(el.textContent).toBe('fallback');
     });
 });
+
+describe('snippet output toggle', () => {
+    it('shows hidden output on click and hides it again', () => {
+        const host = document.createElement('div');
+        document.body.append(host);
+        mount(host, load('snippet-output-hidden'), { lazy: false });
+        const button = host.querySelector('[data-fw-output]');
+        const blocks = [...host.querySelectorAll('.fw-embed__block')];
+        expect(button.hidden).toBe(false);
+        expect(button.textContent).toBe('Show output');
+        expect(blocks.every((block) => block.hidden)).toBe(true);
+        button.click();
+        expect(button.textContent).toBe('Hide output');
+        expect(blocks.some((block) => block.hidden)).toBe(false);
+        button.click();
+        expect(blocks.every((block) => block.hidden)).toBe(true);
+    });
+
+    it('starts with output shown when the snippet does not hide it', () => {
+        const host = document.createElement('div');
+        mount(host, load('python-snippet'), { lazy: false });
+        expect(host.querySelector('[data-fw-output]').textContent).toBe('Hide output');
+    });
+});

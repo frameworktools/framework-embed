@@ -17,6 +17,8 @@ A Framework Cloud server serves these public, cookie-free routes:
 | `GET /api/oembed?url=…&format=json` | oEmbed 1.0 `photo` response for images with known dimensions, or `link` for other artifacts |
 | `GET /.well-known/framework.json` | Discovery document listing the routes above |
 
+For a code snippet, `?output=none` on a pasted URL or an artifact route sets `data.display.output` to `false`, so the output starts hidden. The document's `url` and `embed_url` keep the option. Other kinds ignore it.
+
 Private, password-protected, missing, and deleted artifacts return `404` with `Cache-Control: no-store`. Version URLs send `Cache-Control: public, max-age=3600`. Newest-version URLs send `Cache-Control: public, max-age=300`. Resolve and oEmbed responses send `max-age=3600` when the requested URL names a version and `max-age=300` otherwise.
 
 ## Embed document: `framework.embed/v1`
@@ -43,8 +45,8 @@ Private, password-protected, missing, and deleted artifacts return `404` with `C
 }
 ```
 
-- `kind` is `model`, `table`, `test`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
-- `data` is set for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
+- `kind` is `model`, `table`, `test`, `code_snippet`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
+- `data` is set for `code_snippet` with the normalized snippet (see `code_snippet` below), and for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
 - `spec` is set for `vega-lite` and contains the Vega-Lite specification with inlined data.
 - `image` contains `url`, `content_type`, `width`, and `height`. It is set for `image` and may be set for other kinds in future updates as a fallback. `width` and `height` may be `null`.
 - `page` covers HTML documents, Quarto sites, PDFs, data files, and other outputs. Renderers display a link card with the title, description, author, and attribution link.
@@ -136,11 +138,12 @@ The JavaScript and PHP renderers produce identical HTML for each embed document,
 - `model`: one coefficient table per coefficient-like table (estimate, exponentiated ratio when `model.exponentiate` is set, standard error, test statistic, p-value, and confidence interval), followed by fit statistics and additional tables in a `Model details` disclosure.
 - `table`: a static `<table>` with the first 25 rows and a note stating the row count with a link to the full artifact.
 - `test`: method, test statistic, p-value, estimates, and confidence interval, followed by parameters and additional details in a `Test details` disclosure.
+- `code_snippet`: a bordered panel with a header, the code blocks, and the output blocks between them, then links to the notebook and model.
 - `image`: `<img src alt loading="lazy">`.
 - `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback link to the artifact. The JavaScript bundle renders the chart with `vega-embed`. Without JavaScript, the fallback link remains visible.
 - `page`: a link card.
 
-The stylesheet exposes custom properties (`--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`). It follows `prefers-color-scheme` and any `data-theme="dark"` or `.dark` ancestor.
+The stylesheet exposes custom properties (`--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-code`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`). It follows `prefers-color-scheme` and any `data-theme="dark"` or `.dark` ancestor.
 
 ## Security rules for consumers
 
@@ -342,6 +345,64 @@ A closed `<details class="fw-embed__details">` with `<summary>Test details</summ
 
 Numbers use result formatting.
 
+### `code_snippet`
+
+A chunk's code and the text it printed, as a notebook showed them. `data` is the snippet as Framework Cloud normalizes it:
+
+```json
+{
+  "schema": "framework.artifact/v1",
+  "kind": "code_snippet",
+  "source": {"language": "r", "file": "notebooks/02-partial-pooling.qmd", "label": "fit-bayes", "lines": [41, 44],
+             "permalink": "https://github.com/…/blob/<commit>/notebooks/02-partial-pooling.qmd#L41-L44"},
+  "snippet": {"width": 80, "blocks": [
+    {"type": "code", "text": "summary(fit)", "lines": [[["fn", "summary"], ["", "(fit)"]]]},
+    {"type": "output", "text": "…", "lines": [[["", "…"]]], "folded": true, "truncated": {"lines": 1240}}
+  ]},
+  "display": {"links": [{"rel": "notebook", "url": "https://…"}, {"rel": "model", "url": "https://…"}]},
+  "truncated": true
+}
+```
+
+- `source.language` is `r`, `python`, or `stata`. `file`, `label`, `lines`, `commit`, `repository`, and `permalink` are optional. Cloud sets `permalink` only for a GitHub repository at a full commit.
+- Block `type` is `code`, `output`, `message`, `warning`, or `error`. Every block carries plain `text` and the same text as `lines`: a list of lines, each a list of `[classes, text]` segments. `classes` is a space-separated string, empty for plain text.
+- Code classes: `kw`, `str`, `num`, `const`, `fn`, `var`, `op`, `com`. Output classes: `res`, `inp`, and `err` (Stata results, input, and errors), `bold`, `italic`, `underline`, `faint`, and `ansi-black` through `ansi-white`. Cloud builds them; renderers never highlight or parse SMCL or ANSI.
+- `folded` (output blocks) shows the block closed. `truncated.lines` counts lines Cloud cut from the end.
+- `display.links` holds only links a reader of the embed may open. A model link appears only when the model is embeddable.
+- `display.output` is `false` when the output starts hidden. Cloud sets it for `?output=none`. Absent or `true`, output shows.
+
+```html
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">R</span>
+<span class="fw-embed__source">02-partial-pooling.qmd · fit-bayes</span>
+<a class="fw-embed__lines" href="{permalink}" target="_blank" rel="noopener">Lines 41–44</a>
+<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>Hide output</button>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-fn">summary</span>(fit)</code></pre>
+<div class="fw-embed__block fw-embed__block--output">
+<details class="fw-embed__fold">
+<summary>Output, 1259 lines</summary>
+<pre class="fw-embed__output"><code>…</code></pre>
+<p class="fw-embed__more">1240 more lines not shown.</p>
+</details>
+</div>
+<p class="fw-embed__links"><a href="{url}" target="_blank" rel="noopener">Full notebook</a> <a href="{url}" target="_blank" rel="noopener">Model</a></p>
+</div>
+```
+
+- The header names the language (`R`, `Python`, `Stata`, else `Code`), then the file's last path segment and the label joined by ` · `, then the line range when `lines` holds two integers with `1 ≤ first ≤ last`: `Line 41` or `Lines 41–44`, numbers formatted as counts (Number formatting: digits group from five digits up). The range links to `permalink` when it is a safe URL.
+- A snippet with at least one rendered non-code block gets an output toggle before the copy button. It reads `Hide output`, or `Show output` when `display.output` is `false`. In that case every non-code block also carries `hidden`. The toggle ships `hidden`. The JS bundle shows it, and a click shows or hides every non-code block and swaps the label. Without the bundle, hidden output stays hidden.
+- The copy button ships `hidden`. The JS bundle shows it and copies the `textContent` of the snippet's code blocks joined with a newline, without output. Server-rendered markup without the bundle shows no button.
+- Each segment becomes a `<span>` whose classes are the segment's tokens prefixed with `fw-t-` (`res bold` → `fw-t-res fw-t-bold`). Tokens outside `[a-z0-9-]` are dropped; a segment with no valid token is plain escaped text. Lines join with `\n` inside `<code>`.
+- When `lines` is not a list of lines of two-string segments, the block renders its `text` split on `\n`, unstyled. A block with neither is skipped, as is a block of unknown `type`.
+- Every non-code block sits in `<div class="fw-embed__block fw-embed__block--{type}">`. A folded block wraps its output in `<details class="fw-embed__fold">` with `<summary>{Output|Message|Warning|Error}, {n} lines</summary>`, where `n` counts shown and cut lines (`1 line` singular). A cut block ends with `<p class="fw-embed__more">{n} more lines not shown.</p>`.
+- Links: `notebook` reads `Full notebook`, `model` reads `Model`. Other `rel` values and unsafe URLs are dropped. The paragraph is left out when no link remains.
+- A snippet with no renderable code block renders as `page`.
+
+Code and output use `--fw-embed-code`, a system monospace stack by default (`ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace`), so box-drawing characters in Stata tables share one font and columns stay aligned. Lines do not wrap; a long line scrolls. Output lines sit at 1.45 so Stata's box lines nearly join. Messages are muted, warnings carry an amber rule, and errors a red rule.
+
 ### `image`
 
 ```html
@@ -456,7 +517,7 @@ Embed requests never send cookies and never follow redirects.
 
 ## Artifact URLs
 
-On an allowed host, these paths are artifact URLs. Query strings and fragments are ignored.
+On an allowed host, these paths are artifact URLs. Fragments and query strings are ignored, except `output=none`. That option asks for a code snippet with its output hidden, and it stays on the matched URL and the URL requested.
 
 | Path | Type |
 |---|---|
@@ -466,7 +527,7 @@ On an allowed host, these paths are artifact URLs. Query strings and fragments a
 
 `{key}` is 1 to 64 of `A-Z a-z 0-9 _ -`. Handles, projects, and slugs are 1 to 200 of `A-Z a-z 0-9 _ . -`, and never `.` or `..`. `{n}` is a positive integer of at most nine digits. A trailing slash is allowed on `key` and `path` URLs.
 
-`embed` URLs are requested directly. Other artifact URLs are requested as `{origin}/api/embed/v1/resolve?url={origin}{path}`, with the inner URL percent-encoded.
+`embed` URLs are requested directly. Other artifact URLs are requested as `{origin}/api/embed/v1/resolve?url={origin}{path}`, with the inner URL percent-encoded. With the option, the inner URL is `{origin}{path}?output=none`, and an `embed` URL is requested as `{origin}{path}?output=none`.
 
 ## Theming
 

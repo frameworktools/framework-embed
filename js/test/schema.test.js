@@ -8,7 +8,7 @@ const spec = join(dirname(fileURLToPath(import.meta.url)), '../../spec');
 const schema = JSON.parse(readFileSync(join(spec, 'embed.schema.json'), 'utf8'));
 const validate = new Ajv2020({ strict: false, allErrors: true }).compile(schema);
 // Fixtures that break the schema on purpose, to show renderers survive a hostile or broken server.
-const INVALID = ['hostile-image.json'];
+const INVALID = ['hostile-image.json', 'hostile-snippet.json'];
 const names = readdirSync(join(spec, 'fixtures')).filter((f) => f.endsWith('.json') && !INVALID.includes(f)).sort();
 
 describe('embed.schema.json', () => {

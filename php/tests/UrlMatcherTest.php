@@ -86,4 +86,15 @@ final class UrlMatcherTest extends TestCase
             $matcher->requestUrl('https://framework.pub/@ada/admissions/model/versions/2?utm=1'));
         $this->assertSame('https://framework.pub/api/embed/v1/artifacts/abc', $matcher->requestUrl('https://framework.pub/api/embed/v1/artifacts/abc'));
     }
+
+    public function test_keeps_output_none_and_no_other_query(): void
+    {
+        $matcher = new UrlMatcher();
+        $this->assertSame('https://framework.pub/d/abc?output=none', $matcher->match('https://framework.pub/d/abc?utm=1&output=none#x')?->url);
+        $this->assertSame('https://framework.pub/d/abc', $matcher->match('https://framework.pub/d/abc?output=all')?->url);
+        $this->assertSame('https://framework.pub/api/embed/v1/resolve?url=https%3A%2F%2Fframework.pub%2Fd%2Fabc%3Foutput%3Dnone',
+            $matcher->requestUrl('https://framework.pub/d/abc?output=none'));
+        $this->assertSame('https://framework.pub/api/embed/v1/artifacts/abc/versions/2?output=none',
+            $matcher->requestUrl('https://framework.pub/api/embed/v1/artifacts/abc/versions/2?output=none'));
+    }
 }

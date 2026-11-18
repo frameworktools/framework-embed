@@ -13,7 +13,8 @@ const load = (name) => JSON.parse(readFileSync(join(fixtures, name + '.json'), '
 describe('fixtures', () => {
     it('has a fixture for every required case', () => {
         for (const name of ['r-glm-logit', 'r-lmer', 'python-xgboost', 'stata-regress', 'r-tibble', 'r-ttest-welch', 'r-ggplot',
-            'python-altair', 'page', 'truncated-table', 'minimal-model', 'minimal-test', 'hostile-model', 'hostile-vega', 'hostile-page', 'hostile-image']) {
+            'python-altair', 'page', 'truncated-table', 'minimal-model', 'minimal-test', 'hostile-model', 'hostile-vega', 'hostile-page', 'hostile-image',
+            'r-snippet', 'stata-snippet', 'python-snippet', 'snippet-truncated', 'snippet-output-hidden', 'hostile-snippet']) {
             expect(names).toContain(name);
         }
     });

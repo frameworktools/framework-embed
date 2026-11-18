@@ -64,19 +64,25 @@ export function isAllowedUrl(url, hosts = DEFAULT_HOSTS) {
     return allowedOrigin(url, hosts) !== null;
 }
 
+// The one query option an artifact URL keeps: output=none, a code snippet without its output.
+function optionOf(query) {
+    return query.slice(1).split('&').includes('output=none') ? '?output=none' : '';
+}
+
 // What an artifact URL on an allowed host points at, or null.
 export function matchArtifactUrl(url, hosts = DEFAULT_HOSTS) {
     const origin = allowedOrigin(url, hosts);
     if (!origin) return null;
-    const { path } = parse(url);
+    const { path, query } = parse(url);
+    const option = optionOf(query);
     for (const [type, pattern] of PATHS) {
         const m = pattern.exec(path);
         if (!m) continue;
         if (type === 'path') {
             if ([m[1], m[2], m[3]].some((part) => part === '.' || part === '..')) return null;
-            return { type, origin, url: origin + path, handle: m[1], project: m[2], slug: m[3], key: null, version: m[4] ? Number(m[4]) : null };
+            return { type, origin, url: origin + path + option, handle: m[1], project: m[2], slug: m[3], key: null, version: m[4] ? Number(m[4]) : null };
         }
-        return { type, origin, url: origin + path, handle: null, project: null, slug: null, key: m[1], version: m[2] ? Number(m[2]) : null };
+        return { type, origin, url: origin + path + option, handle: null, project: null, slug: null, key: m[1], version: m[2] ? Number(m[2]) : null };
     }
     return null;
 }

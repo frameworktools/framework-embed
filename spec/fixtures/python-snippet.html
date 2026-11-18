@@ -1,0 +1,40 @@
+<figure class="fw-embed fw-embed--code_snippet" data-fw-embed-kind="code_snippet" data-fw-embed-key="pysnippet0000001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">Income and scores</span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/schools/python-snippet/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+<div class="fw-embed__body">
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">Python</span>
+<span class="fw-embed__source">03-income.ipynb · fit-ols</span>
+<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>Hide output</button>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code>model <span class="fw-t-op">=</span> smf.ols(<span class="fw-t-str">&quot;score ~ income&quot;</span>, <span class="fw-t-var">data</span><span class="fw-t-op">=</span>df).fit()
+<span class="fw-t-fn">print</span>(model.params.round(<span class="fw-t-num">3</span>))
+model.predict({<span class="fw-t-str">&quot;income&quot;</span>: [<span class="fw-t-str">&quot;high&quot;</span>]})</code></pre>
+<div class="fw-embed__block fw-embed__block--output">
+<pre class="fw-embed__output"><code>Intercept    48.912
+income        0.214
+dtype: float64</code></pre>
+</div>
+<div class="fw-embed__block fw-embed__block--message">
+<pre class="fw-embed__output"><code>/opt/venv/lib/statsmodels/base/model.py:607: ConvergenceWarning: Maximum Likelihood optimization failed to converge.</code></pre>
+</div>
+<div class="fw-embed__block fw-embed__block--error">
+<pre class="fw-embed__output"><code><span class="fw-t-ansi-red">---------------------------------------------------------------------------</span>
+<span class="fw-t-ansi-red">PatsyError</span>                                Traceback (most recent call last)
+Cell <span class="fw-t-ansi-green">In[4], line 3</span>
+<span class="fw-t-bold fw-t-ansi-green">      1</span> model = smf.ols(<span class="fw-t-ansi-yellow">&quot;score ~ income&quot;</span>, data=df).fit()
+<span class="fw-t-ansi-green">----&gt; 3</span> model.predict({&quot;income&quot;: [&quot;high&quot;]})
+
+<span class="fw-t-ansi-red">PatsyError</span>: Error converting data to categorical: observation with value &#39;high&#39; does not match any of the expected levels</code></pre>
+</div>
+<p class="fw-embed__links"><a href="https://example.academic.page/notebooks/income" target="_blank" rel="noopener">Full notebook</a> <a href="https://framework.pub/@ada/schools/income-model" target="_blank" rel="noopener">Model</a></p>
+</div>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

@@ -1,0 +1,243 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "pysnippet0000001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "code_snippet",
+    "title": "Income and scores",
+    "description": null,
+    "alt": "Python code from 03-income.ipynb, with its output.",
+    "url": "https://framework.pub/@ada/schools/python-snippet/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/pysnippet0000001/versions/1",
+    "published_at": "2026-11-18T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/schools/python-snippet/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "code_snippet",
+        "source": {
+            "language": "python",
+            "file": "notebooks/03-income.ipynb",
+            "label": "fit-ols"
+        },
+        "snippet": {
+            "blocks": [
+                {
+                    "type": "code",
+                    "text": "model = smf.ols(\"score ~ income\", data=df).fit()\nprint(model.params.round(3))\nmodel.predict({\"income\": [\"high\"]})",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "model "
+                            ],
+                            [
+                                "op",
+                                "="
+                            ],
+                            [
+                                "",
+                                " smf.ols("
+                            ],
+                            [
+                                "str",
+                                "\"score ~ income\""
+                            ],
+                            [
+                                "",
+                                ", "
+                            ],
+                            [
+                                "var",
+                                "data"
+                            ],
+                            [
+                                "op",
+                                "="
+                            ],
+                            [
+                                "",
+                                "df).fit()"
+                            ]
+                        ],
+                        [
+                            [
+                                "fn",
+                                "print"
+                            ],
+                            [
+                                "",
+                                "(model.params.round("
+                            ],
+                            [
+                                "num",
+                                "3"
+                            ],
+                            [
+                                "",
+                                "))"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "model.predict({"
+                            ],
+                            [
+                                "str",
+                                "\"income\""
+                            ],
+                            [
+                                "",
+                                ": ["
+                            ],
+                            [
+                                "str",
+                                "\"high\""
+                            ],
+                            [
+                                "",
+                                "]})"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "output",
+                    "text": "Intercept    48.912\nincome        0.214\ndtype: float64",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "Intercept    48.912"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "income        0.214"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "dtype: float64"
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                },
+                {
+                    "type": "message",
+                    "text": "/opt/venv/lib/statsmodels/base/model.py:607: ConvergenceWarning: Maximum Likelihood optimization failed to converge.",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "/opt/venv/lib/statsmodels/base/model.py:607: ConvergenceWarning: Maximum Likelihood optimization failed to converge."
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                },
+                {
+                    "type": "error",
+                    "text": "---------------------------------------------------------------------------\nPatsyError                                Traceback (most recent call last)\nCell In[4], line 3\n      1 model = smf.ols(\"score ~ income\", data=df).fit()\n----> 3 model.predict({\"income\": [\"high\"]})\n\nPatsyError: Error converting data to categorical: observation with value 'high' does not match any of the expected levels",
+                    "lines": [
+                        [
+                            [
+                                "ansi-red",
+                                "---------------------------------------------------------------------------"
+                            ]
+                        ],
+                        [
+                            [
+                                "ansi-red",
+                                "PatsyError"
+                            ],
+                            [
+                                "",
+                                "                                Traceback (most recent call last)"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "Cell "
+                            ],
+                            [
+                                "ansi-green",
+                                "In[4], line 3"
+                            ]
+                        ],
+                        [
+                            [
+                                "bold ansi-green",
+                                "      1"
+                            ],
+                            [
+                                "",
+                                " model = smf.ols("
+                            ],
+                            [
+                                "ansi-yellow",
+                                "\"score ~ income\""
+                            ],
+                            [
+                                "",
+                                ", data=df).fit()"
+                            ]
+                        ],
+                        [
+                            [
+                                "ansi-green",
+                                "----> 3"
+                            ],
+                            [
+                                "",
+                                " model.predict({\"income\": [\"high\"]})"
+                            ]
+                        ],
+                        [],
+                        [
+                            [
+                                "ansi-red",
+                                "PatsyError"
+                            ],
+                            [
+                                "",
+                                ": Error converting data to categorical: observation with value 'high' does not match any of the expected levels"
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                }
+            ]
+        },
+        "display": {
+            "links": [
+                {
+                    "rel": "notebook",
+                    "url": "https://example.academic.page/notebooks/income"
+                },
+                {
+                    "rel": "model",
+                    "url": "https://framework.pub/@ada/schools/income-model"
+                }
+            ]
+        },
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

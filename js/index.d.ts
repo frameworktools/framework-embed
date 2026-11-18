@@ -3,7 +3,7 @@ export interface EmbedDocument {
     key?: string;
     version?: number;
     latest_version?: number;
-    kind: 'model' | 'table' | 'test' | 'image' | 'vega-lite' | 'page' | string;
+    kind: 'model' | 'table' | 'test' | 'code_snippet' | 'image' | 'vega-lite' | 'page' | string;
     title?: string | null;
     description?: string | null;
     alt?: string | null;
@@ -72,6 +72,9 @@ export function mount(element: Element, doc: EmbedDocument, options?: { lazy?: b
 export function enhanceCharts(root?: ParentNode, options?: { lazy?: boolean }): number;
 /** Adds hover and placement to variable tips under root, and renumbers repeated tip ids. */
 export function enhanceTips(root?: ParentNode): void;
+/** Shows and wires the copy button on code snippets. */
+export function enhanceCopy(root?: ParentNode): void;
+export function enhanceOutput(root?: ParentNode): void;
 export function loadVegaEmbed(): Promise<NonNullable<Config['vegaEmbed']>>;
 /** Light or dark from the page: markers, then background luminance, then color-scheme, then the OS. */
 export function prefersDark(element: Element): boolean;

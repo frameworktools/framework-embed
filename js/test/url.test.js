@@ -65,6 +65,15 @@ describe('artifact URLs', () => {
             .toBe('https://framework.pub/api/embed/v1/resolve?url=https%3A%2F%2Fframework.pub%2F%40ada%2Fadmissions%2Fmodel%2Fversions%2F2');
         expect(embedRequestUrl('https://framework.pub/api/embed/v1/artifacts/abc')).toBe('https://framework.pub/api/embed/v1/artifacts/abc');
     });
+
+    it('keeps output=none and no other query', () => {
+        expect(matchArtifactUrl('https://framework.pub/d/abc?utm=1&output=none#x').url).toBe('https://framework.pub/d/abc?output=none');
+        expect(matchArtifactUrl('https://framework.pub/d/abc?output=all').url).toBe('https://framework.pub/d/abc');
+        expect(embedRequestUrl('https://framework.pub/d/abc?output=none'))
+            .toBe('https://framework.pub/api/embed/v1/resolve?url=https%3A%2F%2Fframework.pub%2Fd%2Fabc%3Foutput%3Dnone');
+        expect(embedRequestUrl('https://framework.pub/api/embed/v1/artifacts/abc/versions/2?output=none'))
+            .toBe('https://framework.pub/api/embed/v1/artifacts/abc/versions/2?output=none');
+    });
 });
 
 describe('fetchEmbed', () => {

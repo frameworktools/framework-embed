@@ -1,0 +1,128 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "hostilesnippet01",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "code_snippet",
+    "title": "<script>alert('title')</script>",
+    "description": null,
+    "alt": "Hostile snippet.",
+    "url": "https://framework.pub/@ada/schools/hostile-snippet/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/hostilesnippet01/versions/1",
+    "published_at": "2026-11-18T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/schools/hostile-snippet/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "code_snippet",
+        "source": {
+            "language": "__proto__",
+            "file": "<script>alert(1)</script>.py",
+            "label": "\"><img src=x onerror=alert(1)>",
+            "lines": [
+                3,
+                1
+            ],
+            "permalink": "javascript:alert(1)"
+        },
+        "snippet": {
+            "blocks": [
+                {
+                    "type": "code",
+                    "text": "<script>alert(1)</script>",
+                    "lines": [
+                        [
+                            [
+                                "kw\" onmouseover=\"alert(1)",
+                                "<b>x</b>"
+                            ],
+                            [
+                                "str fw-x Bad_Class",
+                                "</code></pre><script>alert(2)</script>"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "output",
+                    "text": "plain <i>fallback</i> & 'quotes'",
+                    "lines": "not a list",
+                    "folded": "yes"
+                },
+                {
+                    "type": "constructor",
+                    "text": "skipped"
+                },
+                {
+                    "type": [
+                        "code"
+                    ],
+                    "text": "skipped"
+                },
+                {
+                    "type": "warning",
+                    "text": "x",
+                    "lines": [
+                        [
+                            [
+                                "warn",
+                                5
+                            ]
+                        ]
+                    ],
+                    "truncated": {
+                        "lines": "12"
+                    }
+                },
+                {
+                    "type": "error",
+                    "lines": [
+                        [
+                            [
+                                "err",
+                                "err <svg onload=alert(1)>"
+                            ]
+                        ]
+                    ],
+                    "folded": true,
+                    "truncated": {
+                        "lines": 1
+                    }
+                }
+            ]
+        },
+        "display": {
+            "links": [
+                {
+                    "rel": "notebook",
+                    "url": "javascript:alert(1)"
+                },
+                {
+                    "rel": "model",
+                    "url": "https://framework.pub/x\"onmouseover=alert(1)"
+                },
+                {
+                    "rel": "__proto__",
+                    "url": "https://framework.pub/"
+                },
+                {
+                    "rel": "model",
+                    "url": "https://framework.pub/@ada/schools/model"
+                }
+            ]
+        },
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

@@ -1,0 +1,47 @@
+<figure class="fw-embed fw-embed--code_snippet" data-fw-embed-kind="code_snippet" data-fw-embed-key="statasnippet0001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">Prices by mileage and weight</span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/schools/stata-snippet/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+<div class="fw-embed__body">
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">Stata</span>
+<span class="fw-embed__source">01-prices.do · fit-ols</span>
+<span class="fw-embed__lines">Lines 12–13</span>
+<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>Hide output</button>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-kw">sysuse</span> auto, clear</code></pre>
+<div class="fw-embed__block fw-embed__block--output">
+<pre class="fw-embed__output"><code>(1978 automobile data)</code></pre>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-kw">quietly</span> <span class="fw-t-kw">summarize</span> price
+<span class="fw-t-kw">regress</span> price mpg weight</code></pre>
+<div class="fw-embed__block fw-embed__block--output">
+<pre class="fw-embed__output"><code>      Source │       SS           df       MS      Number of obs   =<span class="fw-t-res">        74</span>
+─────────────┼──────────────────────────────────   F(2, 71)        = <span class="fw-t-res">     14.74</span>
+       Model │ <span class="fw-t-res"> 186321280         2  93160639.9   </span>Prob &gt; F        =<span class="fw-t-res">    0.0000</span>
+    Residual │ <span class="fw-t-res">  448744116        71  6320339.67   </span>R-squared       =<span class="fw-t-res">    0.2934</span>
+─────────────┼──────────────────────────────────   Adj R-squared   =<span class="fw-t-res">    0.2735</span>
+       Total │ <span class="fw-t-res">  635065396        73  8699525.97   </span>Root MSE        =   <span class="fw-t-res"> 2514</span>
+
+─────────────┬────────────────────────────────────────────────────────────────
+       price │ Coefficient  Std. err.      t   P&gt;|t|     [95% conf. interval]
+─────────────┼────────────────────────────────────────────────────────────────
+         mpg │<span class="fw-t-res">  -226.4207   71.84876    -3.15   0.002    -369.6824   -83.15899</span>
+      weight │<span class="fw-t-res">    1.74566   .6411763     2.72   0.008     .4673948    3.023926</span>
+       _cons │<span class="fw-t-res">   1946.069    3597.05     0.54   0.590    -5226.245    9118.382</span>
+─────────────┴────────────────────────────────────────────────────────────────</code></pre>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-kw">regress</span> price foo</code></pre>
+<div class="fw-embed__block fw-embed__block--error">
+<pre class="fw-embed__output"><code><span class="fw-t-err">variable </span><span class="fw-t-err fw-t-bold">foo</span><span class="fw-t-err"> not found</span>
+r(111);</code></pre>
+</div>
+</div>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

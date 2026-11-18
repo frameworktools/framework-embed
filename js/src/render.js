@@ -7,7 +7,7 @@ export const FEATURE_LIMIT = 10;
 // Text values longer than this many characters take a full row of the statistics grid.
 export const WIDE_TEXT = 24;
 
-const KINDS = new Set(['model', 'table', 'test', 'image', 'vega-lite', 'page']);
+const KINDS = new Set(['model', 'table', 'test', 'code_snippet', 'image', 'vega-lite', 'page']);
 
 const COLUMN_LABELS = {
     term: 'Term', estimate: 'Estimate', std_error: 'Std. error', statistic: 'Statistic', p_value: 'p-value',
@@ -78,6 +78,7 @@ export function render(doc) {
     if (kind === 'model') body = renderModel(doc);
     else if (kind === 'table') body = renderTableKind(doc);
     else if (kind === 'test') body = renderTest(doc);
+    else if (kind === 'code_snippet') body = renderSnippet(doc);
     else if (kind === 'image') body = renderImage(doc);
     else if (kind === 'vega-lite') body = renderChart(doc);
     if (body === null) {
@@ -760,6 +761,107 @@ function renderPairs(pairs) {
         const wide = [...text].length > WIDE_TEXT ? ' fw-embed__stat--wide' : '';
         return `<div class="fw-embed__stat--text${wide}"><dt>${escapeHtml(term)}</dt><dd${tip}>${escapeHtml(text)}</dd></div>`;
     }), '</dl>'].join('\n');
+}
+
+// --- code snippets ----------------------------------------------------------
+// Code and the text it printed, as a notebook showed them. Cloud colors the code and styles the
+// output; each block arrives as plain `text` and as `lines` of [classes, text] segments.
+
+const SNIPPET_LANGUAGES = { r: 'R', python: 'Python', stata: 'Stata' };
+const SNIPPET_BLOCKS = { code: 'Code', output: 'Output', message: 'Message', warning: 'Warning', error: 'Error' };
+const SNIPPET_LINKS = { notebook: 'Full notebook', model: 'Model' };
+const known = (names, value) => typeof value === 'string' && Object.hasOwn(names, value);
+
+// A segment's classes, each prefixed: "res bold" -> "fw-t-res fw-t-bold". Tokens outside [a-z0-9-] are dropped.
+function segmentClasses(classes) {
+    return classes.split(' ').filter((token) => /^[a-z0-9-]+$/.test(token)).map((token) => `fw-t-${token}`).join(' ');
+}
+
+// A block's lines as segments, or null when they don't fit the shape.
+function snippetLines(block) {
+    if (!Array.isArray(block.lines)) return null;
+    for (const line of block.lines) {
+        if (!Array.isArray(line)) return null;
+        for (const segment of line) {
+            if (!Array.isArray(segment) || segment.length !== 2 || typeof segment[0] !== 'string' || typeof segment[1] !== 'string') return null;
+        }
+    }
+    return block.lines;
+}
+
+// A block's HTML lines: styled segments, or its plain text when the segments are missing or malformed.
+function snippetHtml(block) {
+    const lines = snippetLines(block);
+    if (lines === null) return typeof block.text === 'string' ? block.text.split('\n').map(escapeHtml) : null;
+    return lines.map((line) => line.map(([classes, value]) => {
+        const names = segmentClasses(classes);
+        return names === '' ? escapeHtml(value) : `<span class="${names}">${escapeHtml(value)}</span>`;
+    }).join(''));
+}
+
+function snippetHead(source, output, shown) {
+    const parts = ['<div class="fw-embed__snippet-head">',
+        `<span class="fw-embed__lang">${known(SNIPPET_LANGUAGES, source.language) ? SNIPPET_LANGUAGES[source.language] : 'Code'}</span>`];
+    const file = text(source.file);
+    const name = [file === null ? null : file.split('/').pop(), text(source.label)].filter((part) => part !== null && part !== '');
+    if (name.length > 0) parts.push(`<span class="fw-embed__source">${escapeHtml(name.join(' · '))}</span>`);
+    const range = list(source.lines);
+    if (range.length === 2 && Number.isInteger(range[0]) && Number.isInteger(range[1]) && range[0] >= 1 && range[1] >= range[0]) {
+        const label = range[0] === range[1] ? `Line ${count(range[0])}` : `Lines ${count(range[0])}–${count(range[1])}`;
+        const href = safeUrl(source.permalink);
+        parts.push(href === null
+            ? `<span class="fw-embed__lines">${label}</span>`
+            : `<a class="fw-embed__lines" href="${escapeHtml(href)}" target="_blank" rel="noopener">${label}</a>`);
+    }
+    if (output) parts.push(`<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>${shown ? 'Hide output' : 'Show output'}</button>`);
+    parts.push('<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', '</div>');
+    return parts.join('\n');
+}
+
+function snippetBlock(block, shown) {
+    const html = snippetHtml(block);
+    if (html === null) return null;
+    if (block.type === 'code') return `<pre class="fw-embed__code"><code>${html.join('\n')}</code></pre>`;
+    const truncated = isObject(block.truncated) && Number.isInteger(block.truncated.lines) && block.truncated.lines > 0 ? block.truncated.lines : 0;
+    const parts = [`<div class="fw-embed__block fw-embed__block--${block.type}"${shown ? '' : ' hidden'}>`];
+    const body = [`<pre class="fw-embed__output"><code>${html.join('\n')}</code></pre>`];
+    if (truncated > 0) body.push(`<p class="fw-embed__more">${plural(truncated, 'more line', 'more lines')} not shown.</p>`);
+    if (block.folded === true) {
+        parts.push('<details class="fw-embed__fold">', `<summary>${SNIPPET_BLOCKS[block.type]}, ${plural(html.length + truncated, 'line', 'lines')}</summary>`, ...body, '</details>');
+    } else {
+        parts.push(...body);
+    }
+    parts.push('</div>');
+    return parts.join('\n');
+}
+
+function renderSnippet(doc) {
+    const data = doc.data;
+    if (!isObject(data) || !isObject(data.snippet)) return null;
+    const source = isObject(data.source) ? data.source : {};
+    // display.output false: the output starts hidden, and the toggle shows it
+    const shown = !(isObject(data.display) && data.display.output === false);
+    const blocks = [];
+    let code = false;
+    let output = false;
+    for (const block of list(data.snippet.blocks)) {
+        if (!isObject(block) || !known(SNIPPET_BLOCKS, block.type)) continue;
+        const html = snippetBlock(block, shown);
+        if (html === null) continue;
+        code = code || block.type === 'code';
+        output = output || block.type !== 'code';
+        blocks.push(html);
+    }
+    if (!code) return null;
+    const parts = ['<div class="fw-embed__snippet">', snippetHead(source, output, shown), ...blocks];
+    const links = list(isObject(data.display) ? data.display.links : null).flatMap((link) => {
+        if (!isObject(link) || !known(SNIPPET_LINKS, link.rel)) return [];
+        const href = safeUrl(link.url);
+        return href === null ? [] : [`<a href="${escapeHtml(href)}" target="_blank" rel="noopener">${SNIPPET_LINKS[link.rel]}</a>`];
+    });
+    if (links.length > 0) parts.push(`<p class="fw-embed__links">${links.join(' ')}</p>`);
+    parts.push('</div>');
+    return parts.join('\n');
 }
 
 // --- other kinds ------------------------------------------------------------

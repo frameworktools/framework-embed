@@ -1,0 +1,301 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "statasnippet0001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "code_snippet",
+    "title": "Prices by mileage and weight",
+    "description": null,
+    "alt": "Stata code from 01-prices.do, with its output.",
+    "url": "https://framework.pub/@ada/schools/stata-snippet/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/statasnippet0001/versions/1",
+    "published_at": "2026-11-18T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/schools/stata-snippet/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "code_snippet",
+        "source": {
+            "language": "stata",
+            "file": "analysis/01-prices.do",
+            "label": "fit-ols",
+            "lines": [
+                12,
+                13
+            ]
+        },
+        "snippet": {
+            "width": 80,
+            "blocks": [
+                {
+                    "type": "code",
+                    "text": "sysuse auto, clear",
+                    "lines": [
+                        [
+                            [
+                                "kw",
+                                "sysuse"
+                            ],
+                            [
+                                "",
+                                " auto, clear"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "output",
+                    "text": "(1978 automobile data)",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "(1978 automobile data)"
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                },
+                {
+                    "type": "code",
+                    "text": "quietly summarize price\nregress price mpg weight",
+                    "lines": [
+                        [
+                            [
+                                "kw",
+                                "quietly"
+                            ],
+                            [
+                                "",
+                                " "
+                            ],
+                            [
+                                "kw",
+                                "summarize"
+                            ],
+                            [
+                                "",
+                                " price"
+                            ]
+                        ],
+                        [
+                            [
+                                "kw",
+                                "regress"
+                            ],
+                            [
+                                "",
+                                " price mpg weight"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "output",
+                    "text": "      Source │       SS           df       MS      Number of obs   =        74\n─────────────┼──────────────────────────────────   F(2, 71)        =      14.74\n       Model │  186321280         2  93160639.9   Prob > F        =    0.0000\n    Residual │   448744116        71  6320339.67   R-squared       =    0.2934\n─────────────┼──────────────────────────────────   Adj R-squared   =    0.2735\n       Total │   635065396        73  8699525.97   Root MSE        =    2514\n\n─────────────┬────────────────────────────────────────────────────────────────\n       price │ Coefficient  Std. err.      t   P>|t|     [95% conf. interval]\n─────────────┼────────────────────────────────────────────────────────────────\n         mpg │  -226.4207   71.84876    -3.15   0.002    -369.6824   -83.15899\n      weight │    1.74566   .6411763     2.72   0.008     .4673948    3.023926\n       _cons │   1946.069    3597.05     0.54   0.590    -5226.245    9118.382\n─────────────┴────────────────────────────────────────────────────────────────",
+                    "lines": [
+                        [
+                            [
+                                "",
+                                "      Source │       SS           df       MS      Number of obs   ="
+                            ],
+                            [
+                                "res",
+                                "        74"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "─────────────┼──────────────────────────────────   F(2, 71)        = "
+                            ],
+                            [
+                                "res",
+                                "     14.74"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "       Model │ "
+                            ],
+                            [
+                                "res",
+                                " 186321280         2  93160639.9   "
+                            ],
+                            [
+                                "",
+                                "Prob > F        ="
+                            ],
+                            [
+                                "res",
+                                "    0.0000"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "    Residual │ "
+                            ],
+                            [
+                                "res",
+                                "  448744116        71  6320339.67   "
+                            ],
+                            [
+                                "",
+                                "R-squared       ="
+                            ],
+                            [
+                                "res",
+                                "    0.2934"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "─────────────┼──────────────────────────────────   Adj R-squared   ="
+                            ],
+                            [
+                                "res",
+                                "    0.2735"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "       Total │ "
+                            ],
+                            [
+                                "res",
+                                "  635065396        73  8699525.97   "
+                            ],
+                            [
+                                "",
+                                "Root MSE        =   "
+                            ],
+                            [
+                                "res",
+                                " 2514"
+                            ]
+                        ],
+                        [],
+                        [
+                            [
+                                "",
+                                "─────────────┬────────────────────────────────────────────────────────────────"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "       price │ Coefficient  Std. err.      t   P>|t|     [95% conf. interval]"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "─────────────┼────────────────────────────────────────────────────────────────"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "         mpg │"
+                            ],
+                            [
+                                "res",
+                                "  -226.4207   71.84876    -3.15   0.002    -369.6824   -83.15899"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "      weight │"
+                            ],
+                            [
+                                "res",
+                                "    1.74566   .6411763     2.72   0.008     .4673948    3.023926"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "       _cons │"
+                            ],
+                            [
+                                "res",
+                                "   1946.069    3597.05     0.54   0.590    -5226.245    9118.382"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "─────────────┴────────────────────────────────────────────────────────────────"
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                },
+                {
+                    "type": "code",
+                    "text": "regress price foo",
+                    "lines": [
+                        [
+                            [
+                                "kw",
+                                "regress"
+                            ],
+                            [
+                                "",
+                                " price foo"
+                            ]
+                        ]
+                    ]
+                },
+                {
+                    "type": "error",
+                    "text": "variable foo not found\nr(111);",
+                    "lines": [
+                        [
+                            [
+                                "err",
+                                "variable "
+                            ],
+                            [
+                                "err bold",
+                                "foo"
+                            ],
+                            [
+                                "err",
+                                " not found"
+                            ]
+                        ],
+                        [
+                            [
+                                "",
+                                "r(111);"
+                            ]
+                        ]
+                    ],
+                    "folded": false
+                }
+            ]
+        },
+        "display": {
+            "links": []
+        },
+        "truncated": false
+    },
+    "spec": null,
+    "image": null
+}

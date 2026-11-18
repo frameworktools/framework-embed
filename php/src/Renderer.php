@@ -19,7 +19,13 @@ final class Renderer
     /** Text values longer than this many characters take a full row of the statistics grid. */
     public const WIDE_TEXT = 24;
 
-    private const KINDS = ['model', 'table', 'test', 'image', 'vega-lite', 'page'];
+    private const KINDS = ['model', 'table', 'test', 'code_snippet', 'image', 'vega-lite', 'page'];
+
+    private const SNIPPET_LANGUAGES = ['r' => 'R', 'python' => 'Python', 'stata' => 'Stata'];
+
+    private const SNIPPET_BLOCKS = ['code' => 'Code', 'output' => 'Output', 'message' => 'Message', 'warning' => 'Warning', 'error' => 'Error'];
+
+    private const SNIPPET_LINKS = ['notebook' => 'Full notebook', 'model' => 'Model'];
 
     private const COLUMN_LABELS = [
         'term' => 'Term', 'estimate' => 'Estimate', 'std_error' => 'Std. error', 'statistic' => 'Statistic', 'p_value' => 'p-value',
@@ -87,6 +93,7 @@ final class Renderer
             'model' => self::model($doc),
             'table' => self::tableKind($doc),
             'test' => self::test($doc),
+            'code_snippet' => self::snippet($doc),
             'image' => self::image($doc),
             'vega-lite' => self::chart($doc),
             default => null,
@@ -1301,6 +1308,158 @@ final class Renderer
             '<p class="fw-embed__fallback">' . $alt . ($href === null ? '' : ' <a href="' . self::e($href) . '">View chart</a>') . '</p>',
             '</div>',
         ]);
+    }
+
+    // --- code snippets ----------------------------------------------------------
+    // Code and the text it printed, as a notebook showed them. Cloud colors the code and styles the
+    // output; each block arrives as plain `text` and as `lines` of [classes, text] segments.
+
+    private static function known(array $names, mixed $value): bool
+    {
+        return is_string($value) && array_key_exists($value, $names);
+    }
+
+    /** A segment's classes, each prefixed: "res bold" -> "fw-t-res fw-t-bold". Tokens outside [a-z0-9-] are dropped. */
+    private static function segmentClasses(string $classes): string
+    {
+        $tokens = array_filter(explode(' ', $classes), fn (string $token) => preg_match('/^[a-z0-9-]+$/D', $token) === 1);
+
+        return implode(' ', array_map(fn (string $token) => 'fw-t-' . $token, $tokens));
+    }
+
+    /** A block's lines as segments, or null when they don't fit the shape. */
+    private static function snippetLines(array $block): ?array
+    {
+        $lines = $block['lines'] ?? null;
+        if (! is_array($lines) || ! array_is_list($lines)) {
+            return null;
+        }
+        foreach ($lines as $line) {
+            if (! is_array($line) || ! array_is_list($line)) {
+                return null;
+            }
+            foreach ($line as $segment) {
+                if (! is_array($segment) || ! array_is_list($segment) || count($segment) !== 2 || ! is_string($segment[0]) || ! is_string($segment[1])) {
+                    return null;
+                }
+            }
+        }
+
+        return $lines;
+    }
+
+    /** A block's HTML lines: styled segments, or its plain text when the segments are missing or malformed. */
+    private static function snippetHtml(array $block): ?array
+    {
+        $lines = self::snippetLines($block);
+        if ($lines === null) {
+            return is_string($block['text'] ?? null) ? array_map(self::e(...), explode("\n", $block['text'])) : null;
+        }
+
+        return array_map(fn (array $line) => implode('', array_map(function (array $segment) {
+            $names = self::segmentClasses($segment[0]);
+
+            return $names === '' ? self::e($segment[1]) : '<span class="' . $names . '">' . self::e($segment[1]) . '</span>';
+        }, $line)), $lines);
+    }
+
+    private static function snippetHead(array $source, bool $output, bool $shown): string
+    {
+        $parts = ['<div class="fw-embed__snippet-head">',
+            '<span class="fw-embed__lang">' . (self::known(self::SNIPPET_LANGUAGES, $source['language'] ?? null) ? self::SNIPPET_LANGUAGES[$source['language']] : 'Code') . '</span>'];
+        $file = self::text($source['file'] ?? null);
+        $name = array_values(array_filter([$file === null ? null : substr((string) strrchr('/' . $file, '/'), 1), self::text($source['label'] ?? null)],
+            fn (?string $part) => $part !== null && $part !== ''));
+        if ($name !== []) {
+            $parts[] = '<span class="fw-embed__source">' . self::e(implode(' · ', $name)) . '</span>';
+        }
+        $range = self::lst($source['lines'] ?? null);
+        if (count($range) === 2 && Format::isInteger($range[0]) && Format::isInteger($range[1]) && $range[0] >= 1 && $range[1] >= $range[0]) {
+            $label = $range[0] == $range[1] ? 'Line ' . Format::number($range[0]) : 'Lines ' . Format::number($range[0]) . '–' . Format::number($range[1]);
+            $href = self::safeUrl($source['permalink'] ?? null);
+            $parts[] = $href === null
+                ? '<span class="fw-embed__lines">' . $label . '</span>'
+                : '<a class="fw-embed__lines" href="' . self::e($href) . '" target="_blank" rel="noopener">' . $label . '</a>';
+        }
+        if ($output) {
+            $parts[] = '<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>' . ($shown ? 'Hide output' : 'Show output') . '</button>';
+        }
+        $parts[] = '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>';
+        $parts[] = '</div>';
+
+        return implode("\n", $parts);
+    }
+
+    private static function snippetBlock(array $block, bool $shown): ?string
+    {
+        $html = self::snippetHtml($block);
+        if ($html === null) {
+            return null;
+        }
+        if ($block['type'] === 'code') {
+            return '<pre class="fw-embed__code"><code>' . implode("\n", $html) . '</code></pre>';
+        }
+        $truncated = self::obj($block['truncated'] ?? null);
+        $truncated = Format::isInteger($truncated['lines'] ?? null) && $truncated['lines'] > 0 ? $truncated['lines'] : 0;
+        $parts = ['<div class="fw-embed__block fw-embed__block--' . $block['type'] . '"' . ($shown ? '' : ' hidden') . '>'];
+        $body = ['<pre class="fw-embed__output"><code>' . implode("\n", $html) . '</code></pre>'];
+        if ($truncated > 0) {
+            $body[] = '<p class="fw-embed__more">' . self::plural($truncated, 'more line', 'more lines') . ' not shown.</p>';
+        }
+        if (($block['folded'] ?? null) === true) {
+            $parts = [...$parts, '<details class="fw-embed__fold">', '<summary>' . self::SNIPPET_BLOCKS[$block['type']] . ', ' . self::plural(count($html) + $truncated, 'line', 'lines') . '</summary>', ...$body, '</details>'];
+        } else {
+            $parts = [...$parts, ...$body];
+        }
+        $parts[] = '</div>';
+
+        return implode("\n", $parts);
+    }
+
+    private static function snippet(array $doc): ?string
+    {
+        $data = $doc['data'] ?? null;
+        if (! self::isObject($data) || ! self::isObject($data['snippet'] ?? null)) {
+            return null;
+        }
+        $source = self::obj($data['source'] ?? null);
+        // display.output false: the output starts hidden, and the toggle shows it
+        $shown = (self::obj($data['display'] ?? null)['output'] ?? null) !== false;
+        $blocks = [];
+        $code = false;
+        $output = false;
+        foreach (self::lst($data['snippet']['blocks'] ?? null) as $block) {
+            if (! self::isObject($block) || ! self::known(self::SNIPPET_BLOCKS, $block['type'] ?? null)) {
+                continue;
+            }
+            $html = self::snippetBlock($block, $shown);
+            if ($html === null) {
+                continue;
+            }
+            $code = $code || $block['type'] === 'code';
+            $output = $output || $block['type'] !== 'code';
+            $blocks[] = $html;
+        }
+        if (! $code) {
+            return null;
+        }
+        $parts = ['<div class="fw-embed__snippet">', self::snippetHead($source, $output, $shown), ...$blocks];
+        $links = [];
+        foreach (self::lst(self::obj($data['display'] ?? null)['links'] ?? null) as $link) {
+            if (! self::isObject($link) || ! self::known(self::SNIPPET_LINKS, $link['rel'] ?? null)) {
+                continue;
+            }
+            $href = self::safeUrl($link['url'] ?? null);
+            if ($href !== null) {
+                $links[] = '<a href="' . self::e($href) . '" target="_blank" rel="noopener">' . self::SNIPPET_LINKS[$link['rel']] . '</a>';
+            }
+        }
+        if ($links !== []) {
+            $parts[] = '<p class="fw-embed__links">' . implode(' ', $links) . '</p>';
+        }
+        $parts[] = '</div>';
+
+        return implode("\n", $parts);
     }
 
     private static function page(array $doc): string

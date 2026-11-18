@@ -106,15 +106,18 @@ final class UrlMatcher
         if ($origin === null) {
             return null;
         }
-        $path = self::parse($url)['path'];
+        $parsed = self::parse($url);
+        $path = $parsed['path'];
+        // The one query option an artifact URL keeps: output=none, a code snippet without its output
+        $option = in_array('output=none', explode('&', substr($parsed['query'], 1)), true) ? '?output=none' : '';
         $k = self::KEY;
         $n = self::NAME;
         $v = self::VERSION;
         if (preg_match("#^/api/embed/v1/artifacts/{$k}(?:/versions/{$v})?$#D", $path, $m) === 1) {
-            return new ArtifactUrl('embed', $origin, $origin . $path, key: $m[1], version: isset($m[2]) ? (int) $m[2] : null);
+            return new ArtifactUrl('embed', $origin, $origin . $path . $option, key: $m[1], version: isset($m[2]) ? (int) $m[2] : null);
         }
         if (preg_match("#^/d/{$k}(?:/versions/{$v})?/?$#D", $path, $m) === 1) {
-            return new ArtifactUrl('key', $origin, $origin . $path, key: $m[1], version: isset($m[2]) ? (int) $m[2] : null);
+            return new ArtifactUrl('key', $origin, $origin . $path . $option, key: $m[1], version: isset($m[2]) ? (int) $m[2] : null);
         }
         if (preg_match("#^/@{$n}/{$n}/{$n}(?:/versions/{$v})?/?$#D", $path, $m) === 1) {
             foreach ([$m[1], $m[2], $m[3]] as $part) {
@@ -123,7 +126,7 @@ final class UrlMatcher
                 }
             }
 
-            return new ArtifactUrl('path', $origin, $origin . $path, handle: $m[1], project: $m[2], slug: $m[3], version: isset($m[4]) ? (int) $m[4] : null);
+            return new ArtifactUrl('path', $origin, $origin . $path . $option, handle: $m[1], project: $m[2], slug: $m[3], version: isset($m[4]) ? (int) $m[4] : null);
         }
 
         return null;

@@ -12,8 +12,8 @@
     "latest_version": { "type": "integer", "minimum": 1 },
     "kind": {
       "type": "string",
-      "description": "model, table, test, image, vega-lite, or page. Renderers treat any other value as page.",
-      "examples": ["model", "table", "test", "image", "vega-lite", "page"]
+      "description": "model, table, test, code_snippet, image, vega-lite, or page. Renderers treat any other value as page.",
+      "examples": ["model", "table", "test", "code_snippet", "image", "vega-lite", "page"]
     },
     "title": { "type": ["string", "null"] },
     "description": { "type": ["string", "null"] },
@@ -34,8 +34,8 @@
       "properties": { "text": { "type": "string" }, "url": { "type": "string" } }
     },
     "data": {
-      "description": "Set for model, table, and test: the framework.artifact/v1 representation as Cloud normalizes it.",
-      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/representation" }]
+      "description": "Set for model, table, test, and code_snippet: the framework.artifact/v1 representation as Cloud normalizes it.",
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/representation" }, { "$ref": "#/$defs/code_snippet" }]
     },
     "spec": {
       "type": ["object", "null"],
@@ -58,6 +58,76 @@
     }
   },
   "$defs": {
+    "segments": {
+      "description": "Text as lines of styled segments: each line a list of [classes, text] pairs. classes is a space-separated string of [a-z0-9-] tokens, empty for plain text.",
+      "type": "array",
+      "items": {
+        "type": "array",
+        "items": { "type": "array", "prefixItems": [{ "type": "string" }, { "type": "string" }], "minItems": 2, "maxItems": 2 }
+      }
+    },
+    "code_snippet": {
+      "type": "object",
+      "description": "A chunk's code and the text it printed, as a notebook showed them.",
+      "required": ["schema", "kind", "source", "snippet"],
+      "properties": {
+        "schema": { "const": "framework.artifact/v1" },
+        "kind": { "const": "code_snippet" },
+        "source": {
+          "type": "object",
+          "required": ["language"],
+          "properties": {
+            "language": { "enum": ["r", "python", "stata"] },
+            "file": { "type": "string", "description": "The file the chunk is in, relative to the repository." },
+            "label": { "type": "string", "description": "The chunk label, cell tag, or Stata marker." },
+            "lines": { "type": "array", "prefixItems": [{ "type": "integer", "minimum": 1 }, { "type": "integer", "minimum": 1 }], "minItems": 2, "maxItems": 2 },
+            "commit": { "type": "string" },
+            "repository": { "type": "string" },
+            "permalink": { "type": "string", "description": "A GitHub link to the lines at the commit." }
+          }
+        },
+        "snippet": {
+          "type": "object",
+          "required": ["blocks"],
+          "properties": {
+            "width": { "type": "integer", "description": "Console width at the run: R width, Stata linesize." },
+            "blocks": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["type", "text", "lines"],
+                "properties": {
+                  "type": { "enum": ["code", "output", "message", "warning", "error"] },
+                  "text": { "type": "string", "description": "Plain text, for copying and readers that ignore styling." },
+                  "lines": { "$ref": "#/$defs/segments" },
+                  "folded": { "type": "boolean", "description": "Output blocks only: shown closed." },
+                  "truncated": {
+                    "type": "object",
+                    "required": ["lines"],
+                    "properties": { "lines": { "type": "integer", "minimum": 1, "description": "Lines cut from the end." } }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "display": {
+          "type": "object",
+          "properties": {
+            "output": { "type": "boolean", "description": "false: output blocks start hidden behind the toggle." },
+            "links": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "required": ["rel", "url"],
+                "properties": { "rel": { "enum": ["notebook", "model"] }, "url": { "type": "string" } }
+              }
+            }
+          }
+        },
+        "truncated": { "type": "boolean" }
+      }
+    },
     "scalar": { "type": ["string", "number", "boolean", "null"] },
     "representation": {
       "type": "object",

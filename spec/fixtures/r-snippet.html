@@ -1,0 +1,61 @@
+<figure class="fw-embed fw-embed--code_snippet" data-fw-embed-kind="code_snippet" data-fw-embed-key="rsnippet00000001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">Partial pooling across schools</span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/schools/r-snippet/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+<div class="fw-embed__body">
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">R</span>
+<span class="fw-embed__source">02-partial-pooling.qmd · fit-bayes</span>
+<a class="fw-embed__lines" href="https://github.com/frameworktools/bayesian-social-statistics/blob/3f2c9e1d4b5a69788796a5b4c3d2e1f0a9b8c7d6/notebooks/02-partial-pooling.qmd#L41-L44" target="_blank" rel="noopener">Lines 41–44</a>
+<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>Hide output</button>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-com"># Partial pooling: schools share a common mean</span>
+fit <span class="fw-t-op">&lt;-</span> <span class="fw-t-fn">brm</span>(score <span class="fw-t-kw">~</span> <span class="fw-t-num">1</span> <span class="fw-t-op">+</span> (<span class="fw-t-num">1</span> <span class="fw-t-op">|</span> school), <span class="fw-t-var">data</span> <span class="fw-t-op">=</span> schools,
+           <span class="fw-t-var">seed</span> <span class="fw-t-op">=</span> <span class="fw-t-num">2026</span>, <span class="fw-t-var">refresh</span> <span class="fw-t-op">=</span> <span class="fw-t-num">0</span>)</code></pre>
+<div class="fw-embed__block fw-embed__block--message">
+<pre class="fw-embed__output"><code>Compiling Stan program...
+Start sampling</code></pre>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-fn">summary</span>(fit)</code></pre>
+<div class="fw-embed__block fw-embed__block--output">
+<details class="fw-embed__fold">
+<summary>Output, 19 lines</summary>
+<pre class="fw-embed__output"><code> Family: gaussian 
+  Links: mu = identity; sigma = identity 
+Formula: score ~ 1 + (1 | school) 
+   Data: schools (Number of observations: 400) 
+  Draws: 4 chains, each with iter = 2000; warmup = 1000; thin = 1;
+         total post-warmup draws = 4000
+
+Multilevel Hyperparameters:
+~school (Number of levels: 20) 
+              Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sd(Intercept)     4.82      0.93     3.31     6.97 1.00     1012     1673
+
+Regression Coefficients:
+          Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+Intercept    51.37      1.15    49.08    53.62 1.00      794     1259
+
+Further Distributional Parameters:
+      Estimate Est.Error l-95% CI u-95% CI Rhat Bulk_ESS Tail_ESS
+sigma     9.94      0.36     9.27    10.67 1.00     5521     2968</code></pre>
+</details>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-fn">fixef</span>(fit)[<span class="fw-t-str">&quot;Intercept&quot;</span>, <span class="fw-t-str">&quot;Estimate&quot;</span>]</code></pre>
+<div class="fw-embed__block fw-embed__block--output">
+<pre class="fw-embed__output"><code>[1] 51.37</code></pre>
+</div>
+<div class="fw-embed__block fw-embed__block--warning">
+<pre class="fw-embed__output"><code>Warning: There were 3 divergent transitions after warmup.</code></pre>
+</div>
+<p class="fw-embed__links"><a href="https://example.academic.page/notebooks/partial-pooling" target="_blank" rel="noopener">Full notebook</a></p>
+</div>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__description">The model behind the second post.</span>
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

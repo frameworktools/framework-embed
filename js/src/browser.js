@@ -57,7 +57,59 @@ export function mount(element, doc, options = {}) {
     element.innerHTML = render(doc);
     enhanceCharts(element, options);
     enhanceTips(element);
+    enhanceCopy(element);
+    enhanceOutput(element);
     return element.firstElementChild;
+}
+
+// --- copy buttons ---
+// A code snippet's copy button ships hidden, so server-rendered markup without this script shows
+// no dead control. This shows it and copies the snippet's code blocks, joined, without the output.
+
+export function enhanceCopy(root = document) {
+    if (typeof document === 'undefined') return;
+    for (const button of root.querySelectorAll('[data-fw-copy]:not([data-fw-copy-ready])')) {
+        const snippet = button.closest('.fw-embed__snippet');
+        if (!snippet) continue;
+        button.setAttribute('data-fw-copy-ready', '');
+        button.hidden = false;
+        let timer = null;
+        button.addEventListener('click', async () => {
+            const code = [...snippet.querySelectorAll('.fw-embed__code')].map((pre) => pre.textContent).join('\n');
+            try {
+                await navigator.clipboard.writeText(code);
+                button.textContent = 'Copied';
+            } catch {
+                button.textContent = 'Copy failed';
+            }
+            clearTimeout(timer);
+            timer = setTimeout(() => { button.textContent = 'Copy code'; }, 2000);
+        });
+    }
+}
+
+// --- output toggles ---
+// A snippet's output toggle ships hidden too. Without this script, output that starts hidden stays hidden.
+
+export function enhanceOutput(root = document) {
+    if (typeof document === 'undefined') return;
+    for (const button of root.querySelectorAll('[data-fw-output]:not([data-fw-output-ready])')) {
+        const snippet = button.closest('.fw-embed__snippet');
+        if (!snippet) continue;
+        button.setAttribute('data-fw-output-ready', '');
+        button.hidden = false;
+        const blocks = [...snippet.querySelectorAll('.fw-embed__block')];
+        const sync = () => {
+            const shown = blocks.some((block) => !block.hidden);
+            button.textContent = shown ? 'Hide output' : 'Show output';
+        };
+        sync();
+        button.addEventListener('click', () => {
+            const show = blocks.every((block) => block.hidden);
+            for (const block of blocks) block.hidden = !show;
+            sync();
+        });
+    }
 }
 
 // --- variable tips ---
@@ -540,7 +592,7 @@ export function expandDetailsForPrint() {
     printing = true;
     let opened = [];
     window.addEventListener('beforeprint', () => {
-        opened = [...document.querySelectorAll('details.fw-embed__details:not([open])')];
+        opened = [...document.querySelectorAll('details.fw-embed__details:not([open]), details.fw-embed__fold:not([open])')];
         for (const details of opened) details.open = true;
     });
     window.addEventListener('afterprint', () => {
