@@ -135,7 +135,7 @@ The JavaScript and PHP renderers produce identical HTML for each embed document,
 </figure>
 ```
 
-- `model`: one coefficient table per coefficient-like table (estimate, exponentiated ratio when `model.exponentiate` is set, standard error, test statistic, p-value, and confidence interval), followed by fit statistics and additional tables in a `Model details` disclosure.
+- `model`: one coefficient table per coefficient-like table (estimate, standard error, test statistic, p-value, and confidence interval), followed by fit statistics and additional tables in a `Model details` disclosure. When `model.exponentiate` is set, a switch chooses between the ratio scale and the model scale (see "Scale switch").
 - `table`: a static `<table>` with the first 25 rows and a note stating the row count with a link to the full artifact.
 - `test`: method, test statistic, p-value, estimates, and confidence interval, followed by parameters and additional details in a `Test details` disclosure.
 - `code_snippet`: a bordered panel with a header, the code blocks, and the output blocks between them, then links to the notebook and model.
@@ -143,7 +143,7 @@ The JavaScript and PHP renderers produce identical HTML for each embed document,
 - `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback link to the artifact. The JavaScript bundle renders the chart with `vega-embed`. Without JavaScript, the fallback link remains visible.
 - `page`: a link card.
 
-The stylesheet exposes custom properties (`--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-code`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`). It follows `prefers-color-scheme` and any `data-theme="dark"` or `.dark` ancestor.
+The stylesheet exposes custom properties, listed under "Theming". It follows `prefers-color-scheme` and any `data-theme="dark"` or `.dark` ancestor.
 
 ## Security rules for consumers
 
@@ -260,16 +260,38 @@ A coefficient table has these columns, in order. Columns whose data is absent ar
 
 - Term, a row header (`<th scope="row">`).
 - Any columns outside the standard set (`term`, `estimate`, `std_error`, `statistic`, `p_value`, `conf_low`, `conf_high`, `df`).
-- Estimate, on the model's scale.
-- When `model.exponentiate` is set, the exponentiated estimate with its exponentiated interval. The header is the label with the interval, such as `Odds ratio (95% CI)`, with the interval part in `<span class="fw-embed__ci">` as in the cells. The cell reads `exp(estimate) (exp(low) to exp(high))`, such as `1.04 (1.00 to 1.07)`. The interval part sits in `<span class="fw-embed__ci">`, which the stylesheet places on a second line: `<td class="fw-embed__num">1.04 <span class="fw-embed__ci">(1.00 to 1.07)</span></td>`. Without interval columns, the header is the label alone and the cell is `exp(estimate)`. Intercept rows show `—`. A term is an intercept when, in ASCII lower case, it is `(intercept)`, `intercept`, `const`, or `_cons`.
+- Estimate.
 - Std. error.
 - Statistic.
 - p-value.
-- The interval on the model's scale, as `low to high`.
+- The interval, as `low to high`.
 
-The interval header takes its level from the `confidence_level` metric. Without that metric, the header is `CI`. Estimates, ratios, standard errors, statistics, and bounds use result formatting with forced decimals. The ratio cell for the glm fixture's `wt` reads `< 0.01 (< 0.01 to 0.13)`. On narrow screens the table scrolls inside its figure.
+The interval header takes its level from the `confidence_level` metric, such as `95% CI`. Without that metric, the header is `CI`. Estimates, standard errors, statistics, and bounds use result formatting with forced decimals. On narrow screens the table scrolls inside its figure.
+
+#### Scale switch
+
+A frequentist model with `model.exponentiate` set renders each coefficient table twice, once on the ratio scale and once on the model scale, with a switch between them. A Bayesian model does the same only when its table has `ratio_estimate`.
+
+```html
+<form class="fw-embed__scales">
+<div class="fw-embed__switch" role="radiogroup" aria-label="Scale">
+<label><input type="radio" name="fw-embed-scale" value="ratio" checked=""> Odds ratio</label>
+<label><input type="radio" name="fw-embed-scale" value="model"> Log odds</label>
+</div>
+<div class="fw-embed__scale fw-embed__scale--ratio">…coefficient table…</div>
+<div class="fw-embed__scale fw-embed__scale--model">…coefficient table…</div>
+</form>
+```
+
+- The first label is `model.exponentiate`. The second is `Log odds` for `Odds ratio`, `Log hazard` for `Hazard ratio`, `Log rate` for `Rate ratio` and `Incidence rate ratio`, `Log time` for `Time ratio`, and `Coefficient` otherwise.
+- The ratio table's estimate header is the first label. For a frequentist model, its estimate and interval bounds are `exp` of the model-scale values, and its standard error is the delta-method `exp(estimate) * std_error`. Statistic and p-value are unchanged. Intercept rows are exponentiated like any other row. A Bayesian model's ratio table reads the `ratio_` columns instead (see "Bayesian models").
+- The model table's estimate header is the second label, and its values come from the document unchanged.
+- The stylesheet shows the ratio table and hides the model table until the `model` input is checked, using `:has()`. No JavaScript is involved.
+- Each embed's radio inputs sit in their own `<form>`, so embeds on one page switch independently even though the inputs share a `name`. A host that removes the inputs loses the switch, and the stylesheet hides the empty switch and shows only the ratio table.
 
 `exp` is fdlibm's `exp`, computed with IEEE basic operations only, so the JS and PHP renderers agree bit for bit. Platform `exp` functions can differ in the last place.
+
+#### Metrics
 
 Metric labels: `nobs` Observations, `df_resid` Residual df, `df_model` Model df, `aic` AIC, `bic` BIC, `rsquared` and `r.squared` R², `rsquared_adj` and `adj.r.squared` Adjusted R², `pseudo_rsquared` Pseudo R², `sigma` Residual SD, `llf` and `log_likelihood` Log likelihood, `deviance` Deviance, `null.deviance` Null deviance, `dispersion` Dispersion, `converged` Converged, `reml` REML, `confidence_level` Confidence level, `interval_method` Interval method, `vcov_type` Standard errors, `n_estimators` Trees, `max_depth` Maximum depth, `learning_rate` Learning rate, `n_features` Features, `importance_type` Importance type, `objective` Objective, `n_events` Events, `concordance` Concordance, `theta` Theta, `command` Command. `n_groups.<factor>` becomes `Groups: <factor>`. Other names replace `_` and `.` with spaces and capitalize an initial ASCII letter.
 
@@ -531,7 +553,24 @@ On an allowed host, these paths are artifact URLs. Fragments and query strings a
 
 ## Theming
 
-The stylesheet themes through `--fw-embed-font`, `--fw-embed-mono`, `--fw-embed-fg`, `--fw-embed-muted`, `--fw-embed-bg`, `--fw-embed-border`, and `--fw-embed-accent`. `--fw-embed-font` and `--fw-embed-fg` are unset by default, so the site's font and color apply. Muted text and borders mix the current text color with transparency, so they suit light and dark pages. The accent changes under `prefers-color-scheme: dark` and under a `data-theme="dark"` or `.dark` ancestor. A `data-theme="light"` or `.light` ancestor keeps the light accent. Figures sit on a white panel in both themes.
+The stylesheet themes through these custom properties, set on `.fw-embed` or any ancestor:
+
+| Property | Default | Used for |
+|---|---|---|
+| `--fw-embed-font` | Unset, so the site's font applies | Labels, headers, prose, and tips |
+| `--fw-embed-mono` | JetBrains Mono, then system monospace fonts | Numbers, formulas, the outcome variable, and tip headings |
+| `--fw-embed-code` | System monospace fonts | Code and output in code snippets |
+| `--fw-embed-fg` | Unset, so the site's text color applies | Embed text, the checked scale, and chart titles |
+| `--fw-embed-muted` | The text color at 62% opacity | Table headers, notes, statistic labels, and chart axis labels |
+| `--fw-embed-border` | The text color at 18% opacity | Header rules, the scale switch, code snippet panels, link cards, and chart gridlines |
+| `--fw-embed-rule` | The text color at 8% opacity | Rules between table rows and between statistics |
+| `--fw-embed-bg` | `transparent` | Background of the `<figure class="fw-embed">` wrapper and the scale switch |
+| `--fw-embed-accent` | `#1d4ed8`, or `#7aa7ff` in dark mode | Links and focus outlines |
+| `--fw-embed-warning` | `#b45309`, or `#f59e0b` in dark mode | Sampling warnings under a Bayesian model's coefficients |
+| `--fw-embed-tip-bg` | `#1f2229` in both modes | Variable tip background |
+| `--fw-embed-tip-fg` | `#f4f5f7` in both modes | Variable tip text |
+
+Muted text, borders, and rules mix the current text color with transparency, so they suit light and dark pages. The accent and warning colors change under `prefers-color-scheme: dark` and under a `data-theme="dark"` or `.dark` ancestor. A `data-theme="light"` or `.light` ancestor keeps the light colors. The defaults are declared with `:where()`, so any host rule that sets a property wins. Image artifacts sit on a white panel in both themes.
 
 Numbers use `--fw-embed-mono`: numeric table cells (`td.fw-embed__num`), numeric statistic values (`dd.fw-embed__num`), and the counts in notes (`span.fw-embed__num`), at 0.92em of the surrounding text with tabular figures. Labels, headers, and prose keep the host font. The default stack starts with JetBrains Mono. The stylesheet declares it with `@font-face`, weights 400 and 600, from `@fontsource/jetbrains-mono` 5.2.8 on jsDelivr, with `font-display: swap`. Its `unicode-range` is Basic Latin plus the no-break space, en and em dashes, and the minus sign. That covers the letters in interval cells ("to") and formulas, which share the mono stack. A site that sets `--fw-embed-mono` to another stack never downloads the font.
 

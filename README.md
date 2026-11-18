@@ -6,7 +6,7 @@ Each public or unlisted artifact on [framework.pub](https://framework.pub) or a 
 
 ## Supported artifacts
 
-- **Regression models.** One coefficient table with estimates, exponentiated odds, hazard, or rate ratios when applicable, standard errors, test statistics, p-values, and confidence intervals. Fit statistics and additional tables appear in a collapsible **Model details** panel.
+- **Regression models.** Coefficient tables with estimates, standard errors, test statistics, p-values, and confidence intervals, with a switch to odds, hazard, or rate ratios when applicable. Terms show the variable behind them in a tip when the model was published with its variables. Fit statistics and additional tables appear in a collapsible **Model details** panel.
 - **Tables.** Static HTML tables displaying the first 25 rows with a link to the full table.
 - **Hypothesis tests.** Test statistic, p-value, and estimate with its confidence interval, with additional parameters under **Test details**.
 - **Figures.** SVG, PNG, JPEG, GIF, and WebP images.
@@ -44,25 +44,49 @@ Upload the archive under **Plugins → Add New → Upload Plugin** and activate 
 
 ### Drupal
 
+Neither the module nor `framework-cloud/embed` is on Packagist or drupal.org. Clone this repository at a release tag, then register both directories as Composer path repositories in the site's root `composer.json`:
+
 ```sh
-composer require drupal/framework_embed
+git clone --branch v0.4.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
+composer config repositories.framework-embed-drupal '{"type":"path","url":"/path/to/framework-embed/drupal","options":{"versions":{"drupal/framework_embed":"0.1.0"}}}'
+composer require drupal/framework_embed:0.1.0 framework-cloud/embed:0.1.0
 drush en framework_embed
 ```
 
-Add a **Framework artifact** field to a content type for stored embeds. For live embeds, enable **Embed Framework artifacts** on a text format after **Limit allowed HTML tags**, or select the **Framework artifact** formatter on a Link field. Until the packages are published on Packagist, configure path repositories as shown in `drupal/README.md`.
+Keep `0.1.0` in these commands to satisfy the `^0.1` constraint in the module's `composer.json`. The installed code comes from the cloned tag.
+
+Add a **Framework artifact** field to a content type for stored embeds. For live embeds, enable **Embed Framework artifacts** on a text format after **Limit allowed HTML tags**, or select the **Framework artifact** formatter on a Link field. See `drupal/README.md`.
 
 ### Statamic
 
+The addon and `framework-cloud/embed` are not on Packagist. Clone this repository at a release tag and register both directories as path repositories:
+
 ```sh
-composer require framework-cloud/statamic-embed
+git clone --branch v0.4.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
+composer config repositories.framework-embed-statamic '{"type":"path","url":"/path/to/framework-embed/statamic","options":{"versions":{"framework-cloud/statamic-embed":"0.1.0"}}}'
+composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0
 php artisan vendor:publish --tag=framework-embed
 ```
 
-Add `{{ framework:styles }}` inside `<head>` and `{{ framework:scripts only_if_charts="true" }}` before `</body>`. Add a **Framework artifact** field to a blueprint for stored embeds and render it with `{{ framework:artifact field="handle" }}`. Scheduled takedown checks require the Laravel scheduler. Until the packages are published on Packagist, configure path repositories as shown in `statamic/README.md`.
+Keep `0.1.0` in these commands to satisfy the `^0.1` constraint in the addon's `composer.json`. The installed code comes from the cloned tag.
+
+Add `{{ framework:styles }}` inside `<head>` and `{{ framework:scripts only_if_charts="true" }}` before `</body>`. Add a **Framework artifact** field to a blueprint for stored embeds and render it with `{{ framework:artifact field="handle" }}`. Scheduled takedown checks require the Laravel scheduler. See `statamic/README.md`.
 
 ## Web component and JavaScript
 
-Include the stylesheet and browser bundle to use `<framework-artifact>` on any HTML page:
+The JavaScript package is not on npm. Each [release](https://github.com/frameworktools/framework-embed/releases) attaches these files, which are also committed under `php/assets/`:
+
+| File | Contents |
+|---|---|
+| `framework-embed.css` | Stylesheet |
+| `framework-embed.iife.js` | Script-tag build. It sets `window.FrameworkEmbed`, applies `window.FrameworkEmbedConfig`, registers `<framework-artifact>`, prepares disclosures for printing, and draws charts and sets up variable tips on load. |
+| `framework-embed.js` | ES module with the same exports. Importing it registers no custom element and adds no event listeners. |
+
+Host the files with your site, or load them from jsDelivr at a pinned tag, such as `https://cdn.jsdelivr.net/gh/frameworktools/framework-embed@v0.4.1/php/assets/framework-embed.iife.js`. GitHub Pages serves the latest release under unversioned names at `https://frameworktools.github.io/framework-embed/`.
+
+Include the stylesheet and script-tag build to use `<framework-artifact>` on any HTML page:
 
 ```html
 <link rel="stylesheet" href="framework-embed.css">
@@ -73,29 +97,32 @@ Include the stylesheet and browser bundle to use `<framework-artifact>` on any H
 </framework-artifact>
 ```
 
-The custom element renders into light DOM so host page styles apply. Child elements remain visible as a fallback until the embed document loads. Placing a `framework.embed/v1` document inside a child `<script type="application/json">` renders without a network request. Set `window.FrameworkEmbedConfig = {hosts: ["framework.pub", "framework.example.edu"]}` before the script tag to allow additional servers.
+The custom element renders into light DOM so host page styles apply. Child elements remain visible as a fallback until the embed document loads. Placing a `framework.embed/v1` document inside a child `<script type="application/json">` renders without a network request. Set `window.FrameworkEmbedConfig = {hosts: ["framework.pub", "framework.example.org"]}` before the script tag to allow additional servers. The list replaces the default, so keep `framework.pub` in it.
 
-Programmatic usage through `@framework-cloud/embed`:
+Pages that import the ES module build call the setup functions themselves:
 
 ```js
-import { render, fetchEmbed, mount } from '@framework-cloud/embed';
+import { configure, expandDetailsForPrint, fetchEmbed, mount, render } from './framework-embed.js';
+
+configure({ hosts: ['framework.pub'] });
+expandDetailsForPrint();
 
 const doc = await fetchEmbed('https://framework.pub/d/aB3dE5fG7hJ9kL1m'); // null on 404 or 410
-const html = render(doc); // escaped HTML string
-mount(document.querySelector('#figure'), doc); // render HTML and initialize charts
+const html = render(doc); // escaped HTML string, for server rendering or a build step
+mount(document.querySelector('#figure'), doc); // insert the HTML into an attached element, then draw charts and set up tips
 ```
 
-See `js/index.d.ts` and `js/README.md` for the full JavaScript API.
+After inserting `render()` output any other way, call `enhanceCharts(root)` and `enhanceTips(root)` on the element that contains it, once that element is in the document. See `js/README.md` for the full JavaScript API.
 
-For the logistic regression in `spec/fixtures/r-glm-logit.json`, the rendered coefficient table contains:
+For the logistic regression in `spec/fixtures/r-glm-logit.json`, the rendered coefficient table opens on the odds ratio scale, with a switch to log odds:
 
-| Term | Estimate | Odds ratio (95% CI) | Std. error | Statistic | p-value | 95% CI |
-|---|---|---|---|---|---|---|
-| (Intercept) | 18.87 | — | 7.44 | 2.53 | 0.011 | 4.28 to 33.46 |
-| wt | -8.08 | < 0.01 (< 0.01 to 0.13) | 3.07 | -2.63 | 0.008 | -14.10 to -2.07 |
-| hp | 0.04 | 1.04 (1.00 to 1.07) | 0.02 | 2.04 | 0.041 | < 0.01 to 0.07 |
+| Term | Odds ratio | Std. error | Statistic | p-value | 95% CI |
+|---|---|---|---|---|---|
+| (Intercept) | 156,145,483.51 | 1,162,277,972.32 | 2.53 | 0.011 | 72.04 to 338,452,350,596,257.20 |
+| wt | 0.00 | 0.00 | -2.63 | 0.008 | 0.00 to 0.13 |
+| hp | 1.04 | 0.02 | 2.04 | 0.041 | 1.00 to 1.07 |
 
-Fit statistics appear in a collapsed **Model details** panel below the table. Model and test results use two decimal places, data tables use three decimal places, and values never use scientific notation.
+Fit statistics appear in a collapsed **Model details** panel below the table. Model and test results use two decimal places, data tables use three decimal places, and values never use scientific notation. A rounded value carries its full value in a `title` attribute.
 
 Numeric cells use JetBrains Mono (`@fontsource/jetbrains-mono` 5.2.8 from jsDelivr, OFL-1.1), while labels and prose inherit the site's font. Set `--fw-embed-mono` to use another monospace font and skip the font download:
 
@@ -104,6 +131,27 @@ Numeric cells use JetBrains Mono (`@fontsource/jetbrains-mono` 5.2.8 from jsDeli
 ```
 
 ## PHP
+
+The PHP package is not on Packagist. Install it with Composer from a release archive by declaring it as a package repository:
+
+```json
+{
+    "repositories": [
+        {
+            "type": "package",
+            "package": {
+                "name": "framework-cloud/embed",
+                "version": "0.4.1",
+                "dist": {"type": "zip", "url": "https://github.com/frameworktools/framework-embed/archive/refs/tags/v0.4.1.zip"},
+                "autoload": {"psr-4": {"Framework\\Embed\\": "php/src/"}}
+            }
+        }
+    ],
+    "require": {"framework-cloud/embed": "0.4.1"}
+}
+```
+
+A clone used as a path repository, as in the Drupal and Statamic instructions, also works. Without Composer, copy the `php/src` and `php/assets` directories side by side and autoload the `Framework\Embed` namespace from `src`.
 
 ```php
 use Framework\Embed\Client;
@@ -114,7 +162,11 @@ $doc = $client->resolve('https://framework.pub/@ada/admissions/model'); // null 
 echo $doc === null ? '' : Renderer::render($doc);
 ```
 
-`Client` accepts any fetcher callable and any cache implementing `Framework\Embed\Cache`. `Psr16Cache` adapts a PSR-16 cache store. `Assets::css()` and `Assets::script()` return filesystem paths to the bundled stylesheet and script.
+`Client` accepts any fetcher callable and any cache implementing `Framework\Embed\Cache`. `Psr16Cache` adapts a PSR-16 cache store. `Assets::css()`, `Assets::script()`, and `Assets::module()` return filesystem paths to the bundled stylesheet and scripts.
+
+## Custom integrations
+
+`SPEC.md` is the full contract: the API, the embed document, the markup each renderer produces, number formatting, chart safety, allowed hosts, and theming. `spec/embed.schema.json` validates embed documents. The [embed integrations guide](https://framework.pub/docs/embed-integrations) covers the API, markup, page setup, HTML sanitizers, Content Security Policy, caching, and conformance tests. The [artifact representation reference](https://framework.pub/docs/artifact-representation) describes the `data` field.
 
 ## Data flow
 
@@ -134,8 +186,8 @@ echo $doc === null ? '' : Renderer::render($doc);
 | `spec/fixtures/*.html` | Expected HTML output that both renderers must match byte for byte |
 | `spec/format-cases.json` | Shared number-formatting test cases |
 | `spec/model-names.json` | Shared model-naming test cases |
-| `js/` | `@framework-cloud/embed` package: renderer, `<framework-artifact>` element, chart loader, and stylesheet |
-| `php/` | `framework-cloud/embed` package: client, URL matcher, renderer, and bundled CSS and JS assets |
+| `js/` | JavaScript renderer, `<framework-artifact>` element, chart loader, and stylesheet (`@framework-cloud/embed`, not published to npm) |
+| `php/` | PHP client, URL matcher, renderer, and bundled CSS and JS assets (`framework-cloud/embed`, not published to Packagist) |
 | `wordpress/` | WordPress plugin `framework-embed` |
 | `drupal/` | Drupal module `framework_embed` |
 | `statamic/` | Statamic addon `framework-cloud/statamic-embed` |

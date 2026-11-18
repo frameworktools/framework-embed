@@ -6,18 +6,17 @@ The module fetches embed documents from framework.pub and from self-hosted Frame
 
 ## Installation
 
-```sh
-composer require drupal/framework_embed
-drush en framework_embed
-```
-
-Until the module and `framework-cloud/embed` are published on Packagist, register both as path repositories in the site's root `composer.json`:
+The module and `framework-cloud/embed` are not on Packagist or drupal.org. Clone this repository at a release tag and register both directories as path repositories in the site's root `composer.json`:
 
 ```sh
+git clone --branch v0.4.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-drupal '{"type":"path","url":"/path/to/framework-embed/drupal","options":{"versions":{"drupal/framework_embed":"0.1.0"}}}'
 composer require drupal/framework_embed:0.1.0 framework-cloud/embed:0.1.0
+drush en framework_embed
 ```
+
+Keep `0.1.0` in these commands to satisfy the `^0.1` constraint in `composer.json`. The installed code comes from the cloned tag.
 
 ## Embed tiers
 
@@ -79,7 +78,7 @@ When no copy is available, visitors see a link to the artifact, and users with *
 
 HTTP requests use Drupal's Guzzle client with redirects and cookies disabled, a five-second timeout, and a 16 MB response limit. Requests run on field save, during background refreshes, and during takedown checks.
 
-The `framework_embed/framework_embed` Drupal asset library provides the stylesheet. `framework_embed/chart` loads the script for Vega-Lite charts and attaches only when a chart is rendered. That script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
+The `framework_embed/framework_embed` Drupal asset library provides the stylesheet. `framework_embed/chart` loads the script for Vega-Lite charts and variable tips, and attaches only when a chart or a tip is rendered. When a chart nears the viewport, that script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
 
 `assets/` contains copies of `php/assets` updated by `make drupal`, since Drupal serves asset files from the module directory while `vendor/` typically sits outside the web root.
 

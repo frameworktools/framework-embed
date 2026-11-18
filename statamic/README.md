@@ -6,21 +6,18 @@ The addon fetches embed documents from framework.pub and from self-hosted Framew
 
 ## Installation
 
+The addon and `framework-cloud/embed` are not on Packagist. Clone this repository at a release tag and register both directories as path repositories in the site's root `composer.json`:
+
 ```sh
-composer require framework-cloud/statamic-embed
+git clone --branch v0.4.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
+composer config repositories.framework-embed-statamic '{"type":"path","url":"/path/to/framework-embed/statamic","options":{"versions":{"framework-cloud/statamic-embed":"0.1.0"}}}'
+composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0
 php artisan vendor:publish --tag=framework-embed          # CSS and JS to public/vendor/statamic-embed
 php artisan vendor:publish --tag=framework-embed-config   # optional: config/framework-embed.php
 ```
 
-`php artisan statamic:install` also publishes the assets. Re-publish assets after updating the addon.
-
-Until both packages are published on Packagist, register them as path repositories in the site's root `composer.json`:
-
-```sh
-composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
-composer config repositories.framework-embed-statamic '{"type":"path","url":"/path/to/framework-embed/statamic","options":{"versions":{"framework-cloud/statamic-embed":"0.1.0"}}}'
-composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0
-```
+Keep `0.1.0` in these commands to satisfy the `^0.1` constraint in `composer.json`. The installed code comes from the cloned tag. `php artisan statamic:install` also publishes the assets. Re-publish assets after updating the addon.
 
 ## Embed tiers
 
@@ -92,7 +89,7 @@ Image artifacts render as `<img>` elements pointing to the image URL in the embe
 </body>
 ```
 
-`{{ framework:scripts }}` outputs the script tag that initializes Vega-Lite charts and opens variable tips on hover. With `only_if_charts="true"`, it outputs the script tag only when a chart or a variable tip rendered earlier in the same request. The script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
+`{{ framework:scripts }}` outputs the script tag that initializes Vega-Lite charts and opens variable tips on hover. With `only_if_charts="true"`, it outputs the script tag only when a chart or a variable tip rendered earlier in the same request. When a chart nears the viewport, the script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
 
 Supported URLs:
 
