@@ -9,6 +9,7 @@ Each public or unlisted artifact on [framework.pub](https://framework.pub) or a 
 - **Regression models.** Coefficient tables with estimates, standard errors, test statistics, p-values, and confidence intervals, with a switch to odds, hazard, or rate ratios when applicable. Terms show the variable behind them in a tip when the model was published with its variables. Fit statistics and additional tables appear in a collapsible **Model details** panel.
 - **Tables.** Static HTML tables displaying the first 25 rows with a link to the full table.
 - **Hypothesis tests.** Test statistic, p-value, and estimate with its confidence interval, with additional parameters under **Test details**.
+- **Code snippets.** R, Python, or Stata code with highlighting, and the output, messages, warnings, and errors it printed. Long output folds. The JavaScript bundle adds buttons to copy the code and show or hide the output. `?output=none` on the artifact URL starts with the output hidden.
 - **Figures.** SVG, PNG, JPEG, GIF, and WebP images.
 - **Charts.** Interactive Vega-Lite charts rendered with `vega-embed`.
 - **Other artifacts.** Link cards for HTML documents, Quarto sites, PDFs, and downloadable files.
@@ -47,7 +48,7 @@ Upload the archive under **Plugins → Add New → Upload Plugin** and activate 
 Neither the module nor `framework-cloud/embed` is on Packagist or drupal.org. Clone this repository at a release tag, then register both directories as Composer path repositories in the site's root `composer.json`:
 
 ```sh
-git clone --branch v0.4.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+git clone --branch v0.5.0 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-drupal '{"type":"path","url":"/path/to/framework-embed/drupal","options":{"versions":{"drupal/framework_embed":"0.1.0"}}}'
 composer require drupal/framework_embed:0.1.0 framework-cloud/embed:0.1.0
@@ -63,7 +64,7 @@ Add a **Framework artifact** field to a content type for stored embeds. For live
 The addon and `framework-cloud/embed` are not on Packagist. Clone this repository at a release tag and register both directories as path repositories:
 
 ```sh
-git clone --branch v0.4.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+git clone --branch v0.5.0 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-statamic '{"type":"path","url":"/path/to/framework-embed/statamic","options":{"versions":{"framework-cloud/statamic-embed":"0.1.0"}}}'
 composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0
@@ -81,10 +82,10 @@ The JavaScript package is not on npm. Each [release](https://github.com/framewor
 | File | Contents |
 |---|---|
 | `framework-embed.css` | Stylesheet |
-| `framework-embed.iife.js` | Script-tag build. It sets `window.FrameworkEmbed`, applies `window.FrameworkEmbedConfig`, registers `<framework-artifact>`, prepares disclosures for printing, and draws charts and sets up variable tips on load. |
+| `framework-embed.iife.js` | Script-tag build. It sets `window.FrameworkEmbed`, applies `window.FrameworkEmbedConfig`, registers `<framework-artifact>`, prepares disclosures for printing, and draws charts and sets up variable tips, copy buttons, and output toggles on load. |
 | `framework-embed.js` | ES module with the same exports. Importing it registers no custom element and adds no event listeners. |
 
-Host the files with your site, or load them from jsDelivr at a pinned tag, such as `https://cdn.jsdelivr.net/gh/frameworktools/framework-embed@v0.4.1/php/assets/framework-embed.iife.js`. GitHub Pages serves the latest release under unversioned names at `https://frameworktools.github.io/framework-embed/`.
+Host the files with your site, or load them from jsDelivr at a pinned tag, such as `https://cdn.jsdelivr.net/gh/frameworktools/framework-embed@v0.5.0/php/assets/framework-embed.iife.js`. GitHub Pages serves the latest release under unversioned names at `https://frameworktools.github.io/framework-embed/`.
 
 Include the stylesheet and script-tag build to use `<framework-artifact>` on any HTML page:
 
@@ -109,10 +110,10 @@ expandDetailsForPrint();
 
 const doc = await fetchEmbed('https://framework.pub/d/aB3dE5fG7hJ9kL1m'); // null on 404 or 410
 const html = render(doc); // escaped HTML string, for server rendering or a build step
-mount(document.querySelector('#figure'), doc); // insert the HTML into an attached element, then draw charts and set up tips
+mount(document.querySelector('#figure'), doc); // insert the HTML into an attached element, then draw charts and set up tips and snippet buttons
 ```
 
-After inserting `render()` output any other way, call `enhanceCharts(root)` and `enhanceTips(root)` on the element that contains it, once that element is in the document. See `js/README.md` for the full JavaScript API.
+After inserting `render()` output any other way, call `enhanceCharts(root)`, `enhanceTips(root)`, `enhanceCopy(root)`, and `enhanceOutput(root)` on the element that contains it, once that element is in the document. See `js/README.md` for the full JavaScript API.
 
 For the logistic regression in `spec/fixtures/r-glm-logit.json`, the rendered coefficient table opens on the odds ratio scale, with a switch to log odds:
 
@@ -141,13 +142,13 @@ The PHP package is not on Packagist. Install it with Composer from a release arc
             "type": "package",
             "package": {
                 "name": "framework-cloud/embed",
-                "version": "0.4.1",
-                "dist": {"type": "zip", "url": "https://github.com/frameworktools/framework-embed/archive/refs/tags/v0.4.1.zip"},
+                "version": "0.5.0",
+                "dist": {"type": "zip", "url": "https://github.com/frameworktools/framework-embed/archive/refs/tags/v0.5.0.zip"},
                 "autoload": {"psr-4": {"Framework\\Embed\\": "php/src/"}}
             }
         }
     ],
-    "require": {"framework-cloud/embed": "0.4.1"}
+    "require": {"framework-cloud/embed": "0.5.0"}
 }
 ```
 

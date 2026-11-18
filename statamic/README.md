@@ -1,6 +1,6 @@
 # Framework Embeds for Statamic
 
-Framework Embeds for Statamic displays published Framework models, tables, hypothesis tests, figures, and Vega-Lite charts in Statamic templates as static HTML rather than iframes. It requires Statamic 5 or 6 and PHP 8.1 or later, and is tested on Statamic 5.74 (Laravel 12) and 6.42 (Laravel 13).
+Framework Embeds for Statamic displays published Framework models, tables, hypothesis tests, code snippets, figures, and Vega-Lite charts in Statamic templates as static HTML rather than iframes. It requires Statamic 5 or 6 and PHP 8.1 or later, and is tested on Statamic 5.74 (Laravel 12) and 6.42 (Laravel 13).
 
 The addon fetches embed documents from framework.pub and from self-hosted Framework Cloud servers listed in `config/framework-embed.php`, rendering them through the `framework-cloud/embed` PHP package.
 
@@ -9,7 +9,7 @@ The addon fetches embed documents from framework.pub and from self-hosted Framew
 The addon and `framework-cloud/embed` are not on Packagist. Clone this repository at a release tag and register both directories as path repositories in the site's root `composer.json`:
 
 ```sh
-git clone --branch v0.4.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+git clone --branch v0.5.0 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-statamic '{"type":"path","url":"/path/to/framework-embed/statamic","options":{"versions":{"framework-cloud/statamic-embed":"0.1.0"}}}'
 composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0
@@ -89,7 +89,7 @@ Image artifacts render as `<img>` elements pointing to the image URL in the embe
 </body>
 ```
 
-`{{ framework:scripts }}` outputs the script tag that initializes Vega-Lite charts and opens variable tips on hover. With `only_if_charts="true"`, it outputs the script tag only when a chart or a variable tip rendered earlier in the same request. When a chart nears the viewport, the script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
+`{{ framework:scripts }}` outputs the script tag that initializes Vega-Lite charts, opens variable tips on hover, and shows the copy and output buttons on code snippets. With `only_if_charts="true"`, it outputs the script tag only when a chart or a variable tip rendered earlier in the same request. When a chart nears the viewport, the script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
 
 Supported URLs:
 
