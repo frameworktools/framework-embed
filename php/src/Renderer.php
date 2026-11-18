@@ -222,14 +222,20 @@ final class Renderer
         return Format::number($n) . ' ' . ($n == 1 ? $one : $many);
     }
 
-    /** A top value as a level name: strings as they are, integers in digits, anything else matches nothing. */
-    private static function levelText(mixed $value): ?string
+    /**
+     * Whether a top value is the level: a string as it is, an integer in digits, a boolean as true or false
+     * in any ASCII case (R writes TRUE, Python True).
+     */
+    private static function isLevel(mixed $value, string $level): bool
     {
         if (is_string($value)) {
-            return $value;
+            return $value === $level;
+        }
+        if (is_bool($value)) {
+            return strtolower($level) === ($value ? 'true' : 'false');
         }
 
-        return Format::isInteger($value) ? (string) (int) $value : null;
+        return is_int($value) && (string) $value === $level;
     }
 
     /**
@@ -247,7 +253,7 @@ final class Renderer
                 $sentences[] = 'Compared with ' . $reference . '.';
             }
             foreach (self::lst($s['top'] ?? null) as $entry) {
-                if (self::isObject($entry) && self::levelText($entry['value'] ?? null) === $level && Format::isInteger($entry['count'] ?? null)) {
+                if (self::isObject($entry) && self::isLevel($entry['value'] ?? null, $level) && Format::isInteger($entry['count'] ?? null)) {
                     if (Format::isInteger($s['count'] ?? null)) {
                         $sentences[] = Format::number($entry['count']) . ' of ' . self::plural($s['count'], 'row', 'rows') . '.';
                     }

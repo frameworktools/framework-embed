@@ -108,10 +108,28 @@
             0.243743808379269,
             -2.08137181136218,
             7.7082099188124
+          ],
+          [
+            "maleTRUE",
+            3.42,
+            0.61,
+            5.61,
+            1e-07,
+            2.22,
+            4.62
+          ],
+          [
+            "body_mass_g:maleTRUE",
+            0.0003,
+            0.0002,
+            1.5,
+            0.134,
+            -0.0001,
+            0.0007
           ]
         ],
         "precision_note": null,
-        "row_count": 4,
+        "row_count": 6,
         "column_count": 7,
         "truncated": false
       }
@@ -215,6 +233,31 @@
             }
           ]
         }
+      },
+      {
+        "name": "male",
+        "role": "predictor",
+        "type": "boolean",
+        "levels": [
+          "FALSE",
+          "TRUE"
+        ],
+        "reference": "FALSE",
+        "summary": {
+          "count": 342,
+          "missing": 0,
+          "distinct": 2,
+          "top": [
+            {
+              "value": true,
+              "count": 172
+            },
+            {
+              "value": false,
+              "count": 170
+            }
+          ]
+        }
       }
     ],
     "terms": [
@@ -249,6 +292,27 @@
         "parts": [
           {
             "variable": "nowhere"
+          }
+        ]
+      },
+      {
+        "term": "maleTRUE",
+        "parts": [
+          {
+            "variable": "male",
+            "level": "TRUE"
+          }
+        ]
+      },
+      {
+        "term": "body_mass_g:maleTRUE",
+        "parts": [
+          {
+            "variable": "body_mass_g"
+          },
+          {
+            "variable": "male",
+            "level": "TRUE"
           }
         ]
       }

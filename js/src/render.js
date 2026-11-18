@@ -148,7 +148,7 @@ function summaryDetail(type, summary, levels, level, reference) {
     const stat = (x) => formatValue(x, false, RESULT_PLACES);
     if (level !== null) {
         if (reference !== null && reference !== level) sentences.push(`Compared with ${reference}.`);
-        const top = list(s.top).find((entry) => isObject(entry) && levelText(entry.value) === level && Number.isInteger(entry.count));
+        const top = list(s.top).find((entry) => isObject(entry) && isLevel(entry.value, level) && Number.isInteger(entry.count));
         if (top !== undefined && Number.isInteger(s.count)) sentences.push(`${count(top.count)} of ${plural(s.count, 'row', 'rows')}.`);
         return sentences.join(' ');
     }
@@ -173,10 +173,12 @@ function summaryDetail(type, summary, levels, level, reference) {
     return sentences.join(' ');
 }
 
-// A top value as a level name: strings as they are, integers in digits, anything else matches nothing.
-function levelText(value) {
-    if (typeof value === 'string') return value;
-    return Number.isInteger(value) ? String(value) : null;
+// Whether a top value is the level: a string as it is, an integer in digits, a boolean as true or false
+// in any ASCII case (R writes TRUE, Python True).
+function isLevel(value, level) {
+    if (typeof value === 'string') return value === level;
+    if (typeof value === 'boolean') return asciiLower(level) === String(value);
+    return Number.isInteger(value) && String(value) === level;
 }
 
 function modelVariables(doc) {
