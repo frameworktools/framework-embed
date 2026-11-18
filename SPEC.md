@@ -51,17 +51,56 @@ Private, password-protected, missing, and deleted artifacts return `404` with `C
 - `author`, `author.url`, and `description` may be `null`. New optional fields may appear within `v1`, and renderers ignore unknown fields.
 - `alt` is a one-sentence text description for screen readers and image alt text.
 
+## Model variables
+
+A `model` representation may carry two optional fields that describe the data behind it. Packages fill them from the data the model was fit on (the model frame), never from rows outside it. Both may be absent, and renderers show the model without them.
+
+```json
+"variables": [
+  {"name": "body_mass_g", "role": "response", "type": "number", "label": "Body mass (g)",
+   "summary": {"count": 342, "missing": 0, "mean": 4201.75, "sd": 801.95, "min": 2700, "max": 6300}},
+  {"name": "flipper_length_mm", "role": "predictor", "type": "number",
+   "summary": {"count": 342, "missing": 0, "mean": 200.92, "sd": 14.06, "min": 172, "max": 231}},
+  {"name": "species", "role": "predictor", "type": "categorical",
+   "levels": ["Adelie", "Chinstrap", "Gentoo"], "reference": "Adelie",
+   "summary": {"count": 342, "missing": 0, "distinct": 3,
+               "top": [{"value": "Adelie", "count": 151}, {"value": "Gentoo", "count": 123}, {"value": "Chinstrap", "count": 68}]}}
+],
+"terms": [
+  {"term": "flipper_length_mm", "parts": [{"variable": "flipper_length_mm"}]},
+  {"term": "speciesChinstrap", "parts": [{"variable": "species", "level": "Chinstrap"}]},
+  {"term": "flipper_length_mm:speciesGentoo", "parts": [{"variable": "flipper_length_mm"}, {"variable": "species", "level": "Gentoo"}]}
+]
+```
+
+`variables` lists each variable once, at most 100:
+
+- `name`: the variable's name in the data, before any transformation (`bill_depth_mm` for a `log(bill_depth_mm)` term).
+- `role`: `response`, `predictor`, `group` (a random-effects grouping factor), `weight`, or `offset`. Optional.
+- `type`: `number`, `categorical` (a factor, category, or labeled integer), `boolean`, `date`, `datetime`, or `string`.
+- `label`: the variable's label, when the data carries one: R's `label` attribute, a pandas `attrs` entry, or Stata's variable label. Optional.
+- `levels`: a categorical variable's levels in model order, at most 50. For a Stata value-labeled variable, the value labels. Optional.
+- `reference`: the level the model's coefficients compare against, when it has one. Optional.
+- `summary`: the same object as a table column's `summary` (`count`, `missing`, `distinct`, `mean`, `sd`, `min`, `q1`, `median`, `q3`, `max`, `top`), computed over the rows the model used. `count` is those rows, so `missing` is usually 0. No `histogram`. Optional.
+
+`terms` maps coefficient table terms to variables, at most 500. Each entry's `term` matches a `term` cell exactly. `parts` names one variable per factor of the term, in order, with `level` for a categorical variable's level. The intercept and terms a package can't map are left out. A term from a transformation, such as `log(x)` or `poly(x, 2)1`, maps to the variable it transforms.
+
+Framework Cloud keeps both fields when they fit this contract and drops entries that don't, as it does for column summaries.
+
 ## Renderer markup
 
 The JavaScript and PHP renderers produce identical HTML for each embed document, verified against the shared fixtures in `spec/fixtures`. All artifact text is escaped before insertion. Every CSS class begins with `fw-embed`.
 
 ```html
 <figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="…" data-fw-embed-version="3">
-  <div class="fw-embed__body">…kind-specific content…</div>
   <figcaption class="fw-embed__caption">
     <span class="fw-embed__title">Admission model</span>
     <a class="fw-embed__credit" href="…attribution.url…" target="_blank" rel="noopener">Framework</a>
   </figcaption>
+  <div class="fw-embed__body">…kind-specific content…</div>
+  <div class="fw-embed__about">
+    <span class="fw-embed__description">Admissions by GRE score and rank.</span>
+  </div>
 </figure>
 ```
 
@@ -120,12 +159,15 @@ The `<figure>` carries `data-fw-embed-key` when `key` is a non-empty string and 
 
 ### Caption
 
-`<figcaption class="fw-embed__caption">` holds, in order:
+`<figcaption class="fw-embed__caption">` comes first in the figure, before `fw-embed__body`, except for `page`, where it follows the body. It holds, in order:
 
 - `fw-embed__title`: `title`, when present. Left out for `page`.
-- `fw-embed__description`: `description`, when present. Left out for `page`.
-- `fw-embed__author`: `author.name`, linked to `author.url` when that URL is safe. Left out for `page`.
 - `fw-embed__credit`: `attribution.text` (default `Framework`), linked to `attribution.url`, or to `url` when that is missing or unsafe, with `target="_blank" rel="noopener"`. A `<span>` when neither URL is safe.
+
+After `fw-embed__body`, a `<div class="fw-embed__about">` holds, in order, when either is present (never for `page`):
+
+- `fw-embed__description`: `description`.
+- `fw-embed__author`: `author.name`, linked to `author.url` when that URL is safe.
 
 ### `model`
 
@@ -133,14 +175,14 @@ A model shows each coefficient table once, in full. Everything else goes in a cl
 
 Inside `fw-embed__body`, in order:
 
-1. `<p class="fw-embed__meta">`: the model's common name and its response, joined by ` · `. For example, `Logistic regression · Response: am`. "Model names" below has the mapping.
-2. `<p class="fw-embed__formula"><code>`: `formula`, when present. Without a formula, a `command` metric with a string value takes this slot. That is how Stata models show the command that fit them, such as `regress price mpg weight i.foreign`. A string `command` metric never appears in the statistics, even when a formula is present.
-3. Each coefficient table (`fw-embed__table--coefficients`).
-4. The `Model details` disclosure, holding any remaining content:
-   - every other table (random effects, smooth terms, ANOVA, and others) rendered as a data table with model column labels, up to 25 rows.
+1. Each coefficient table (`fw-embed__table--coefficients`), and any random effects table.
+2. The `Model details` disclosure, holding, in order:
+   - `<p class="fw-embed__meta">`: the model's common name and its response, joined by ` · `. For example, `Logistic regression · Response: am`. "Model names" below has the mapping.
+   - `<p class="fw-embed__formula"><code>`: `formula`, when present. Without a formula, a `command` metric with a string value takes this slot. That is how Stata models show the command that fit them, such as `regress price mpg weight i.foreign`. A string `command` metric never appears in the statistics, even when a formula is present.
+   - every other table (smooth terms, ANOVA, and others) rendered as a data table with model column labels, up to 25 rows.
    - `<dl class="fw-embed__stats">` containing the model metrics.
 
-   When no additional tables or metrics remain, the disclosure is omitted.
+   When none of these are present, the disclosure is omitted. A model with nothing to show outside the disclosure shows its contents directly.
 
 #### Model names
 
@@ -233,6 +275,24 @@ Each table renders as a data table. Captions appear only when there is more than
 - A number column is decimal when any shown value in it is not a whole number. Every value in a decimal column gets the full number of decimals: three in `table` documents (data formatting), two in model and test tables (result formatting).
 - Model and test tables label known columns: `term` Term, `estimate` Estimate, `std_error` Std. error, `statistic` Statistic, `p_value` p-value, `conf_low` CI lower, `conf_high` CI upper, `group` Group, `variance` Variance, `std_dev` Std. dev., `correlation` Correlation, `feature` Feature, `importance` Importance, `edf` EDF, `ref_df` Ref. df. A column `label` wins over these.
 - The note appears when `row_count` exceeds the rows shown or `column_count` exceeds the columns sent: `Showing {n} of {total} rows and {m} of {total} columns.` The link appears when `url` is safe.
+
+### Variable tips
+
+A coefficient table's term cell gets a tip when `terms` maps it and every variable it names is in `variables`. A data table's column header (in `table` documents) gets one when the column has a `label` or a `summary` that yields a sentence. Everything else stays plain text.
+
+```html
+<th scope="row"><button type="button" class="fw-embed__term" popovertarget="fw-embed-tip-{key}-{version}-{n}">speciesChinstrap</button><span class="fw-embed__tip" id="fw-embed-tip-{key}-{version}-{n}" popover=""><span class="fw-embed__tip-block"><span class="fw-embed__tip-name">species = Chinstrap</span><span class="fw-embed__tip-label">Penguin species</span><span class="fw-embed__tip-detail">Compared with Adelie. 68 of 342 rows.</span></span></span></th>
+```
+
+- Ids count from 1 in document order within one embed. `{key}-{version}-` is left out when `key` has characters other than ASCII letters, digits, `_`, and `-`; `version` is `0` when it isn't an integer. The JS bundle renumbers repeats when one artifact is embedded twice on a page.
+- One `fw-embed__tip-block` per part of the term. The name is the variable, with ` = {level}` for a level. The label line appears when the variable has a `label` other than its name. A column's tip names the column, with its `label` as the label line when the header shows the label.
+- The detail line joins these sentences with spaces, leaving out any whose numbers are missing:
+  - A level: `Compared with {reference}.` when the reference differs from the level, then `{count} of {n} rows.` from the `top` entry whose value is the level (a string as is, an integer in digits).
+  - A number: `Mean {mean}, SD {sd}, range {min} to {max}.`, each part present only when its value is, the first capitalized. Values use result formatting (two decimals, whole numbers as integers).
+  - A date or datetime: `From {min} to {max}.`
+  - Anything else: `{n} levels.` (or `{n} levels, compared with {reference}.`) when `levels` is set, else `{n} distinct values.`; then `Most common: {value} ({count}), …` for up to three `top` entries.
+  - Except for a level: `{count} rows.`, or `{count} rows, {missing} missing.` when values are missing. Singular `row`, `level`, and `distinct value` when the number is 1.
+- The popover opens on click or tap without JavaScript. The JS bundle opens it on mouse hover too, keeps it open after a click, and places it below the button (above when there's no room), within the viewport. Tips are dark on every host: `--fw-embed-tip-bg` and `--fw-embed-tip-fg` theme them.
 
 ### `test`
 

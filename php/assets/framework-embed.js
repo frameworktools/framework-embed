@@ -248,6 +248,7 @@ function scriptJson(value) {
 }
 function render(doc) {
   if (!isObject(doc)) return "";
+  tips = { prefix: tipPrefix(doc), count: 0 };
   let kind = KINDS.has(doc.kind) ? doc.kind : "page";
   let body = null;
   if (kind === "model") body = renderModel(doc);
@@ -262,26 +263,121 @@ function render(doc) {
   let open = `<figure class="fw-embed fw-embed--${kind}" data-fw-embed-kind="${kind}"`;
   if (text(doc.key) !== null) open += ` data-fw-embed-key="${escapeHtml(doc.key)}"`;
   if (Number.isInteger(doc.version)) open += ` data-fw-embed-version="${doc.version}"`;
-  return [open + ">", `<div class="fw-embed__body">`, body, "</div>", renderCaption(doc, kind), "</figure>", ""].join("\n");
+  const caption = renderCaption(doc, kind);
+  const inner = [`<div class="fw-embed__body">`, body, "</div>"];
+  if (kind === "page") return [open + ">", ...inner, caption, "</figure>", ""].join("\n");
+  return [open + ">", caption, ...inner, ...renderAbout(doc), "</figure>", ""].join("\n");
 }
 function renderCaption(doc, kind) {
   const parts = ['<figcaption class="fw-embed__caption">'];
-  if (kind !== "page") {
-    if (text(doc.title) !== null) parts.push(`<span class="fw-embed__title">${escapeHtml(doc.title)}</span>`);
-    if (text(doc.description) !== null) parts.push(`<span class="fw-embed__description">${escapeHtml(doc.description)}</span>`);
-    const author = isObject(doc.author) ? doc.author : {};
-    if (text(author.name) !== null) {
-      const href2 = safeUrl(author.url);
-      const name = escapeHtml(author.name);
-      parts.push(`<span class="fw-embed__author">${href2 === null ? name : `<a href="${escapeHtml(href2)}">${name}</a>`}</span>`);
-    }
-  }
+  if (kind !== "page" && text(doc.title) !== null) parts.push(`<span class="fw-embed__title">${escapeHtml(doc.title)}</span>`);
   const attribution = isObject(doc.attribution) ? doc.attribution : {};
   const credit = escapeHtml(text(attribution.text) ?? "Framework");
   const href = safeUrl(attribution.url) ?? safeUrl(doc.url);
   parts.push(href === null ? `<span class="fw-embed__credit">${credit}</span>` : `<a class="fw-embed__credit" href="${escapeHtml(href)}" target="_blank" rel="noopener">${credit}</a>`);
   parts.push("</figcaption>");
   return parts.join("\n");
+}
+function renderAbout(doc) {
+  const parts = [];
+  if (text(doc.description) !== null) parts.push(`<span class="fw-embed__description">${escapeHtml(doc.description)}</span>`);
+  const author = isObject(doc.author) ? doc.author : {};
+  if (text(author.name) !== null) {
+    const href = safeUrl(author.url);
+    const name = escapeHtml(author.name);
+    parts.push(`<span class="fw-embed__author">${href === null ? name : `<a href="${escapeHtml(href)}">${name}</a>`}</span>`);
+  }
+  return parts.length === 0 ? [] : ['<div class="fw-embed__about">', ...parts, "</div>"];
+}
+var tips = { prefix: "fw-embed-tip-", count: 0 };
+function tipPrefix(doc) {
+  const key = text(doc.key);
+  if (key === null || !/^[A-Za-z0-9_-]+$/.test(key)) return "fw-embed-tip-";
+  return `fw-embed-tip-${key}-${Number.isInteger(doc.version) ? doc.version : 0}-`;
+}
+function tip(label, blocks) {
+  const id = `${tips.prefix}${++tips.count}`;
+  return `<button type="button" class="fw-embed__term" popovertarget="${id}">${escapeHtml(label)}</button><span class="fw-embed__tip" id="${id}" popover="">${blocks.join("")}</span>`;
+}
+function tipBlock(name, label, detail) {
+  let html = `<span class="fw-embed__tip-name">${escapeHtml(name)}</span>`;
+  if (label !== null) html += `<span class="fw-embed__tip-label">${escapeHtml(label)}</span>`;
+  if (detail !== "") html += `<span class="fw-embed__tip-detail">${escapeHtml(detail)}</span>`;
+  return `<span class="fw-embed__tip-block">${html}</span>`;
+}
+function count(x) {
+  return formatNumber(x);
+}
+function plural(n, one, many) {
+  return `${count(n)} ${n === 1 ? one : many}`;
+}
+function summaryDetail(type, summary, levels, level, reference) {
+  const sentences = [];
+  const s = isObject(summary) ? summary : {};
+  const stat = (x) => formatValue(x, false, RESULT_PLACES);
+  if (level !== null) {
+    if (reference !== null && reference !== level) sentences.push(`Compared with ${reference}.`);
+    const top = list(s.top).find((entry) => isObject(entry) && levelText(entry.value) === level && Number.isInteger(entry.count));
+    if (top !== void 0 && Number.isInteger(s.count)) sentences.push(`${count(top.count)} of ${plural(s.count, "row", "rows")}.`);
+    return sentences.join(" ");
+  }
+  if (type === "number") {
+    const parts = [];
+    if (isNumber(s.mean)) parts.push(`mean ${stat(s.mean)}`);
+    if (isNumber(s.sd)) parts.push(`SD ${stat(s.sd)}`);
+    if (s.min !== void 0 && s.max !== void 0 && s.min !== null && s.max !== null) parts.push(`range ${stat(s.min)} to ${stat(s.max)}`);
+    if (parts.length > 0) sentences.push(asciiCapitalize(parts.join(", ")) + ".");
+  } else if (type === "date" || type === "datetime") {
+    if (typeof s.min === "string" && typeof s.max === "string") sentences.push(`From ${s.min} to ${s.max}.`);
+  } else {
+    if (levels.length > 0) sentences.push(`${plural(levels.length, "level", "levels")}${reference !== null ? `, compared with ${reference}` : ""}.`);
+    else if (Number.isInteger(s.distinct)) sentences.push(`${plural(s.distinct, "distinct value", "distinct values")}.`);
+    const top = list(s.top).filter((entry) => isObject(entry) && Number.isInteger(entry.count)).slice(0, 3);
+    if (top.length > 0) sentences.push(`Most common: ${top.map((entry) => `${formatValue(entry.value)} (${count(entry.count)})`).join(", ")}.`);
+  }
+  if (Number.isInteger(s.count)) {
+    const missing = Number.isInteger(s.missing) && s.missing > 0 ? `, ${count(s.missing)} missing` : "";
+    sentences.push(`${plural(s.count, "row", "rows")}${missing}.`);
+  }
+  return sentences.join(" ");
+}
+function levelText(value) {
+  if (typeof value === "string") return value;
+  return Number.isInteger(value) ? String(value) : null;
+}
+function modelVariables(doc) {
+  const variables = /* @__PURE__ */ new Map();
+  for (const variable of list(doc.data?.variables)) {
+    if (isObject(variable) && text(variable.name) !== null && !variables.has(variable.name)) variables.set(variable.name, variable);
+  }
+  return variables;
+}
+function termCell(label, doc) {
+  const entry = list(doc.data?.terms).find((term) => isObject(term) && term.term === label);
+  if (entry === void 0) return escapeHtml(label);
+  const variables = modelVariables(doc);
+  const blocks = [];
+  for (const part of list(entry.parts)) {
+    const variable = isObject(part) ? variables.get(part.variable) : void 0;
+    if (variable === void 0) return escapeHtml(label);
+    const level = text(part.level);
+    const levels = list(variable.levels).filter((value) => typeof value === "string");
+    const name = level === null ? variable.name : `${variable.name} = ${level}`;
+    const variableLabel = text(variable.label);
+    blocks.push(tipBlock(
+      name,
+      variableLabel === variable.name ? null : variableLabel,
+      summaryDetail(variable.type, variable.summary, levels, level, text(variable.reference))
+    ));
+  }
+  return blocks.length === 0 ? escapeHtml(label) : tip(label, blocks);
+}
+function columnHeader(column) {
+  const label = columnLabel(column, false);
+  const detail = summaryDetail(column.type === "number" || column.type === "date" || column.type === "datetime" ? column.type : "string", column.summary, [], null, null);
+  const named2 = label !== column.name;
+  if (detail === "" && !named2) return escapeHtml(label);
+  return tip(label, [tipBlock(column.name, named2 ? label : null, detail)]);
 }
 function usableTables(data) {
   return list(data.tables).filter((table) => isObject(table) && Array.isArray(table.rows) && Array.isArray(table.columns) && table.columns.length > 0 && table.columns.every((column) => isObject(column) && text(column.name) !== null));
@@ -338,7 +434,7 @@ function renderModel(doc) {
   });
   if (stats.length > 0) rest.push(renderMetrics(stats));
   if (visible.length === 0) return [...parts, ...rest].join("\n");
-  return [...parts, ...visible, ...details("Model details", rest)].join("\n");
+  return [...visible, ...details("Model details", [...parts, ...rest])].join("\n");
 }
 function renderTableKind(doc) {
   const data = doc.data;
@@ -508,8 +604,8 @@ function openTable(table, showCaption, modifier) {
   if (showCaption) lines.push(`<caption>${escapeHtml(title)}</caption>`);
   return lines;
 }
-function numberSpan(count) {
-  return `<span class="fw-embed__num">${escapeHtml(formatNumber(count))}</span>`;
+function numberSpan(count2) {
+  return `<span class="fw-embed__num">${escapeHtml(formatNumber(count2))}</span>`;
 }
 function tableNotes(table, rows, start, doc, rest) {
   const notes = [];
@@ -535,7 +631,7 @@ function renderTable(table, showCaption, modelLabels, doc, places, start, end, r
   const columns = table.columns;
   const decimal = columns.map((_, index) => isDecimalColumn(sample, index));
   const lines = openTable(table, showCaption, null);
-  lines.push("<thead><tr>" + columns.map((column) => th(columnLabel(column, modelLabels), column.type === "number")).join("") + "</tr></thead>");
+  lines.push("<thead><tr>" + columns.map((column) => modelLabels ? th(columnLabel(column, true), column.type === "number") : `<th scope="col"${column.type === "number" ? ' class="fw-embed__num"' : ""}>${columnHeader(column)}</th>`).join("") + "</tr></thead>");
   lines.push("<tbody>");
   for (const row of rows) {
     lines.push("<tr>" + columns.map((column, index) => td(formatCell(cell(row, index), column, decimal[index], places), column.type === "number")).join("") + "</tr>");
@@ -549,7 +645,7 @@ function coefficientTable(table, doc, modifier, columns) {
   const lines = openTable(table, true, modifier);
   lines.push("<thead><tr>" + th(columnLabel(table.columns[term], true), false) + columns.map(([header, numeric]) => th(header, numeric)).join("") + "</tr></thead>", "<tbody>");
   for (const row of rows) {
-    lines.push(`<tr><th scope="row">${escapeHtml(formatValue(cell(row, term)))}</th>` + columns.map(([, numeric, value]) => td(value(row), numeric)).join("") + "</tr>");
+    lines.push(`<tr><th scope="row">${termCell(formatValue(cell(row, term)), doc)}</th>` + columns.map(([, numeric, value]) => td(value(row), numeric)).join("") + "</tr>");
   }
   lines.push("</tbody>", "</table>", "</div>");
   return [...lines, ...tableNotes(table, rows, 0, doc, null)].join("\n");
@@ -813,7 +909,116 @@ async function fetchEmbed(url, options = {}) {
 function mount(element, doc, options = {}) {
   element.innerHTML = render(doc);
   enhanceCharts(element, options);
+  enhanceTips(element);
   return element.firstElementChild;
+}
+var tipsWatched = false;
+var tipSerial = 0;
+function placeTip(tip2) {
+  const button = tip2.previousElementSibling;
+  if (!button || typeof tip2.getBoundingClientRect !== "function") return;
+  tip2.setAttribute("data-fw-embed-placed", "");
+  const anchor = button.getBoundingClientRect();
+  const box = tip2.getBoundingClientRect();
+  const gap = 6;
+  const width = document.documentElement.clientWidth;
+  const height = document.documentElement.clientHeight;
+  let top = anchor.bottom + gap;
+  if (top + box.height > height - 8 && anchor.top - gap - box.height >= 8) top = anchor.top - gap - box.height;
+  const left = Math.max(8, Math.min(anchor.left, width - box.width - 8));
+  tip2.style.top = `${Math.round(top)}px`;
+  tip2.style.left = `${Math.round(left)}px`;
+}
+function isOpen(tip2) {
+  try {
+    return tip2.matches(":popover-open");
+  } catch {
+    return false;
+  }
+}
+function show(tip2) {
+  if (typeof tip2.showPopover === "function" && !isOpen(tip2)) {
+    try {
+      tip2.showPopover();
+    } catch {
+    }
+  }
+}
+function hide(tip2) {
+  if (typeof tip2.hidePopover === "function" && isOpen(tip2)) {
+    try {
+      tip2.hidePopover();
+    } catch {
+    }
+  }
+}
+function enhanceTips(root = document) {
+  if (typeof document === "undefined") return;
+  for (const button of root.querySelectorAll(".fw-embed__term[popovertarget]")) {
+    const tip2 = button.nextElementSibling;
+    if (!tip2 || !tip2.classList.contains("fw-embed__tip")) continue;
+    if (document.getElementById(tip2.id) !== tip2) {
+      tip2.id = `fw-embed-tip-r${++tipSerial}`;
+      button.setAttribute("popovertarget", tip2.id);
+    }
+  }
+  if (tipsWatched) return;
+  tipsWatched = true;
+  let timer = null;
+  let hovered = null;
+  const later = (fn) => {
+    clearTimeout(timer);
+    timer = setTimeout(fn, 120);
+  };
+  document.addEventListener("toggle", (event) => {
+    const tip2 = event.target;
+    if (tip2 instanceof Element && tip2.classList.contains("fw-embed__tip") && event.newState === "open") placeTip(tip2);
+  }, true);
+  document.addEventListener("pointerover", (event) => {
+    if (event.pointerType !== "mouse" || !(event.target instanceof Element)) return;
+    const button = event.target.closest(".fw-embed__term");
+    const tip2 = event.target.closest(".fw-embed__tip") ?? button?.nextElementSibling;
+    if (!tip2 || !tip2.classList.contains("fw-embed__tip")) return;
+    hovered = tip2;
+    later(() => {
+      if (hovered === tip2) show(tip2);
+    });
+  });
+  document.addEventListener("pointerout", (event) => {
+    if (event.pointerType !== "mouse" || !(event.target instanceof Element)) return;
+    const from = event.target.closest(".fw-embed__term, .fw-embed__tip");
+    if (!from) return;
+    const to = event.relatedTarget instanceof Element ? event.relatedTarget.closest(".fw-embed__term, .fw-embed__tip") : null;
+    const tip2 = from.classList.contains("fw-embed__tip") ? from : from.nextElementSibling;
+    if (to === from || to === tip2 || to === tip2?.previousElementSibling) return;
+    hovered = null;
+    later(() => {
+      if (hovered !== tip2 && tip2 && !tip2.hasAttribute("data-fw-embed-pinned")) hide(tip2);
+    });
+  });
+  document.addEventListener("click", (event) => {
+    if (!(event.target instanceof Element)) return;
+    const button = event.target.closest(".fw-embed__term");
+    if (!button) return;
+    const tip2 = button.nextElementSibling;
+    if (!tip2 || !tip2.classList.contains("fw-embed__tip")) return;
+    if (isOpen(tip2) && !tip2.hasAttribute("data-fw-embed-pinned")) {
+      event.preventDefault();
+      tip2.setAttribute("data-fw-embed-pinned", "");
+      return;
+    }
+    if (isOpen(tip2)) tip2.removeAttribute("data-fw-embed-pinned");
+    else tip2.setAttribute("data-fw-embed-pinned", "");
+  }, true);
+  document.addEventListener("toggle", (event) => {
+    if (event.target instanceof Element && event.target.classList.contains("fw-embed__tip") && event.newState === "closed") event.target.removeAttribute("data-fw-embed-pinned");
+  }, true);
+  window.addEventListener("scroll", () => {
+    for (const tip2 of document.querySelectorAll(".fw-embed__tip[data-fw-embed-placed]")) if (isOpen(tip2)) placeTip(tip2);
+  }, { passive: true, capture: true });
+  window.addEventListener("resize", () => {
+    for (const tip2 of document.querySelectorAll(".fw-embed__tip")) hide(tip2);
+  });
 }
 var vegaPromise = null;
 function loadScript(entry) {
@@ -912,23 +1117,23 @@ function tooltipText(value) {
   return Object.entries(value).map(([key, item]) => `${key}: ${item !== null && typeof item === "object" ? JSON.stringify(item) : String(item)}`).join("\n");
 }
 function textTooltip() {
-  let tip = null;
+  let tip2 = null;
   return (handler, event, item, value) => {
     const text2 = tooltipText(value);
     if (text2 === "") {
-      if (tip) tip.hidden = true;
+      if (tip2) tip2.hidden = true;
       return;
     }
-    if (!tip) {
-      tip = document.createElement("div");
-      tip.className = "fw-embed__tooltip";
-      tip.setAttribute("role", "tooltip");
-      document.body.append(tip);
+    if (!tip2) {
+      tip2 = document.createElement("div");
+      tip2.className = "fw-embed__tooltip";
+      tip2.setAttribute("role", "tooltip");
+      document.body.append(tip2);
     }
-    tip.textContent = text2;
-    tip.hidden = false;
-    tip.style.left = `${(event?.clientX ?? 0) + 12}px`;
-    tip.style.top = `${(event?.clientY ?? 0) + 12}px`;
+    tip2.textContent = text2;
+    tip2.hidden = false;
+    tip2.style.left = `${(event?.clientX ?? 0) + 12}px`;
+    tip2.style.top = `${(event?.clientY ?? 0) + 12}px`;
   };
 }
 var COMPOSITE = ["facet", "repeat", "concat", "hconcat", "vconcat"];
@@ -1174,6 +1379,7 @@ export {
   defineElement,
   embedRequestUrl,
   enhanceCharts,
+  enhanceTips,
   escapeHtml,
   expandDetailsForPrint,
   fetchEmbed,

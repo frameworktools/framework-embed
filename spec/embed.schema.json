@@ -94,7 +94,48 @@
           }
         },
         "formula": { "type": "string" },
+        "variables": {
+          "type": "array",
+          "maxItems": 100,
+          "description": "Models: the variables the model was fit on, from its data. Optional.",
+          "items": { "$ref": "#/$defs/variable" }
+        },
+        "terms": {
+          "type": "array",
+          "maxItems": 500,
+          "description": "Models: the variables, and levels, behind each coefficient table term. Optional.",
+          "items": {
+            "type": "object",
+            "required": ["term", "parts"],
+            "properties": {
+              "term": { "type": "string" },
+              "parts": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 10,
+                "items": {
+                  "type": "object",
+                  "required": ["variable"],
+                  "properties": { "variable": { "type": "string" }, "level": { "type": "string" } }
+                }
+              }
+            }
+          }
+        },
         "truncated": { "type": "boolean" }
+      }
+    },
+    "variable": {
+      "type": "object",
+      "required": ["name", "type"],
+      "properties": {
+        "name": { "type": "string" },
+        "role": { "enum": ["response", "predictor", "group", "weight", "offset"] },
+        "type": { "enum": ["number", "categorical", "boolean", "date", "datetime", "string"] },
+        "label": { "type": "string" },
+        "levels": { "type": "array", "maxItems": 50, "items": { "type": "string" } },
+        "reference": { "type": "string" },
+        "summary": { "type": "object", "description": "As a table column's summary, over the rows the model used." }
       }
     },
     "table": {

@@ -57,6 +57,7 @@ export function scriptJson(value) {
 
 export function render(doc) {
     if (!isObject(doc)) return '';
+    tips = { prefix: tipPrefix(doc), count: 0 };
     let kind = KINDS.has(doc.kind) ? doc.kind : 'page';
     let body = null;
     if (kind === 'model') body = renderModel(doc);
@@ -71,21 +72,17 @@ export function render(doc) {
     let open = `<figure class="fw-embed fw-embed--${kind}" data-fw-embed-kind="${kind}"`;
     if (text(doc.key) !== null) open += ` data-fw-embed-key="${escapeHtml(doc.key)}"`;
     if (Number.isInteger(doc.version)) open += ` data-fw-embed-version="${doc.version}"`;
-    return [open + '>', `<div class="fw-embed__body">`, body, '</div>', renderCaption(doc, kind), '</figure>', ''].join('\n');
+    // The caption heads the embed: the title and the link back. The description and author follow the
+    // content. A page's link card already shows all three, so its caption (the link back alone) follows the card.
+    const caption = renderCaption(doc, kind);
+    const inner = [`<div class="fw-embed__body">`, body, '</div>'];
+    if (kind === 'page') return [open + '>', ...inner, caption, '</figure>', ''].join('\n');
+    return [open + '>', caption, ...inner, ...renderAbout(doc), '</figure>', ''].join('\n');
 }
 
 function renderCaption(doc, kind) {
     const parts = ['<figcaption class="fw-embed__caption">'];
-    if (kind !== 'page') {
-        if (text(doc.title) !== null) parts.push(`<span class="fw-embed__title">${escapeHtml(doc.title)}</span>`);
-        if (text(doc.description) !== null) parts.push(`<span class="fw-embed__description">${escapeHtml(doc.description)}</span>`);
-        const author = isObject(doc.author) ? doc.author : {};
-        if (text(author.name) !== null) {
-            const href = safeUrl(author.url);
-            const name = escapeHtml(author.name);
-            parts.push(`<span class="fw-embed__author">${href === null ? name : `<a href="${escapeHtml(href)}">${name}</a>`}</span>`);
-        }
-    }
+    if (kind !== 'page' && text(doc.title) !== null) parts.push(`<span class="fw-embed__title">${escapeHtml(doc.title)}</span>`);
     const attribution = isObject(doc.attribution) ? doc.attribution : {};
     const credit = escapeHtml(text(attribution.text) ?? 'Framework');
     const href = safeUrl(attribution.url) ?? safeUrl(doc.url);
@@ -94,6 +91,128 @@ function renderCaption(doc, kind) {
         : `<a class="fw-embed__credit" href="${escapeHtml(href)}" target="_blank" rel="noopener">${credit}</a>`);
     parts.push('</figcaption>');
     return parts.join('\n');
+}
+
+// The description and author, under the content.
+function renderAbout(doc) {
+    const parts = [];
+    if (text(doc.description) !== null) parts.push(`<span class="fw-embed__description">${escapeHtml(doc.description)}</span>`);
+    const author = isObject(doc.author) ? doc.author : {};
+    if (text(author.name) !== null) {
+        const href = safeUrl(author.url);
+        const name = escapeHtml(author.name);
+        parts.push(`<span class="fw-embed__author">${href === null ? name : `<a href="${escapeHtml(href)}">${name}</a>`}</span>`);
+    }
+    return parts.length === 0 ? [] : ['<div class="fw-embed__about">', ...parts, '</div>'];
+}
+
+// --- variable tips ---
+// A term or column with something to tell gets a button that opens a popover with the variable's
+// label, its reference level, and a summary. The popover opens on click or tap without JavaScript;
+// the browser bundle adds hover and places it beside the button. Ids are unique within a page
+// for one copy of an embed; the bundle renumbers repeats.
+
+let tips = { prefix: 'fw-embed-tip-', count: 0 };
+
+function tipPrefix(doc) {
+    const key = text(doc.key);
+    if (key === null || !/^[A-Za-z0-9_-]+$/.test(key)) return 'fw-embed-tip-';
+    return `fw-embed-tip-${key}-${Number.isInteger(doc.version) ? doc.version : 0}-`;
+}
+
+function tip(label, blocks) {
+    const id = `${tips.prefix}${++tips.count}`;
+    return `<button type="button" class="fw-embed__term" popovertarget="${id}">${escapeHtml(label)}</button>`
+        + `<span class="fw-embed__tip" id="${id}" popover="">${blocks.join('')}</span>`;
+}
+
+function tipBlock(name, label, detail) {
+    let html = `<span class="fw-embed__tip-name">${escapeHtml(name)}</span>`;
+    if (label !== null) html += `<span class="fw-embed__tip-label">${escapeHtml(label)}</span>`;
+    if (detail !== '') html += `<span class="fw-embed__tip-detail">${escapeHtml(detail)}</span>`;
+    return `<span class="fw-embed__tip-block">${html}</span>`;
+}
+
+function count(x) {
+    return formatNumber(x);
+}
+
+function plural(n, one, many) {
+    return `${count(n)} ${n === 1 ? one : many}`;
+}
+
+// Sentences about a variable or column: its spread or common values, then its rows.
+function summaryDetail(type, summary, levels, level, reference) {
+    const sentences = [];
+    const s = isObject(summary) ? summary : {};
+    const stat = (x) => formatValue(x, false, RESULT_PLACES);
+    if (level !== null) {
+        if (reference !== null && reference !== level) sentences.push(`Compared with ${reference}.`);
+        const top = list(s.top).find((entry) => isObject(entry) && levelText(entry.value) === level && Number.isInteger(entry.count));
+        if (top !== undefined && Number.isInteger(s.count)) sentences.push(`${count(top.count)} of ${plural(s.count, 'row', 'rows')}.`);
+        return sentences.join(' ');
+    }
+    if (type === 'number') {
+        const parts = [];
+        if (isNumber(s.mean)) parts.push(`mean ${stat(s.mean)}`);
+        if (isNumber(s.sd)) parts.push(`SD ${stat(s.sd)}`);
+        if (s.min !== undefined && s.max !== undefined && s.min !== null && s.max !== null) parts.push(`range ${stat(s.min)} to ${stat(s.max)}`);
+        if (parts.length > 0) sentences.push(asciiCapitalize(parts.join(', ')) + '.');
+    } else if (type === 'date' || type === 'datetime') {
+        if (typeof s.min === 'string' && typeof s.max === 'string') sentences.push(`From ${s.min} to ${s.max}.`);
+    } else {
+        if (levels.length > 0) sentences.push(`${plural(levels.length, 'level', 'levels')}${reference !== null ? `, compared with ${reference}` : ''}.`);
+        else if (Number.isInteger(s.distinct)) sentences.push(`${plural(s.distinct, 'distinct value', 'distinct values')}.`);
+        const top = list(s.top).filter((entry) => isObject(entry) && Number.isInteger(entry.count)).slice(0, 3);
+        if (top.length > 0) sentences.push(`Most common: ${top.map((entry) => `${formatValue(entry.value)} (${count(entry.count)})`).join(', ')}.`);
+    }
+    if (Number.isInteger(s.count)) {
+        const missing = Number.isInteger(s.missing) && s.missing > 0 ? `, ${count(s.missing)} missing` : '';
+        sentences.push(`${plural(s.count, 'row', 'rows')}${missing}.`);
+    }
+    return sentences.join(' ');
+}
+
+// A top value as a level name: strings as they are, integers in digits, anything else matches nothing.
+function levelText(value) {
+    if (typeof value === 'string') return value;
+    return Number.isInteger(value) ? String(value) : null;
+}
+
+function modelVariables(doc) {
+    const variables = new Map();
+    for (const variable of list(doc.data?.variables)) {
+        if (isObject(variable) && text(variable.name) !== null && !variables.has(variable.name)) variables.set(variable.name, variable);
+    }
+    return variables;
+}
+
+// A coefficient term, with a tip when the model says which variables it comes from.
+function termCell(label, doc) {
+    const entry = list(doc.data?.terms).find((term) => isObject(term) && term.term === label);
+    if (entry === undefined) return escapeHtml(label);
+    const variables = modelVariables(doc);
+    const blocks = [];
+    for (const part of list(entry.parts)) {
+        const variable = isObject(part) ? variables.get(part.variable) : undefined;
+        if (variable === undefined) return escapeHtml(label);
+        const level = text(part.level);
+        const levels = list(variable.levels).filter((value) => typeof value === 'string');
+        const name = level === null ? variable.name : `${variable.name} = ${level}`;
+        const variableLabel = text(variable.label);
+        blocks.push(tipBlock(name, variableLabel === variable.name ? null : variableLabel,
+            summaryDetail(variable.type, variable.summary, levels, level, text(variable.reference))));
+    }
+    return blocks.length === 0 ? escapeHtml(label) : tip(label, blocks);
+}
+
+// A data table's column header, with a tip when the column carries a label or summary.
+function columnHeader(column) {
+    const label = columnLabel(column, false);
+    const detail = summaryDetail(column.type === 'number' || column.type === 'date' || column.type === 'datetime' ? column.type : 'string', column.summary, [], null, null);
+    const named = label !== column.name;
+    if (detail === '' && !named) return escapeHtml(label);
+    return tip(label, [tipBlock(column.name, named ? label : null, detail)]);
 }
 
 // --- data kinds -------------------------------------------------------------
@@ -161,7 +280,8 @@ function renderModel(doc) {
     });
     if (stats.length > 0) rest.push(renderMetrics(stats));
     if (visible.length === 0) return [...parts, ...rest].join('\n');
-    return [...parts, ...visible, ...details('Model details', rest)].join('\n');
+    // The model type, response, and formula are details: the coefficients show the terms, and the post names the model
+    return [...visible, ...details('Model details', [...parts, ...rest])].join('\n');
 }
 
 function renderTableKind(doc) {
@@ -385,7 +505,9 @@ function renderTable(table, showCaption, modelLabels, doc, places, start, end, r
     const columns = table.columns;
     const decimal = columns.map((_, index) => isDecimalColumn(sample, index));
     const lines = openTable(table, showCaption, null);
-    lines.push('<thead><tr>' + columns.map((column) => th(columnLabel(column, modelLabels), column.type === 'number')).join('') + '</tr></thead>');
+    lines.push('<thead><tr>' + columns.map((column) => modelLabels
+        ? th(columnLabel(column, true), column.type === 'number')
+        : `<th scope="col"${column.type === 'number' ? ' class="fw-embed__num"' : ''}>${columnHeader(column)}</th>`).join('') + '</tr></thead>');
     lines.push('<tbody>');
     for (const row of rows) {
         lines.push('<tr>' + columns.map((column, index) => td(formatCell(cell(row, index), column, decimal[index], places), column.type === 'number')).join('') + '</tr>');
@@ -401,7 +523,7 @@ function coefficientTable(table, doc, modifier, columns) {
     const lines = openTable(table, true, modifier);
     lines.push('<thead><tr>' + th(columnLabel(table.columns[term], true), false) + columns.map(([header, numeric]) => th(header, numeric)).join('') + '</tr></thead>', '<tbody>');
     for (const row of rows) {
-        lines.push('<tr>' + `<th scope="row">${escapeHtml(formatValue(cell(row, term)))}</th>` + columns.map(([, numeric, value]) => td(value(row), numeric)).join('') + '</tr>');
+        lines.push('<tr>' + `<th scope="row">${termCell(formatValue(cell(row, term)), doc)}</th>` + columns.map(([, numeric, value]) => td(value(row), numeric)).join('') + '</tr>');
     }
     lines.push('</tbody>', '</table>', '</div>');
     return [...lines, ...tableNotes(table, rows, 0, doc, null)].join('\n');

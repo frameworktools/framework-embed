@@ -70,6 +70,8 @@ export function configure(options?: Partial<Omit<Config, 'vegaScripts'>> & { veg
 export function fetchEmbed(url: string, options?: { hosts?: readonly string[]; fetch?: typeof fetch; signal?: AbortSignal }): Promise<EmbedDocument | null>;
 export function mount(element: Element, doc: EmbedDocument, options?: { lazy?: boolean }): Element | null;
 export function enhanceCharts(root?: ParentNode, options?: { lazy?: boolean }): number;
+/** Adds hover and placement to variable tips under root, and renumbers repeated tip ids. */
+export function enhanceTips(root?: ParentNode): void;
 export function loadVegaEmbed(): Promise<NonNullable<Config['vegaEmbed']>>;
 /** Light or dark from the page: markers, then background luminance, then color-scheme, then the OS. */
 export function prefersDark(element: Element): boolean;

@@ -56,7 +56,113 @@ export async function fetchEmbed(url, options = {}) {
 export function mount(element, doc, options = {}) {
     element.innerHTML = render(doc);
     enhanceCharts(element, options);
+    enhanceTips(element);
     return element.firstElementChild;
+}
+
+// --- variable tips ---
+// Each term button opens its popover on click or tap through popovertarget. This adds hover for
+// mice, places the open tip beside its button, closes it on scroll, and renumbers ids when the
+// same embed appears twice on a page.
+
+let tipsWatched = false;
+let tipSerial = 0;
+
+function placeTip(tip) {
+    const button = tip.previousElementSibling;
+    if (!button || typeof tip.getBoundingClientRect !== 'function') return;
+    tip.setAttribute('data-fw-embed-placed', '');
+    const anchor = button.getBoundingClientRect();
+    const box = tip.getBoundingClientRect();
+    const gap = 6;
+    const width = document.documentElement.clientWidth;
+    const height = document.documentElement.clientHeight;
+    let top = anchor.bottom + gap;
+    if (top + box.height > height - 8 && anchor.top - gap - box.height >= 8) top = anchor.top - gap - box.height;
+    const left = Math.max(8, Math.min(anchor.left, width - box.width - 8));
+    tip.style.top = `${Math.round(top)}px`;
+    tip.style.left = `${Math.round(left)}px`;
+}
+
+function isOpen(tip) {
+    try { return tip.matches(':popover-open'); } catch { return false; }
+}
+
+function show(tip) {
+    if (typeof tip.showPopover === 'function' && !isOpen(tip)) {
+        try { tip.showPopover(); } catch { /* detached or unsupported */ }
+    }
+}
+
+function hide(tip) {
+    if (typeof tip.hidePopover === 'function' && isOpen(tip)) {
+        try { tip.hidePopover(); } catch { /* already closed */ }
+    }
+}
+
+export function enhanceTips(root = document) {
+    if (typeof document === 'undefined') return;
+    // Repeated ids (one artifact embedded twice) would open the first copy's tip
+    for (const button of root.querySelectorAll('.fw-embed__term[popovertarget]')) {
+        const tip = button.nextElementSibling;
+        if (!tip || !tip.classList.contains('fw-embed__tip')) continue;
+        if (document.getElementById(tip.id) !== tip) {
+            tip.id = `fw-embed-tip-r${++tipSerial}`;
+            button.setAttribute('popovertarget', tip.id);
+        }
+    }
+    if (tipsWatched) return;
+    tipsWatched = true;
+    let timer = null;
+    let hovered = null;
+    const later = (fn) => { clearTimeout(timer); timer = setTimeout(fn, 120); };
+    document.addEventListener('toggle', (event) => {
+        const tip = event.target;
+        if (tip instanceof Element && tip.classList.contains('fw-embed__tip') && event.newState === 'open') placeTip(tip);
+    }, true);
+    document.addEventListener('pointerover', (event) => {
+        if (event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
+        const button = event.target.closest('.fw-embed__term');
+        const tip = event.target.closest('.fw-embed__tip') ?? button?.nextElementSibling;
+        if (!tip || !tip.classList.contains('fw-embed__tip')) return;
+        hovered = tip;
+        later(() => { if (hovered === tip) show(tip); });
+    });
+    document.addEventListener('pointerout', (event) => {
+        if (event.pointerType !== 'mouse' || !(event.target instanceof Element)) return;
+        const from = event.target.closest('.fw-embed__term, .fw-embed__tip');
+        if (!from) return;
+        const to = event.relatedTarget instanceof Element ? event.relatedTarget.closest('.fw-embed__term, .fw-embed__tip') : null;
+        const tip = from.classList.contains('fw-embed__tip') ? from : from.nextElementSibling;
+        if (to === from || to === tip || to === tip?.previousElementSibling) return;
+        hovered = null;
+        // A tip opened by a click stays until the reader closes it
+        later(() => { if (hovered !== tip && tip && !tip.hasAttribute('data-fw-embed-pinned')) hide(tip); });
+    });
+    document.addEventListener('click', (event) => {
+        if (!(event.target instanceof Element)) return;
+        const button = event.target.closest('.fw-embed__term');
+        if (!button) return;
+        const tip = button.nextElementSibling;
+        if (!tip || !tip.classList.contains('fw-embed__tip')) return;
+        // Hover already opened it: a click keeps it open instead of toggling it shut
+        if (isOpen(tip) && !tip.hasAttribute('data-fw-embed-pinned')) {
+            event.preventDefault();
+            tip.setAttribute('data-fw-embed-pinned', '');
+            return;
+        }
+        if (isOpen(tip)) tip.removeAttribute('data-fw-embed-pinned');
+        else tip.setAttribute('data-fw-embed-pinned', '');
+    }, true);
+    document.addEventListener('toggle', (event) => {
+        if (event.target instanceof Element && event.target.classList.contains('fw-embed__tip') && event.newState === 'closed') event.target.removeAttribute('data-fw-embed-pinned');
+    }, true);
+    window.addEventListener('scroll', () => {
+        for (const tip of document.querySelectorAll('.fw-embed__tip[data-fw-embed-placed]')) if (isOpen(tip)) placeTip(tip);
+    }, { passive: true, capture: true });
+    window.addEventListener('resize', () => {
+        for (const tip of document.querySelectorAll('.fw-embed__tip')) hide(tip);
+    });
 }
 
 let vegaPromise = null;

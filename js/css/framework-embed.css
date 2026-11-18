@@ -1,7 +1,7 @@
 /*
  * Framework embed stylesheet. Themes through custom properties:
  *   --fw-embed-font, --fw-embed-mono, --fw-embed-fg, --fw-embed-muted,
- *   --fw-embed-bg, --fw-embed-border, --fw-embed-accent
+ *   --fw-embed-bg, --fw-embed-border, --fw-embed-accent, --fw-embed-tip-bg, --fw-embed-tip-fg
  * --fw-embed-font and --fw-embed-fg are unset by default, so the site's font and
  * text color apply. Muted text and borders derive from the text color, so they
  * work on light and dark pages alike.
@@ -41,6 +41,8 @@
     --fw-embed-rule: color-mix(in srgb, currentColor 8%, transparent);
     --fw-embed-bg: transparent;
     --fw-embed-accent: #1d4ed8;
+    --fw-embed-tip-bg: #1f2229;
+    --fw-embed-tip-fg: #f4f5f7;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -262,21 +264,32 @@
 .fw-embed__card-description { color: var(--fw-embed-muted); }
 .fw-embed__card .fw-embed__author { font-size: calc(0.75em / 0.875); color: var(--fw-embed-muted); }
 
+/* The caption heads the embed: the title with the link back at its right, over a light rule.
+   A page's caption, the link back alone, follows its card. */
 .fw-embed__caption {
     display: flex;
     flex-wrap: wrap;
     align-items: baseline;
     gap: 0.25em 0.75em;
-    margin-top: 1.25em;
-    padding-top: 0.625em;
-    border-top: 1px solid var(--fw-embed-rule);
+    margin-bottom: 1em;
+    padding-bottom: 0.625em;
+    border-bottom: 1px solid var(--fw-embed-rule);
     font-size: calc(0.75em / 0.875);
 }
-.fw-embed__title { font-weight: 600; }
-.fw-embed__caption .fw-embed__author,
-.fw-embed__description { color: var(--fw-embed-muted); }
-.fw-embed--page .fw-embed__title { display: none; }
-.fw-embed__description { flex-basis: 100%; order: 1; }
+.fw-embed--page .fw-embed__caption { margin: 0.625em 0 0; padding-bottom: 0; border-bottom: 0; }
+/* The title is the table text's size, in bold */
+.fw-embed__title { font-weight: 600; font-size: calc(0.8125em / 0.75); }
+/* The description and author, under the content, in the caption's type */
+.fw-embed__about {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25em 0.75em;
+    margin-top: 1em;
+    font-size: calc(0.75em / 0.875);
+    color: var(--fw-embed-muted);
+}
+.fw-embed__about a { color: inherit; }
+.fw-embed__description { flex-basis: 100%; }
 .fw-embed__credit { margin-left: auto; }
 .fw-embed__caption .fw-embed__credit { color: var(--fw-embed-muted); }
 
@@ -305,6 +318,53 @@ framework-artifact { display: block; }
     pointer-events: none;
 }
 .fw-embed__tooltip[hidden] { display: none; }
+
+/* Variable tips: a term or column header opens a popover with the variable's label and summary.
+   Click or tap opens it without JavaScript; the bundle adds hover and places it by the button.
+   The tip is dark on any host, so it reads over light and dark pages alike. */
+.fw-embed__term {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    letter-spacing: inherit;
+    text-align: inherit;
+    cursor: help;
+    text-decoration: underline dotted;
+    text-decoration-color: var(--fw-embed-muted);
+    text-decoration-thickness: 1px;
+    text-underline-offset: 0.25em;
+}
+.fw-embed__term:hover { text-decoration-color: currentColor; }
+.fw-embed__term:focus-visible { outline: 2px solid var(--fw-embed-accent); outline-offset: 2px; border-radius: 2px; }
+.fw-embed__tip {
+    box-sizing: border-box;
+    width: max-content;
+    max-width: min(22em, calc(100vw - 16px));
+    margin: auto;
+    padding: 0.5em 0.75em;
+    border: 0;
+    border-radius: 0.375em;
+    background: var(--fw-embed-tip-bg);
+    color: var(--fw-embed-tip-fg);
+    box-shadow: 0 6px 20px rgb(0 0 0 / 0.18);
+    font-family: var(--fw-embed-font, inherit);
+    font-size: max(0.75rem, 0.9em);
+    font-weight: 400;
+    font-variant-numeric: normal;
+    line-height: 1.45;
+    text-align: left;
+    white-space: normal;
+}
+.fw-embed__tip[data-fw-embed-placed] { position: fixed; inset: auto; margin: 0; }
+.fw-embed__tip-block { display: block; }
+.fw-embed__tip-block + .fw-embed__tip-block { margin-top: 0.5em; padding-top: 0.5em; border-top: 1px solid color-mix(in srgb, var(--fw-embed-tip-fg) 18%, transparent); }
+.fw-embed__tip-name { display: block; font-weight: 600; font-family: var(--fw-embed-mono); font-size: 0.95em; }
+.fw-embed__tip-label,
+.fw-embed__tip-detail { display: block; }
+.fw-embed__tip-detail { color: color-mix(in srgb, var(--fw-embed-tip-fg) 78%, transparent); }
 
 @media print {
     .fw-embed { break-inside: avoid; color: #000; }

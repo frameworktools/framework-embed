@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { render } from '../src/render.js';
-import { expandDetailsForPrint } from '../src/browser.js';
+import { enhanceTips, expandDetailsForPrint } from '../src/browser.js';
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '../../spec/fixtures');
 const load = (name) => JSON.parse(readFileSync(join(fixtures, name + '.json'), 'utf8'));
@@ -115,9 +115,20 @@ describe('model view', () => {
         expect(host.querySelector('dl.fw-embed__stats')).not.toBeNull();
     });
 
+    it('keeps the model type, response, and formula in the disclosure', () => {
+        const doc = load('r-glm-logit');
+        doc.data.metrics = [];
+        const details = dom(doc).querySelector('details');
+        expect(details.querySelector('.fw-embed__meta')).not.toBeNull();
+        expect(details.querySelector('.fw-embed__formula')).not.toBeNull();
+        expect(dom(doc).querySelector('.fw-embed__body > .fw-embed__meta')).toBeNull();
+    });
+
     it('omits the disclosure when there is nothing else', () => {
         const doc = load('r-glm-logit');
         doc.data.metrics = [];
+        delete doc.data.formula;
+        doc.data.model = null;
         expect(dom(doc).querySelector('details')).toBeNull();
     });
 });
@@ -166,5 +177,57 @@ describe('print', () => {
         expect(details.open).toBe(true);
         window.dispatchEvent(new Event('afterprint'));
         expect(details.open).toBe(false);
+    });
+});
+
+describe('variable tips', () => {
+    it('explains each mapped term with its variable, level, and rows', () => {
+        const host = dom(load('r-lm-variables'));
+        const table = host.querySelector('.fw-embed__table--coefficients');
+        const terms = [...table.querySelectorAll('tbody th')];
+        expect(terms[0].querySelector('button')).toBeNull();
+        const chinstrap = terms.find((th) => th.querySelector('button')?.textContent === 'speciesChinstrap');
+        const tip = chinstrap.querySelector('.fw-embed__tip');
+        expect(chinstrap.querySelector('button').getAttribute('popovertarget')).toBe(tip.id);
+        expect(tip.hasAttribute('popover')).toBe(true);
+        expect([...tip.querySelectorAll('.fw-embed__tip-block > span')].map((span) => span.textContent))
+            .toEqual(['species = Chinstrap', 'Penguin species', 'Compared with Adelie. 68 of 342 rows.']);
+        const mass = terms.find((th) => th.querySelector('button')?.textContent === 'body_mass_g');
+        expect(mass.querySelector('.fw-embed__tip-detail').textContent).toBe('Mean 4201.75, SD 801.95, range 2700 to 6300. 342 rows.');
+    });
+
+    it('leaves a term plain when its mapping names an unknown variable', () => {
+        const doc = load('r-lm-variables');
+        doc.data.terms = [{ term: 'speciesGentoo', parts: [{ variable: 'island', level: 'Biscoe' }] }];
+        expect(dom(doc).querySelector('.fw-embed__term')).toBeNull();
+    });
+
+    it('describes data table columns from their label and summary', () => {
+        const doc = {
+            kind: 'table', key: 'k', version: 1, title: 'T',
+            data: { tables: [{ title: 'T', columns: [
+                { name: 'mass', type: 'number', label: 'Body mass (g)', summary: { count: 10, missing: 2, mean: 4000, sd: 500.5, min: 3000, max: 5000 } },
+                { name: 'species', type: 'string', summary: { count: 10, distinct: 3, top: [{ value: 'Adelie', count: 5 }, { value: 'Gentoo', count: 3 }, { value: 'Chinstrap', count: 2 }] } },
+                { name: 'plain', type: 'string' },
+            ], rows: [[1, 'Adelie', 'x']] }] },
+        };
+        const heads = [...dom(doc).querySelectorAll('thead th')];
+        expect(heads[0].querySelector('button').textContent).toBe('Body mass (g)');
+        expect(heads[0].querySelector('.fw-embed__tip-name').textContent).toBe('mass');
+        expect(heads[0].querySelector('.fw-embed__tip-detail').textContent).toBe('Mean 4000, SD 500.50, range 3000 to 5000. 10 rows, 2 missing.');
+        expect(heads[1].querySelector('.fw-embed__tip-detail').textContent).toBe('3 distinct values. Most common: Adelie (5), Gentoo (3), Chinstrap (2). 10 rows.');
+        expect(heads[2].innerHTML).toBe('plain');
+    });
+
+    it('renumbers tip ids when the same embed appears twice', () => {
+        document.body.innerHTML = '';
+        dom(load('r-lm-variables'));
+        dom(load('r-lm-variables'));
+        enhanceTips(document);
+        const ids = [...document.querySelectorAll('.fw-embed__tip')].map((tip) => tip.id);
+        expect(new Set(ids).size).toBe(ids.length);
+        for (const button of document.querySelectorAll('.fw-embed__term')) {
+            expect(button.getAttribute('popovertarget')).toBe(button.nextElementSibling.id);
+        }
     });
 });

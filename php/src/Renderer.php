@@ -62,6 +62,7 @@ final class Renderer
             return '';
         }
         $kind = in_array($doc['kind'] ?? null, self::KINDS, true) ? $doc['kind'] : 'page';
+        self::$tips = ['prefix' => self::tipPrefix($doc), 'count' => 0];
         $body = match ($kind) {
             'model' => self::model($doc),
             'table' => self::tableKind($doc),
@@ -82,7 +83,15 @@ final class Renderer
             $open .= ' data-fw-embed-version="' . self::integer($doc['version']) . '"';
         }
 
-        return implode("\n", [$open . '>', '<div class="fw-embed__body">', $body, '</div>', self::caption($doc, $kind), '</figure>', '']);
+        // The caption heads the embed: the title and the link back. The description and author follow the
+        // content. A page's link card already shows all three, so its caption (the link back alone) follows the card.
+        $caption = self::caption($doc, $kind);
+        $inner = ['<div class="fw-embed__body">', $body, '</div>'];
+        if ($kind === 'page') {
+            return implode("\n", [$open . '>', ...$inner, $caption, '</figure>', '']);
+        }
+
+        return implode("\n", [$open . '>', $caption, ...$inner, ...self::about($doc), '</figure>', '']);
     }
 
     /** Render embed JSON as served by Framework Cloud. */
@@ -132,19 +141,8 @@ final class Renderer
     private static function caption(array $doc, string $kind): string
     {
         $parts = ['<figcaption class="fw-embed__caption">'];
-        if ($kind !== 'page') {
-            if (self::text($doc['title'] ?? null) !== null) {
-                $parts[] = '<span class="fw-embed__title">' . self::e($doc['title']) . '</span>';
-            }
-            if (self::text($doc['description'] ?? null) !== null) {
-                $parts[] = '<span class="fw-embed__description">' . self::e($doc['description']) . '</span>';
-            }
-            $author = self::obj($doc['author'] ?? null);
-            if (self::text($author['name'] ?? null) !== null) {
-                $href = self::safeUrl($author['url'] ?? null);
-                $name = self::e($author['name']);
-                $parts[] = '<span class="fw-embed__author">' . ($href === null ? $name : '<a href="' . self::e($href) . '">' . $name . '</a>') . '</span>';
-            }
+        if ($kind !== 'page' && self::text($doc['title'] ?? null) !== null) {
+            $parts[] = '<span class="fw-embed__title">' . self::e($doc['title']) . '</span>';
         }
         $attribution = self::obj($doc['attribution'] ?? null);
         $credit = self::e(self::text($attribution['text'] ?? null) ?? 'Framework');
@@ -155,6 +153,211 @@ final class Renderer
         $parts[] = '</figcaption>';
 
         return implode("\n", $parts);
+    }
+
+    /**
+     * The description and author, under the content.
+     *
+     * @return list<string>
+     */
+    private static function about(array $doc): array
+    {
+        $parts = [];
+        if (self::text($doc['description'] ?? null) !== null) {
+            $parts[] = '<span class="fw-embed__description">' . self::e($doc['description']) . '</span>';
+        }
+        $author = self::obj($doc['author'] ?? null);
+        if (self::text($author['name'] ?? null) !== null) {
+            $href = self::safeUrl($author['url'] ?? null);
+            $name = self::e($author['name']);
+            $parts[] = '<span class="fw-embed__author">' . ($href === null ? $name : '<a href="' . self::e($href) . '">' . $name . '</a>') . '</span>';
+        }
+
+        return $parts === [] ? [] : ['<div class="fw-embed__about">', ...$parts, '</div>'];
+    }
+
+    // --- variable tips ---
+    // A term or column with something to tell gets a button that opens a popover with the variable's
+    // label, its reference level, and a summary. The popover opens on click or tap without JavaScript;
+    // the browser bundle adds hover and places it beside the button. Ids are unique within a page
+    // for one copy of an embed; the bundle renumbers repeats.
+
+    /** @var array{prefix: string, count: int} */
+    private static array $tips = ['prefix' => 'fw-embed-tip-', 'count' => 0];
+
+    private static function tipPrefix(array $doc): string
+    {
+        $key = self::text($doc['key'] ?? null);
+        if ($key === null || preg_match('/^[A-Za-z0-9_-]+$/D', $key) !== 1) {
+            return 'fw-embed-tip-';
+        }
+
+        return 'fw-embed-tip-' . $key . '-' . (Format::isInteger($doc['version'] ?? null) ? self::integer($doc['version']) : '0') . '-';
+    }
+
+    /** @param list<string> $blocks */
+    private static function tip(string $label, array $blocks): string
+    {
+        $id = self::$tips['prefix'] . (++self::$tips['count']);
+
+        return '<button type="button" class="fw-embed__term" popovertarget="' . $id . '">' . self::e($label) . '</button>'
+            . '<span class="fw-embed__tip" id="' . $id . '" popover="">' . implode('', $blocks) . '</span>';
+    }
+
+    private static function tipBlock(string $name, ?string $label, string $detail): string
+    {
+        $html = '<span class="fw-embed__tip-name">' . self::e($name) . '</span>';
+        if ($label !== null) {
+            $html .= '<span class="fw-embed__tip-label">' . self::e($label) . '</span>';
+        }
+        if ($detail !== '') {
+            $html .= '<span class="fw-embed__tip-detail">' . self::e($detail) . '</span>';
+        }
+
+        return '<span class="fw-embed__tip-block">' . $html . '</span>';
+    }
+
+    private static function plural(int|float $n, string $one, string $many): string
+    {
+        return Format::number($n) . ' ' . ($n == 1 ? $one : $many);
+    }
+
+    /** A top value as a level name: strings as they are, integers in digits, anything else matches nothing. */
+    private static function levelText(mixed $value): ?string
+    {
+        if (is_string($value)) {
+            return $value;
+        }
+
+        return Format::isInteger($value) ? (string) (int) $value : null;
+    }
+
+    /**
+     * Sentences about a variable or column: its spread or common values, then its rows.
+     *
+     * @param  list<string>  $levels
+     */
+    private static function summaryDetail(mixed $type, mixed $summary, array $levels, ?string $level, ?string $reference): string
+    {
+        $sentences = [];
+        $s = self::obj($summary);
+        $stat = fn (mixed $x) => Format::value($x, false, Format::RESULT_PLACES);
+        if ($level !== null) {
+            if ($reference !== null && $reference !== $level) {
+                $sentences[] = 'Compared with ' . $reference . '.';
+            }
+            foreach (self::lst($s['top'] ?? null) as $entry) {
+                if (self::isObject($entry) && self::levelText($entry['value'] ?? null) === $level && Format::isInteger($entry['count'] ?? null)) {
+                    if (Format::isInteger($s['count'] ?? null)) {
+                        $sentences[] = Format::number($entry['count']) . ' of ' . self::plural($s['count'], 'row', 'rows') . '.';
+                    }
+                    break;
+                }
+            }
+
+            return implode(' ', $sentences);
+        }
+        if ($type === 'number') {
+            $parts = [];
+            if (Format::isNumber($s['mean'] ?? null)) {
+                $parts[] = 'mean ' . $stat($s['mean']);
+            }
+            if (Format::isNumber($s['sd'] ?? null)) {
+                $parts[] = 'SD ' . $stat($s['sd']);
+            }
+            if (($s['min'] ?? null) !== null && ($s['max'] ?? null) !== null) {
+                $parts[] = 'range ' . $stat($s['min']) . ' to ' . $stat($s['max']);
+            }
+            if ($parts !== []) {
+                $sentences[] = Format::asciiCapitalize(implode(', ', $parts)) . '.';
+            }
+        } elseif ($type === 'date' || $type === 'datetime') {
+            if (is_string($s['min'] ?? null) && is_string($s['max'] ?? null)) {
+                $sentences[] = 'From ' . $s['min'] . ' to ' . $s['max'] . '.';
+            }
+        } else {
+            if ($levels !== []) {
+                $sentences[] = self::plural(count($levels), 'level', 'levels') . ($reference !== null ? ', compared with ' . $reference : '') . '.';
+            } elseif (Format::isInteger($s['distinct'] ?? null)) {
+                $sentences[] = self::plural($s['distinct'], 'distinct value', 'distinct values') . '.';
+            }
+            $top = [];
+            foreach (self::lst($s['top'] ?? null) as $entry) {
+                if (self::isObject($entry) && Format::isInteger($entry['count'] ?? null)) {
+                    $top[] = Format::value($entry['value'] ?? null) . ' (' . Format::number($entry['count']) . ')';
+                    if (count($top) === 3) {
+                        break;
+                    }
+                }
+            }
+            if ($top !== []) {
+                $sentences[] = 'Most common: ' . implode(', ', $top) . '.';
+            }
+        }
+        if (Format::isInteger($s['count'] ?? null)) {
+            $missing = Format::isInteger($s['missing'] ?? null) && $s['missing'] > 0 ? ', ' . Format::number($s['missing']) . ' missing' : '';
+            $sentences[] = self::plural($s['count'], 'row', 'rows') . $missing . '.';
+        }
+
+        return implode(' ', $sentences);
+    }
+
+    /** @return array<string, array<string, mixed>> */
+    private static function modelVariables(array $doc): array
+    {
+        $variables = [];
+        foreach (self::lst(self::obj($doc['data'] ?? null)['variables'] ?? null) as $variable) {
+            if (self::isObject($variable) && self::text($variable['name'] ?? null) !== null && ! array_key_exists($variable['name'], $variables)) {
+                $variables[$variable['name']] = $variable;
+            }
+        }
+
+        return $variables;
+    }
+
+    /** A coefficient term, with a tip when the model says which variables it comes from. */
+    private static function termCell(string $label, array $doc): string
+    {
+        $entry = null;
+        foreach (self::lst(self::obj($doc['data'] ?? null)['terms'] ?? null) as $term) {
+            if (self::isObject($term) && ($term['term'] ?? null) === $label) {
+                $entry = $term;
+                break;
+            }
+        }
+        if ($entry === null) {
+            return self::e($label);
+        }
+        $variables = self::modelVariables($doc);
+        $blocks = [];
+        foreach (self::lst($entry['parts'] ?? null) as $part) {
+            $variable = self::isObject($part) && is_string($part['variable'] ?? null) ? ($variables[$part['variable']] ?? null) : null;
+            if ($variable === null) {
+                return self::e($label);
+            }
+            $level = self::text($part['level'] ?? null);
+            $levels = array_values(array_filter(self::lst($variable['levels'] ?? null), 'is_string'));
+            $name = $level === null ? $variable['name'] : $variable['name'] . ' = ' . $level;
+            $variableLabel = self::text($variable['label'] ?? null);
+            $blocks[] = self::tipBlock($name, $variableLabel === $variable['name'] ? null : $variableLabel,
+                self::summaryDetail($variable['type'] ?? null, $variable['summary'] ?? null, $levels, $level, self::text($variable['reference'] ?? null)));
+        }
+
+        return $blocks === [] ? self::e($label) : self::tip($label, $blocks);
+    }
+
+    /** A data table's column header, with a tip when the column carries a label or summary. */
+    private static function columnHeader(array $column): string
+    {
+        $label = self::columnLabel($column, false);
+        $type = in_array($column['type'] ?? null, ['number', 'date', 'datetime'], true) ? $column['type'] : 'string';
+        $detail = self::summaryDetail($type, $column['summary'] ?? null, [], null, null);
+        $named = $label !== $column['name'];
+        if ($detail === '' && ! $named) {
+            return self::e($label);
+        }
+
+        return self::tip($label, [self::tipBlock($column['name'], $named ? $label : null, $detail)]);
     }
 
     // --- data kinds ---------------------------------------------------------
@@ -282,7 +485,8 @@ final class Renderer
             return implode("\n", [...$parts, ...$rest]);
         }
 
-        return implode("\n", [...$parts, ...$visible, ...self::details('Model details', $rest)]);
+        // The model type, response, and formula are details: the coefficients show the terms, and the post names the model
+        return implode("\n", [...$visible, ...self::details('Model details', [...$parts, ...$rest])]);
     }
 
     private static function tableKind(array $doc): ?string
@@ -674,7 +878,9 @@ final class Renderer
         $lines = self::openTable($table, $showCaption, null);
         $head = '';
         foreach ($columns as $column) {
-            $head .= self::th(self::columnLabel($column, $modelLabels), self::isNumeric($column));
+            $head .= $modelLabels
+                ? self::th(self::columnLabel($column, true), self::isNumeric($column))
+                : '<th scope="col"' . (self::isNumeric($column) ? ' class="fw-embed__num"' : '') . '>' . self::columnHeader($column) . '</th>';
         }
         $lines[] = '<thead><tr>' . $head . '</tr></thead>';
         $lines[] = '<tbody>';
@@ -703,7 +909,7 @@ final class Renderer
         $lines[] = '<thead><tr>' . $head . '</tr></thead>';
         $lines[] = '<tbody>';
         foreach ($rows as $row) {
-            $cells = '<th scope="row">' . self::e(Format::value(self::cell($row, $term))) . '</th>';
+            $cells = '<th scope="row">' . self::termCell(Format::value(self::cell($row, $term)), $doc) . '</th>';
             foreach ($columns as [, $numeric, $value]) {
                 $cells .= self::td($value($row), $numeric);
             }

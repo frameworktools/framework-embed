@@ -95,6 +95,9 @@ A bare host name such as `framework.example.org` allows HTTPS on the default por
 == Changelog ==
 
 = 0.3.5 =
+* The title and the link back head each embed, over a light rule. The description and author follow the content.
+* A model's type, response, and formula are in Model details. The coefficients come first.
+* Model terms and table columns explain themselves on hover or tap: the variable's label, the level a coefficient compares against, and a summary of its data, when the artifact carries them.
 * Vega, Vega-Lite, vega-embed, and JetBrains Mono are bundled with the plugin. Pages no longer load them from a CDN.
 * The readme links the framework.pub terms of service and privacy policy, and names the bundled libraries and the plugin's source code.
 
