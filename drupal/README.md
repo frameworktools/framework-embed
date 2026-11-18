@@ -78,7 +78,7 @@ When no copy is available, visitors see a link to the artifact, and users with *
 
 HTTP requests use Drupal's Guzzle client with redirects and cookies disabled, a five-second timeout, and a 16 MB response limit. Requests run on field save, during background refreshes, and during takedown checks.
 
-The `framework_embed/framework_embed` Drupal asset library provides the stylesheet. `framework_embed/chart` loads the script for Vega-Lite charts and variable tips, and attaches only when a chart or a tip is rendered. When a chart nears the viewport, that script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
+The `framework_embed/framework_embed` Drupal asset library provides the stylesheet. `framework_embed/chart` loads the script for Vega-Lite charts, variable tips, and code snippet buttons, and attaches only when one of them is rendered. When a chart nears the viewport, that script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
 
 `assets/` contains copies of `php/assets` updated by `make drupal`, since Drupal serves asset files from the module directory while `vendor/` typically sits outside the web root.
 

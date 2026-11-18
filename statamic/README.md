@@ -89,7 +89,7 @@ Image artifacts render as `<img>` elements pointing to the image URL in the embe
 </body>
 ```
 
-`{{ framework:scripts }}` outputs the script tag that initializes Vega-Lite charts, opens variable tips on hover, and shows the copy and output buttons on code snippets. With `only_if_charts="true"`, it outputs the script tag only when a chart or a variable tip rendered earlier in the same request. When a chart nears the viewport, the script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
+`{{ framework:scripts }}` outputs the script tag that initializes Vega-Lite charts, opens variable tips on hover, and shows the copy and output buttons on code snippets. With `only_if_charts="true"`, it outputs the script tag only when a chart, a variable tip, or a code snippet rendered earlier in the same request. When a chart nears the viewport, the script loads `vega`, `vega-lite`, and `vega-embed` from `cdn.jsdelivr.net` with subresource integrity.
 
 Supported URLs:
 

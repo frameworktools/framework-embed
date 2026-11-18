@@ -169,6 +169,12 @@ final class EmbedTest extends TestCase
         $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-lm-variables" }}');
         $this->afterResponse();
         $this->assertStringContainsString('framework-embed.iife.js', $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-lm-variables" }}{{ framework:scripts only_if_charts="true" }}'));
+
+        // So do a code snippet's copy and output buttons
+        $this->app->forgetScopedInstances();
+        $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-snippet" }}');
+        $this->afterResponse();
+        $this->assertStringContainsString('framework-embed.iife.js', $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-snippet" }}{{ framework:scripts only_if_charts="true" }}'));
     }
 
     public function test_assets_are_publishable(): void
