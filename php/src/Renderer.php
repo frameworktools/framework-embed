@@ -271,8 +271,10 @@ final class Renderer
             if (Format::isNumber($s['sd'] ?? null)) {
                 $parts[] = 'SD ' . $stat($s['sd']);
             }
-            if (($s['min'] ?? null) !== null && ($s['max'] ?? null) !== null) {
-                $parts[] = 'range ' . $stat($s['min']) . ' to ' . $stat($s['max']);
+            if (Format::isNumber($s['min'] ?? null) && Format::isNumber($s['max'] ?? null)) {
+                // Both ends with the same decimals: 1.00 to 6.90, not 1 to 6.90
+                $decimal = ! Format::isInteger($s['min']) || ! Format::isInteger($s['max']);
+                $parts[] = 'range ' . Format::value($s['min'], $decimal, Format::RESULT_PLACES) . ' to ' . Format::value($s['max'], $decimal, Format::RESULT_PLACES);
             }
             if ($parts !== []) {
                 $sentences[] = Format::asciiCapitalize(implode(', ', $parts)) . '.';

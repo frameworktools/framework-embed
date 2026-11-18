@@ -288,7 +288,7 @@ A coefficient table's term cell gets a tip when `terms` maps it and every variab
 - One `fw-embed__tip-block` per part of the term. The name is the variable, with ` = {level}` for a level. The label line appears when the variable has a `label` other than its name. A column's tip names the column, with its `label` as the label line when the header shows the label.
 - The detail line joins these sentences with spaces, leaving out any whose numbers are missing:
   - A level: `Compared with {reference}.` when the reference differs from the level, then `{count} of {n} rows.` from the `top` entry whose value is the level: a string as is, an integer in digits, or a boolean as `true` or `false` in any ASCII case.
-  - A number: `Mean {mean}, SD {sd}, range {min} to {max}.`, each part present only when its value is, the first capitalized. Values use result formatting (two decimals, whole numbers as integers).
+  - A number: `Mean {mean}, SD {sd}, range {min} to {max}.`, each part present only when its value is, the first capitalized. Values use result formatting: two decimals, whole numbers as integers, and both ends of the range with decimals when either has them.
   - A date or datetime: `From {min} to {max}.`
   - Anything else: `{n} levels.` (or `{n} levels, compared with {reference}.`) when `levels` is set, else `{n} distinct values.`; then `Most common: {value} ({count}), …` for up to three `top` entries.
   - Except for a level: `{count} rows.`, or `{count} rows, {missing} missing.` when values are missing. Singular `row`, `level`, and `distinct value` when the number is 1.

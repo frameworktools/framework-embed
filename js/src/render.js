@@ -156,7 +156,11 @@ function summaryDetail(type, summary, levels, level, reference) {
         const parts = [];
         if (isNumber(s.mean)) parts.push(`mean ${stat(s.mean)}`);
         if (isNumber(s.sd)) parts.push(`SD ${stat(s.sd)}`);
-        if (s.min !== undefined && s.max !== undefined && s.min !== null && s.max !== null) parts.push(`range ${stat(s.min)} to ${stat(s.max)}`);
+        if (isNumber(s.min) && isNumber(s.max)) {
+            // Both ends with the same decimals: 1.00 to 6.90, not 1 to 6.90
+            const decimal = !Number.isInteger(s.min) || !Number.isInteger(s.max);
+            parts.push(`range ${formatValue(s.min, decimal, RESULT_PLACES)} to ${formatValue(s.max, decimal, RESULT_PLACES)}`);
+        }
         if (parts.length > 0) sentences.push(asciiCapitalize(parts.join(', ')) + '.');
     } else if (type === 'date' || type === 'datetime') {
         if (typeof s.min === 'string' && typeof s.max === 'string') sentences.push(`From ${s.min} to ${s.max}.`);
