@@ -163,6 +163,12 @@ final class EmbedTest extends TestCase
         $this->afterResponse();
         $this->assertSame($this->fixture('minimal-test'), $this->antlers('{{ framework:artifact url="https://framework.pub/d/minimal-test" }}{{ framework:scripts only_if_charts="true" }}'));
         $this->assertStringContainsString('framework-embed.iife.js', $this->antlers('{{ framework:artifact url="https://framework.pub/d/python-altair" }}{{ framework:scripts only_if_charts="true" }}'));
+
+        // Variable tips open on hover through the same script
+        $this->app->forgetScopedInstances();
+        $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-lm-variables" }}');
+        $this->afterResponse();
+        $this->assertStringContainsString('framework-embed.iife.js', $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-lm-variables" }}{{ framework:scripts only_if_charts="true" }}'));
     }
 
     public function test_assets_are_publishable(): void

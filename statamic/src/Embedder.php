@@ -300,7 +300,8 @@ class Embedder
         } catch (Throwable) {
             return null;
         }
-        if (str_contains($html, 'data-fw-embed-chart')) {
+        // The script draws charts and opens variable tips on hover, so either one needs it
+        if (str_contains($html, 'data-fw-embed-chart') || str_contains($html, 'fw-embed__term')) {
             $this->sawChart = true;
         }
 

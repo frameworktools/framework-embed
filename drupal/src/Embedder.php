@@ -307,7 +307,7 @@ class Embedder implements TrustedCallbackInterface, DestructableInterface {
   private function figure(array $doc, array $cache): array {
     $html = Renderer::render($doc);
     $libraries = ['framework_embed/framework_embed'];
-    if (str_contains($html, 'data-fw-embed-chart')) {
+    if (str_contains($html, 'data-fw-embed-chart') || str_contains($html, 'fw-embed__term')) {
       $libraries[] = 'framework_embed/chart';
     }
 

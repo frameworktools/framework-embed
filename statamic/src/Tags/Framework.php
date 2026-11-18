@@ -48,9 +48,9 @@ class Framework extends Tags
     }
 
     /**
-     * The script that draws Vega-Lite charts, deferred. Put it before </body>.
-     * Pass only_if_charts="true" to print it only when a chart was rendered
-     * earlier in the same request.
+     * The script that draws Vega-Lite charts and opens variable tips on hover,
+     * deferred. Put it before </body>. Pass only_if_charts="true" to print it
+     * only when a chart or a variable tip was rendered earlier in the same request.
      */
     public function scripts(): string
     {

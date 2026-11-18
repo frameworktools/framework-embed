@@ -273,13 +273,15 @@ final class Framework_Embed_Plugin {
 	}
 
 	/**
-	 * Enqueues the stylesheet, and the script when the figure holds a chart.
+	 * Enqueues the stylesheet, and the script when the figure holds a chart
+	 * or variable tips (the script draws charts, and opens tips on hover
+	 * beside their term).
 	 *
 	 * @param string $html Rendered figure.
 	 */
 	public function enqueue( string $html ): void {
 		wp_enqueue_style( 'framework-embed' );
-		if ( str_contains( $html, 'data-fw-embed-chart' ) ) {
+		if ( str_contains( $html, 'data-fw-embed-chart' ) || str_contains( $html, 'fw-embed__term' ) ) {
 			wp_enqueue_script( 'framework-embed' );
 		}
 	}

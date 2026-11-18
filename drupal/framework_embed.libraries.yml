@@ -4,7 +4,8 @@ framework_embed:
     theme:
       assets/framework-embed.css: {}
 
-# Draws Vega-Lite charts. Attached only when a rendered artifact contains one.
+# Draws Vega-Lite charts and opens variable tips on hover beside their term.
+# Attached only when a rendered artifact contains a chart or a tip.
 chart:
   js:
     assets/framework-embed.iife.js: { attributes: { defer: true } }

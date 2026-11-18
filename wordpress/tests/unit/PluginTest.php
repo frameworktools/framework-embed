@@ -81,6 +81,15 @@ final class PluginTest extends TestCase
         $this->assertSame([], WP::$scheduled);
     }
 
+    public function test_a_figure_with_variable_tips_enqueues_the_script(): void
+    {
+        $url = 'https://framework.pub/d/r-lm-variables';
+
+        $this->assertSame('fresh', Framework_Embed_Live::refresh($url));
+        $this->assertStringContainsString('fw-embed__term', Framework_Embed_Live::render($url));
+        $this->assertSame(['style:framework-embed', 'script:framework-embed'], WP::$enqueued);
+    }
+
     public function test_expired_copy_renders_and_schedules_a_refresh(): void
     {
         $url = 'https://framework.pub/d/minimal-test';
