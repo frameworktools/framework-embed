@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.3.8
+Stable tag: 0.4.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -93,6 +93,9 @@ Yes. Override custom properties such as `--fw-embed-font`, `--fw-embed-mono`, `-
 A bare host name such as `framework.example.org` allows HTTPS on the default port. An origin such as `http://localhost:8000` allows that exact scheme, host, and port. IP addresses and URL paths are rejected.
 
 == Changelog ==
+
+= 0.4.0 =
+* Bayesian models from brms, rstanarm, Bambi, PyMC, and Stata's bayes and bayesmh show their posterior: posterior mean and SD, credible interval, R-hat, and effective sample sizes. Odds and rate ratios are summaries of the exponentiated draws. Warnings flag R-hat above 1.01 and divergent transitions, and Model details lists the priors and sampling settings.
 
 = 0.3.8 =
 * The outcome in Model details is set as a variable name, in the code font and the text color.

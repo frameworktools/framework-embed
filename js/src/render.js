@@ -30,7 +30,9 @@ const METRIC_LABELS = {
     theta: 'Theta', command: 'Command',
     chains: 'Chains', draws: 'Draws', warmup: 'Warmup', sampler: 'Sampler', divergent_transitions: 'Divergent transitions',
     max_treedepth_hits: 'Max treedepth hits', bayes_r2: 'Bayes R²', elpd_loo: 'ELPD (LOO)', elpd_loo_se: 'ELPD (LOO) SE',
-    looic: 'LOOIC', p_loo: 'p (LOO)', waic: 'WAIC',
+    looic: 'LOOIC', p_loo: 'p (LOO)', waic: 'WAIC', rhat_max: 'Max R-hat', acceptance_rate: 'Acceptance rate',
+    efficiency_min: 'Efficiency (min)', efficiency_avg: 'Efficiency (avg)', efficiency_max: 'Efficiency (max)', dic: 'DIC',
+    log_marginal_likelihood: 'Log marginal likelihood',
 };
 
 const INTERVAL_METHODS = { 'wald-t': 'Wald t', 'wald-normal': 'Wald normal', profile: 'Profile likelihood', bootstrap: 'Bootstrap' };

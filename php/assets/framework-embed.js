@@ -236,7 +236,14 @@ var METRIC_LABELS = {
   elpd_loo_se: "ELPD (LOO) SE",
   looic: "LOOIC",
   p_loo: "p (LOO)",
-  waic: "WAIC"
+  waic: "WAIC",
+  rhat_max: "Max R-hat",
+  acceptance_rate: "Acceptance rate",
+  efficiency_min: "Efficiency (min)",
+  efficiency_avg: "Efficiency (avg)",
+  efficiency_max: "Efficiency (max)",
+  dic: "DIC",
+  log_marginal_likelihood: "Log marginal likelihood"
 };
 var INTERVAL_METHODS = { "wald-t": "Wald t", "wald-normal": "Wald normal", profile: "Profile likelihood", bootstrap: "Bootstrap" };
 var MODEL_TYPES = {

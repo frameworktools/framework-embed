@@ -105,7 +105,7 @@ Coefficient tables (`role: "coefficients"`, and `random_effects` for group-level
 
 No `statistic` or `p_value`. `interval_method` names the interval, such as `Equal-tailed`; an HDI is allowed and named `HDI`.
 
-Metrics a Bayesian model may carry, beside `nobs`, `confidence_level`, and `interval_method`: `chains`, `draws` (post-warmup draws, all chains), `warmup` (per chain), `sampler` (such as `NUTS (Stan)`), `divergent_transitions`, `max_treedepth_hits`, `bayes_r2`, `elpd_loo`, `elpd_loo_se`, `looic`, `p_loo`, `waic`.
+Metrics a Bayesian model may carry, beside `nobs`, `confidence_level`, and `interval_method`: `chains`, `draws` (post-warmup draws, all chains), `warmup` (per chain), `sampler` (such as `NUTS (Stan)`), `divergent_transitions`, `max_treedepth_hits`, `bayes_r2`, `elpd_loo`, `elpd_loo_se`, `looic`, `p_loo`, `waic`, and from Stata `rhat_max`, `acceptance_rate`, `efficiency_min`, `efficiency_avg`, `efficiency_max`, `dic`, and `log_marginal_likelihood`.
 
 A `priors` table (`role: "priors"`) lists the priors: `parameter` (the class, coefficient, and group, as the package names them), `prior` (the distribution as text, such as `student_t(3, 0, 2.5)`), and `source` (`default` or `user`) when known.
 
