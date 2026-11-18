@@ -85,6 +85,8 @@
 .fw-embed__note,
 .fw-embed__fallback { font-size: calc(0.75em / 0.875); color: var(--fw-embed-muted); }
 .fw-embed__meta + .fw-embed__formula { margin-top: -0.75em; }
+/* In Model details, the formula sits just under the model line instead of overlapping it */
+.fw-embed__details > .fw-embed__meta + .fw-embed__formula { margin-top: 0.25em; }
 .fw-embed__method { font-weight: 600; }
 .fw-embed__note { margin-top: -0.5em; }
 

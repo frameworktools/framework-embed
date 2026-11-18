@@ -6,7 +6,7 @@
    "link": "identity",
    "response": "price"
   },
-  "meta": "Ordinary least squares regression · Response: price"
+  "meta": "Ordinary least squares regression · Outcome: price"
  },
  {
   "model": {
@@ -31,7 +31,7 @@
    "link": "logit",
    "response": "am"
   },
-  "meta": "Logistic regression · Response: am"
+  "meta": "Logistic regression · Outcome: am"
  },
  {
   "model": {
@@ -292,6 +292,6 @@
    "link": "log",
    "response": "y"
   },
-  "meta": "Spline · log link · Response: y"
+  "meta": "Spline · log link · Outcome: y"
  }
 ]

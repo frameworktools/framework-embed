@@ -569,7 +569,7 @@ function modelMeta(model) {
     const detail = familyLink(text(model.family), text(model.link));
     if (detail !== null) parts.push(detail);
   }
-  if (text(model.response) !== null) parts.push(`Response: ${model.response}`);
+  if (text(model.response) !== null) parts.push(`Outcome: ${model.response}`);
   return parts.length > 0 ? asciiCapitalize(parts.join(" \xB7 ")) : null;
 }
 function columnIndex(table, name) {

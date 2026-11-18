@@ -177,7 +177,7 @@ Inside `fw-embed__body`, in order:
 
 1. Each coefficient table (`fw-embed__table--coefficients`), and any random effects table.
 2. The `Model details` disclosure, holding, in order:
-   - `<p class="fw-embed__meta">`: the model's common name and its response, joined by ` · `. For example, `Logistic regression · Response: am`. "Model names" below has the mapping.
+   - `<p class="fw-embed__meta">`: the model's common name and its outcome (`model.response`), joined by ` · `. For example, `Logistic regression · Outcome: am`. "Model names" below has the mapping.
    - `<p class="fw-embed__formula"><code>`: `formula`, when present. Without a formula, a `command` metric with a string value takes this slot. That is how Stata models show the command that fit them, such as `regress price mpg weight i.foreign`. A string `command` metric never appears in the statistics, even when a formula is present.
    - every other table (smooth terms, ANOVA, and others) rendered as a data table with model column labels, up to 25 rows.
    - `<dl class="fw-embed__stats">` containing the model metrics.

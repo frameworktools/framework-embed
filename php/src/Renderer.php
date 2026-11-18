@@ -744,7 +744,7 @@ final class Renderer
             }
         }
         if (self::text($model['response'] ?? null) !== null) {
-            $parts[] = 'Response: ' . $model['response'];
+            $parts[] = 'Outcome: ' . $model['response'];
         }
 
         return $parts === [] ? null : Format::asciiCapitalize(implode(' · ', $parts));
