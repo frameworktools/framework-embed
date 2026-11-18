@@ -262,7 +262,7 @@ function renderModel(doc) {
     const model = isObject(data.model) ? data.model : {};
     const parts = [];
     const meta = modelMeta(model);
-    if (meta !== null) parts.push(`<p class="fw-embed__meta">${escapeHtml(meta)}</p>`);
+    if (meta !== null) parts.push(`<p class="fw-embed__meta">${metaHtml(meta, text(model.response))}</p>`);
     if (formula !== null) parts.push(`<p class="fw-embed__formula"><code>${escapeHtml(formula)}</code></p>`);
     let level = null;
     for (const metric of metrics) if (metric.name === 'confidence_level' && isNumber(metric.value)) { level = metric.value; break; }
@@ -418,6 +418,12 @@ function modelName(model) {
     if (type === 'linear_ml') return 'Linear model';
     if (type === 'tree_ensemble') return 'Tree ensemble model';
     return null;
+}
+
+// The meta line, with the outcome (always last) set as a variable name.
+function metaHtml(meta, response) {
+    if (response === null || !meta.endsWith(response)) return `<span>${escapeHtml(meta)}</span>`;
+    return `<span>${escapeHtml(meta.slice(0, meta.length - response.length))}</span><code class="fw-embed__var">${escapeHtml(response)}</code>`;
 }
 
 function modelMeta(model) {

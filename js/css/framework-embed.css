@@ -81,9 +81,12 @@
 .fw-embed__body { display: flex; flex-direction: column; gap: 1.125em; min-width: 0; }
 .fw-embed__body > * { margin: 0; }
 
-.fw-embed__meta,
 .fw-embed__note,
 .fw-embed__fallback { font-size: calc(0.75em / 0.875); color: var(--fw-embed-muted); }
+/* The meta line is muted text with the outcome as a variable name, in the formula's type and the text color */
+.fw-embed__meta { font-size: calc(0.75em / 0.875); }
+.fw-embed__meta > span { color: var(--fw-embed-muted); }
+.fw-embed__meta > .fw-embed__var { font-family: var(--fw-embed-mono); font-size: 0.95em; }
 .fw-embed__meta + .fw-embed__formula { margin-top: -0.75em; }
 /* In Model details, the formula sits just under the model line instead of overlapping it */
 .fw-embed__details > .fw-embed__meta + .fw-embed__formula { margin-top: 0.25em; }

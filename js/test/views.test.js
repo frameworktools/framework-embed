@@ -120,6 +120,7 @@ describe('model view', () => {
         doc.data.metrics = [];
         const details = dom(doc).querySelector('details');
         expect(details.querySelector('.fw-embed__meta')).not.toBeNull();
+        expect(details.querySelector('.fw-embed__meta > code.fw-embed__var').textContent).toBe('am');
         expect(details.querySelector('.fw-embed__formula')).not.toBeNull();
         expect(dom(doc).querySelector('.fw-embed__body > .fw-embed__meta')).toBeNull();
     });

@@ -69,7 +69,7 @@ final class FixturesTest extends TestCase
         foreach ($cases as $case) {
             $html = Renderer::render(['schema' => 'framework.embed/v1', 'kind' => 'model', 'url' => 'https://framework.pub/d/x',
                 'data' => ['model' => $case['model'], 'tables' => [], 'metrics' => [['name' => 'nobs', 'value' => 1]]]]);
-            $meta = preg_match('#<p class="fw-embed__meta">([^<]*)</p>#', $html, $m) === 1 ? html_entity_decode($m[1], ENT_QUOTES) : null;
+            $meta = preg_match('#<p class="fw-embed__meta">(.*?)</p>#', $html, $m) === 1 ? html_entity_decode(strip_tags($m[1]), ENT_QUOTES) : null;
             $this->assertSame($case['meta'], $meta, json_encode($case['model']));
         }
     }

@@ -443,7 +443,7 @@ final class Renderer
         $parts = [];
         $meta = self::modelMeta($model);
         if ($meta !== null) {
-            $parts[] = '<p class="fw-embed__meta">' . self::e($meta) . '</p>';
+            $parts[] = '<p class="fw-embed__meta">' . self::metaHtml($meta, self::text($model['response'] ?? null)) . '</p>';
         }
         if ($formula !== null) {
             $parts[] = '<p class="fw-embed__formula"><code>' . self::e($formula) . '</code></p>';
@@ -724,6 +724,16 @@ final class Renderer
             'tree_ensemble' => 'Tree ensemble model',
             default => null,
         };
+    }
+
+    /** The meta line, with the outcome (always last) set as a variable name. */
+    private static function metaHtml(string $meta, ?string $response): string
+    {
+        if ($response === null || ! str_ends_with($meta, $response)) {
+            return '<span>' . self::e($meta) . '</span>';
+        }
+
+        return '<span>' . self::e(substr($meta, 0, strlen($meta) - strlen($response))) . '</span><code class="fw-embed__var">' . self::e($response) . '</code>';
     }
 
     private static function modelMeta(array $model): ?string
