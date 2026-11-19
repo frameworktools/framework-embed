@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.5.1
+Stable tag: 0.6.0
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -93,6 +93,10 @@ Yes. Override custom properties such as `--fw-embed-font`, `--fw-embed-mono`, `-
 A bare host name such as `framework.example.org` allows HTTPS on the default port. An origin such as `http://localhost:8000` allows that exact scheme, host, and port. IP addresses and URL paths are rejected.
 
 == Changelog ==
+
+= 0.6.0 =
+* A chart published with a static image, such as a ggplot, shows that image until the chart draws, and keeps it wherever the chart can't draw: without JavaScript, in feed readers and email, and in print.
+* On a dark page, a chart that doesn't set its own colors uses a palette made for dark backgrounds.
 
 = 0.5.1 =
 * A page whose only embed is a code snippet loads the script, so the copy button and Show output button appear.
