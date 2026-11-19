@@ -959,10 +959,12 @@ function renderSnippet(doc) {
   return parts.join("\n");
 }
 function renderImage(doc) {
-  const image = isObject(doc.image) ? doc.image : null;
+  return imageMedia(doc.image, text(doc.alt) ?? text(doc.title) ?? "");
+}
+function imageMedia(value, alt) {
+  const image = isObject(value) ? value : null;
   const src = image === null ? null : safeUrl(image.url);
   if (src === null) return null;
-  const alt = text(doc.alt) ?? text(doc.title) ?? "";
   const type = text(image.content_type);
   const vector = type !== null && asciiLower(type).startsWith("image/svg+xml");
   let tag = `<img class="fw-embed__img${vector ? " fw-embed__img--vector" : ""}" src="${escapeHtml(src)}" alt="${escapeHtml(alt)}" loading="lazy" decoding="async"`;
@@ -974,12 +976,13 @@ function renderImage(doc) {
 }
 function renderChart(doc) {
   if (!isObject(doc.spec)) return null;
+  const alt = text(doc.alt) ?? text(doc.title) ?? "Chart";
   const href = safeUrl(doc.url);
-  const alt = escapeHtml(text(doc.alt) ?? text(doc.title) ?? "Chart");
+  const fallback = imageMedia(doc.image, alt) ?? `<p class="fw-embed__fallback">${escapeHtml(alt)}${href === null ? "" : ` <a href="${escapeHtml(href)}">View chart</a>`}</p>`;
   return [
     '<div class="fw-embed__chart" data-fw-embed-chart>',
     `<script type="application/json">${scriptJson(doc.spec)}<\/script>`,
-    `<p class="fw-embed__fallback">${alt}${href === null ? "" : ` <a href="${escapeHtml(href)}">View chart</a>`}</p>`,
+    fallback,
     "</div>"
   ].join("\n");
 }
@@ -1418,6 +1421,7 @@ function responsiveSpec(spec) {
 function rgba(color) {
   return color === null ? null : `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${Math.round(color[3] * 1e3) / 1e3})`;
 }
+var DARK_CATEGORY = Object.freeze(["#8AB4F8", "#FDBA74", "#F28B82", "#81C995", "#FDD663", "#C58AF9", "#78D9EC", "#FF8BCB", "#E8EAED", "#A8C7FA"]);
 function chartTheme(container) {
   const figure = container.closest(".fw-embed") ?? container;
   const style = styleOf(figure);
@@ -1439,8 +1443,9 @@ function chartTheme(container) {
   const fg = rgba(fgColor);
   const mutedColor = rgba(muted);
   const borderColor = rgba(border);
+  const dark = prefersDark(container);
   return {
-    dark: prefersDark(container),
+    dark,
     config: {
       background: "transparent",
       font,
@@ -1449,7 +1454,8 @@ function chartTheme(container) {
       axis: { labelColor: mutedColor, titleColor: fg, gridColor: borderColor, domainColor: borderColor, tickColor: borderColor, labelFont: font, titleFont: font },
       legend: { labelColor: mutedColor, titleColor: fg, labelFont: font, titleFont: font },
       header: { labelColor: mutedColor, titleColor: fg, labelFont: font, titleFont: font },
-      view: { stroke: borderColor }
+      view: { stroke: borderColor },
+      ...dark ? { range: { category: [...DARK_CATEGORY] } } : {}
     }
   };
 }

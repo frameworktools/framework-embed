@@ -376,6 +376,10 @@ function rgba(color) {
     return color === null ? null : `rgba(${color[0]}, ${color[1]}, ${color[2]}, ${Math.round(color[3] * 1000) / 1000})`;
 }
 
+// The category palette on a dark page, phiz's dark theme: lighter tints that keep their contrast on a dark
+// background. It fills only a color or fill scale without its own range or scheme; Vega's default stays in light mode.
+export const DARK_CATEGORY = Object.freeze(['#8AB4F8', '#FDBA74', '#F28B82', '#81C995', '#FDD663', '#C58AF9', '#78D9EC', '#FF8BCB', '#E8EAED', '#A8C7FA']);
+
 // Font and colors from the page, so the chart matches the site. The specification's own config wins.
 export function chartTheme(container) {
     const figure = container.closest('.fw-embed') ?? container;
@@ -399,8 +403,9 @@ export function chartTheme(container) {
     const fg = rgba(fgColor);
     const mutedColor = rgba(muted);
     const borderColor = rgba(border);
+    const dark = prefersDark(container);
     return {
-        dark: prefersDark(container),
+        dark,
         config: {
             background: 'transparent',
             font,
@@ -410,6 +415,7 @@ export function chartTheme(container) {
             legend: { labelColor: mutedColor, titleColor: fg, labelFont: font, titleFont: font },
             header: { labelColor: mutedColor, titleColor: fg, labelFont: font, titleFont: font },
             view: { stroke: borderColor },
+            ...(dark ? { range: { category: [...DARK_CATEGORY] } } : {}),
         },
     };
 }

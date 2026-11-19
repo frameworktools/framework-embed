@@ -42,6 +42,7 @@
       "description": "Set for vega-lite: the Vega-Lite specification with its data inlined."
     },
     "image": {
+      "description": "Set for image. Optional for vega-lite: a static rendering of the same chart, shown wherever the chart cannot draw.",
       "oneOf": [
         { "type": "null" },
         {

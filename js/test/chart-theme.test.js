@@ -3,7 +3,7 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import vegaEmbed from 'vega-embed';
-import { chartOptions, chartTheme, configure, mount, parseColor, prefersDark, responsiveSpec } from '../src/browser.js';
+import { DARK_CATEGORY, chartOptions, chartTheme, configure, mount, parseColor, prefersDark, responsiveSpec } from '../src/browser.js';
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '../../spec/fixtures');
 const load = (name) => JSON.parse(readFileSync(join(fixtures, name + '.json'), 'utf8'));
@@ -137,5 +137,75 @@ describe('chart config', () => {
         await new Promise((resolve) => setTimeout(resolve, 50));
         expect(calls).toEqual(['light', 'dark']);
         expect(host.querySelectorAll('.fw-embed__chart-view')).toHaveLength(1);
+    });
+});
+
+describe('dark category palette', () => {
+    const page = (theme) => {
+        const host = document.createElement('div');
+        host.setAttribute('data-theme', theme);
+        document.body.append(host);
+        host.innerHTML = '<figure class="fw-embed"><div class="fw-embed__chart"><div></div></div></figure>';
+        return host.querySelector('.fw-embed__chart > div');
+    };
+    const values = [{ a: 1, c: 'x' }, { a: 2, c: 'y' }, { a: 3, c: 'z' }];
+    const chart = (color, extra = {}) => ({ $schema: 'https://vega.github.io/schema/vega-lite/v6.json', width: 200, data: { values }, mark: 'point',
+        encoding: { x: { field: 'a', type: 'quantitative' }, ...color }, ...extra });
+    // The colors vega gives the three categories.
+    const colors = async (container, spec, key = 'color') => {
+        const { view } = await vegaEmbed(container, responsiveSpec(spec), chartOptions(container));
+        const scale = view.scale(key);
+        const range = ['x', 'y', 'z'].map((c) => scale(c));
+        view.finalize();
+        return range;
+    };
+    const DEFAULT = ['#4c78a8', '#f58518', '#e45756'];
+
+    it('sets the category range only on a dark page', () => {
+        expect(chartTheme(page('dark')).config.range).toEqual({ category: [...DARK_CATEGORY] });
+        expect(chartTheme(page('light')).config.range).toBeUndefined();
+    });
+
+    it('colors a color or fill scale without its own palette on a dark page', async () => {
+        expect(await colors(page('dark'), chart({ color: { field: 'c', type: 'nominal' } }))).toEqual(DARK_CATEGORY.slice(0, 3));
+        expect(await colors(page('dark'), chart({ fill: { field: 'c', type: 'nominal' } }), 'fill')).toEqual(DARK_CATEGORY.slice(0, 3));
+    });
+
+    it("keeps Vega's default palette on a light page", async () => {
+        expect(await colors(page('light'), chart({ color: { field: 'c', type: 'nominal' } }))).toEqual(DEFAULT);
+    });
+
+    it('never changes a palette the specification sets', async () => {
+        const range = ['#111111', '#222222', '#333333'];
+        expect(await colors(page('dark'), chart({ color: { field: 'c', type: 'nominal', scale: { range } } }))).toEqual(range);
+        const scheme = await colors(page('dark'), chart({ color: { field: 'c', type: 'nominal', scale: { scheme: 'set1' } } }));
+        expect(scheme).toEqual(await colors(page('light'), chart({ color: { field: 'c', type: 'nominal', scale: { scheme: 'set1' } } })));
+        expect(scheme).not.toEqual(DARK_CATEGORY.slice(0, 3));
+        const config = { config: { range: { category: range } } };
+        expect(await colors(page('dark'), chart({ color: { field: 'c', type: 'nominal' } }, config))).toEqual(range);
+    });
+});
+
+describe('image fallback', () => {
+    it('keeps the image under the drawn chart and shows it again when the chart fails', async () => {
+        let fail = false;
+        configure({ vegaEmbed: vi.fn(async (el) => { if (fail) throw new Error('no vega'); el.innerHTML = '<svg></svg>'; return { finalize() {} }; }) });
+        const host = document.createElement('div');
+        document.body.append(host);
+        mount(host, load('r-ggplot-vega'), { lazy: false });
+        const container = host.querySelector('[data-fw-embed-chart]');
+        await vi.waitFor(() => expect(container.dataset.fwEmbedChartState).toBe('ready'));
+        expect(container.querySelector('.fw-embed__chart-view svg')).not.toBeNull();
+        expect(container.querySelector('.fw-embed__media img').getAttribute('alt')).toBe('Fuel economy by weight');
+        expect(container.querySelector('.fw-embed__fallback')).toBeNull();
+
+        fail = true;
+        const second = document.createElement('div');
+        document.body.append(second);
+        mount(second, load('r-ggplot-vega'), { lazy: false });
+        const failed = second.querySelector('[data-fw-embed-chart]');
+        await vi.waitFor(() => expect(failed.dataset.fwEmbedChartState).toBe('error'));
+        expect(failed.querySelector('.fw-embed__chart-view')).toBeNull();
+        expect(failed.querySelector('.fw-embed__media img')).not.toBeNull();
     });
 });

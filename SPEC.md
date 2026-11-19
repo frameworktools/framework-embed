@@ -48,7 +48,7 @@ Private, password-protected, missing, and deleted artifacts return `404` with `C
 - `kind` is `model`, `table`, `test`, `code_snippet`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
 - `data` is set for `code_snippet` with the normalized snippet (see `code_snippet` below), and for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
 - `spec` is set for `vega-lite` and contains the Vega-Lite specification with inlined data.
-- `image` contains `url`, `content_type`, `width`, and `height`. It is set for `image` and may be set for other kinds in future updates as a fallback. `width` and `height` may be `null`.
+- `image` contains `url`, `content_type`, `width`, and `height`. It is set for `image`. It is optional for `vega-lite`, where it is a static rendering of the same chart, such as the SVG a ggplot was drawn to, shown wherever the chart cannot draw (see `vega-lite` below). It may be set for other kinds in future updates as a fallback. `width` and `height` may be `null`.
 - `page` covers HTML documents, Quarto sites, PDFs, data files, and other outputs. Renderers display a link card with the title, description, author, and attribution link.
 - `author`, `author.url`, and `description` may be `null`. New optional fields may appear within `v1`, and renderers ignore unknown fields.
 - `alt` is a one-sentence text description for screen readers and image alt text.
@@ -140,7 +140,7 @@ The JavaScript and PHP renderers produce identical HTML for each embed document,
 - `test`: method, test statistic, p-value, estimates, and confidence interval, followed by parameters and additional details in a `Test details` disclosure.
 - `code_snippet`: a bordered panel with a header, the code blocks, and the output blocks between them, then links to the notebook and model.
 - `image`: `<img src alt loading="lazy">`.
-- `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback link to the artifact. The JavaScript bundle renders the chart with `vega-embed`. Without JavaScript, the fallback link remains visible.
+- `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback: the chart's static image when the document has one, otherwise its alt text and a link to the artifact. The JavaScript bundle renders the chart with `vega-embed`, which replaces the fallback. Without JavaScript, the fallback remains visible.
 - `page`: a link card.
 
 The stylesheet exposes custom properties, listed under "Theming". It follows `prefers-color-scheme` and any `data-theme="dark"` or `.dark` ancestor.
@@ -444,13 +444,24 @@ A figure whose `image.content_type` starts with `image/svg+xml` (ASCII case-inse
 </div>
 ```
 
-The specification is written exactly as JavaScript's `JSON.stringify` writes it. That means shortest round-trip numbers in ECMAScript `Number::toString` form, integer-like keys first in ascending order, and only `"`, `\`, and control characters escaped. Then `<`, `>`, `&`, U+2028, and U+2029 become `<`, `>`, `&`, ` `, and ` `, so the text cannot close the `<script>` element. The JS bundle draws the chart with vega-embed and moves the fallback paragraph to a screen-reader-only class.
+When the document has an `image` with a safe `url`, the fallback is that image instead of the paragraph, written exactly as the `image` kind writes it, with `alt` falling back to `title`, then `Chart`:
+
+```html
+<div class="fw-embed__chart" data-fw-embed-chart>
+<script type="application/json">{spec}</script>
+<div class="fw-embed__media"><img class="fw-embed__img fw-embed__img--vector" src="{image.url}" alt="{alt}" loading="lazy" decoding="async" width="672" height="480" style="max-width: min(100%, calc(80vh * 672 / 480))"></div>
+</div>
+```
+
+`image` is a static rendering of the same chart. It shows wherever the chart does not draw: without JavaScript, in feed readers and email, on sites that do not load Vega, while the chart loads, and when the chart fails or is refused (see "Chart safety"). With `width` and `height`, it holds the chart's space while the chart loads, so the page does not jump. It sits on the same white panel as an `image` figure, since a static chart usually has dark text drawn into it. Print uses the image rather than the drawn chart. An `image` without a safe `url` is ignored and the paragraph fallback is written.
+
+The specification is written exactly as JavaScript's `JSON.stringify` writes it. That means shortest round-trip numbers in ECMAScript `Number::toString` form, integer-like keys first in ascending order, and only `"`, `\`, and control characters escaped. Then `<`, `>`, `&`, U+2028, and U+2029 become `<`, `>`, `&`, ` `, and ` `, so the text cannot close the `<script>` element. The JS bundle draws the chart with vega-embed and moves the fallback paragraph to a screen-reader-only class. While a chart with an image fallback loads, the view is laid out at the container's width but hidden, and the image keeps showing. Once the container's `data-fw-embed-chart-state` is `ready`, the stylesheet hides the image from the screen, keeping its `alt` for screen readers, and the chart sits on the figure's own background.
 
 ## Chart safety
 
 Stored specifications render in the host site's origin. Chart renderers must prevent Vega from evaluating arbitrary JavaScript or making network requests:
 
-- **No URLs.** Any specification containing a string `url` property (in data, lookup transforms, or Vega data sources) is not rendered, leaving the fallback paragraph and link visible.
+- **No URLs.** Any specification containing a string `url` property (in data, lookup transforms, or Vega data sources) is not rendered, leaving the fallback image, or the paragraph and link, visible.
 - **Blocking loader.** Vega receives a loader whose `load`, `sanitize`, `http`, and `file` methods reject every URL. External data loads fail, image marks receive no source, and `href` encodings neither render as links nor navigate.
 - **Expression interpreter.** Vega parses expressions to an AST (`ast: true`) and evaluates them with its CSP-safe interpreter rather than `new Function`. The pinned `vega-embed` 7.1.0 build includes `vega-interpreter`. Sites may supply a custom interpreter with `configure({vegaInterpreter})`.
 - **No embed options from the specification.** The renderer strips top-level `usermeta` before rendering so `usermeta.embedOptions` cannot override safety options or the loader.
@@ -487,8 +498,9 @@ These rules apply to the JavaScript bundle and do not alter server-rendered mark
   - Axis and legend labels use `--fw-embed-muted`.
   - Gridlines, domains, ticks, and the view outline use `--fw-embed-border`.
   - The chart background is transparent.
+  - On a dark page, `range.category` is a palette with enough contrast on a dark background: `#8AB4F8`, `#FDBA74`, `#F28B82`, `#81C995`, `#FDD663`, `#C58AF9`, `#78D9EC`, `#FF8BCB`, `#E8EAED`, `#A8C7FA` (phiz's dark theme). It applies only to a categorical color or fill scale without its own `scale.range` or `scale.scheme`. Light pages keep Vega's default palette.
 
-  The specification's own `config` and encodings take precedence over these defaults.
+  The specification's own `config` and encodings take precedence over these defaults, so a palette the specification sets is never changed.
 
 ## Safe URLs
 
