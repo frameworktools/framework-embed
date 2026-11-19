@@ -867,10 +867,14 @@ function renderSnippet(doc) {
 // --- other kinds ------------------------------------------------------------
 
 function renderImage(doc) {
-    const image = isObject(doc.image) ? doc.image : null;
+    return imageMedia(doc.image, text(doc.alt) ?? text(doc.title) ?? '');
+}
+
+// An image object as a figure: null without a safe URL.
+function imageMedia(value, alt) {
+    const image = isObject(value) ? value : null;
     const src = image === null ? null : safeUrl(image.url);
     if (src === null) return null;
-    const alt = text(doc.alt) ?? text(doc.title) ?? '';
     // Vector figures scale to the figure's width; raster figures stop at their natural size.
     const type = text(image.content_type);
     const vector = type !== null && asciiLower(type).startsWith('image/svg+xml');
@@ -883,14 +887,18 @@ function renderImage(doc) {
     return `<div class="fw-embed__media">${tag}></div>`;
 }
 
+// The specification for the script to draw, over a fallback: the chart's static image when it has a safe
+// one, otherwise its alt text and a link back. The drawn chart replaces the fallback.
 function renderChart(doc) {
     if (!isObject(doc.spec)) return null;
+    const alt = text(doc.alt) ?? text(doc.title) ?? 'Chart';
     const href = safeUrl(doc.url);
-    const alt = escapeHtml(text(doc.alt) ?? text(doc.title) ?? 'Chart');
+    const fallback = imageMedia(doc.image, alt)
+        ?? `<p class="fw-embed__fallback">${escapeHtml(alt)}${href === null ? '' : ` <a href="${escapeHtml(href)}">View chart</a>`}</p>`;
     return [
         '<div class="fw-embed__chart" data-fw-embed-chart>',
         `<script type="application/json">${scriptJson(doc.spec)}</script>`,
-        `<p class="fw-embed__fallback">${alt}${href === null ? '' : ` <a href="${escapeHtml(href)}">View chart</a>`}</p>`,
+        fallback,
         '</div>',
     ].join('\n');
 }

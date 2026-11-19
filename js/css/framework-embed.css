@@ -261,6 +261,25 @@
 .fw-embed__chart-view.vega-embed { display: block; width: 100%; max-width: 100%; min-width: 0; }
 .fw-embed__chart-view svg,
 .fw-embed__chart-view canvas { display: block; max-width: none; }
+/* A chart with a static image keeps showing the image, on the figure's white panel, until the chart draws.
+   Meanwhile the view takes the container's width, so it can measure itself, but no space. */
+.fw-embed__chart:not([data-fw-embed-chart-state="ready"]):has(> .fw-embed__media) > .fw-embed__chart-view {
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 0;
+    overflow: hidden;
+    visibility: hidden;
+}
+/* Drawn, the chart sits on the figure's own background; the image stays for screen readers. */
+@media screen {
+    .fw-embed__chart[data-fw-embed-chart-state="ready"] > .fw-embed__media {
+        position: absolute;
+        width: 1px; height: 1px;
+        padding: 0; margin: -1px;
+        overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%);
+        white-space: nowrap; border: 0;
+    }
+}
 
 .fw-embed__card {
     display: flex;
@@ -513,6 +532,8 @@ framework-artifact { display: block; }
     .fw-embed { break-inside: avoid; color: #000; }
     .fw-embed__scroll,
     .fw-embed__chart { overflow: visible; }
+    /* A chart with a static image prints the image, drawn for paper, rather than the themed view. */
+    .fw-embed__chart:has(> .fw-embed__media) > .fw-embed__chart-view { display: none; }
     .fw-embed__table th,
     .fw-embed__table td { white-space: normal; }
     .fw-embed a { color: inherit; }

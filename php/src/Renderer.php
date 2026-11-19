@@ -1270,12 +1270,17 @@ final class Renderer
 
     private static function image(array $doc): ?string
     {
-        $image = self::isObject($doc['image'] ?? null) ? $doc['image'] : null;
+        return self::imageMedia($doc['image'] ?? null, self::text($doc['alt'] ?? null) ?? self::text($doc['title'] ?? null) ?? '');
+    }
+
+    /** An image object as a figure: null without a safe URL. */
+    private static function imageMedia(mixed $value, string $alt): ?string
+    {
+        $image = self::isObject($value) ? $value : null;
         $src = $image === null ? null : self::safeUrl($image['url'] ?? null);
         if ($src === null) {
             return null;
         }
-        $alt = self::text($doc['alt'] ?? null) ?? self::text($doc['title'] ?? null) ?? '';
         // Vector figures scale to the figure's width; raster figures stop at their natural size.
         $type = self::text($image['content_type'] ?? null);
         $vector = $type !== null && str_starts_with(strtolower($type), 'image/svg+xml');
@@ -1293,19 +1298,25 @@ final class Renderer
         return '<div class="fw-embed__media">' . $tag . '></div>';
     }
 
+    /**
+     * The specification for the script to draw, over a fallback: the chart's static image when it has a safe
+     * one, otherwise its alt text and a link back. The drawn chart replaces the fallback.
+     */
     private static function chart(array $doc): ?string
     {
         $spec = $doc['spec'] ?? null;
         if (! ($spec instanceof stdClass) && ! self::isObject($spec)) {
             return null;
         }
+        $alt = self::text($doc['alt'] ?? null) ?? self::text($doc['title'] ?? null) ?? 'Chart';
         $href = self::safeUrl($doc['url'] ?? null);
-        $alt = self::e(self::text($doc['alt'] ?? null) ?? self::text($doc['title'] ?? null) ?? 'Chart');
+        $fallback = self::imageMedia($doc['image'] ?? null, $alt)
+            ?? '<p class="fw-embed__fallback">' . self::e($alt) . ($href === null ? '' : ' <a href="' . self::e($href) . '">View chart</a>') . '</p>';
 
         return implode("\n", [
             '<div class="fw-embed__chart" data-fw-embed-chart>',
             '<script type="application/json">' . Json::forScript($spec) . '</script>',
-            '<p class="fw-embed__fallback">' . $alt . ($href === null ? '' : ' <a href="' . self::e($href) . '">View chart</a>') . '</p>',
+            $fallback,
             '</div>',
         ]);
     }
