@@ -428,6 +428,12 @@ final class Renderer
             fn ($metric) => self::isObject($metric) && self::text($metric['name'] ?? null) !== null));
     }
 
+    /** A section the artifact's owner turned off on Framework Cloud: data.display.{name} is false. */
+    private static function hidden(array $data, string $name): bool
+    {
+        return (self::obj($data['display'] ?? null)[$name] ?? null) === false;
+    }
+
     private static function details(string $label, array $blocks): array
     {
         if ($blocks === []) {
@@ -506,7 +512,7 @@ final class Renderer
             if ($coefficients[$index]) {
                 $visible[] = self::coefficients($table, $model, $level, $doc);
             } elseif ($index === $importance) {
-                $continued = self::shownRows($table, self::FEATURE_LIMIT, self::ROW_LIMIT) !== [];
+                $continued = ! self::hidden($data, 'details') && self::shownRows($table, self::FEATURE_LIMIT, self::ROW_LIMIT) !== [];
                 $visible[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, 0, self::FEATURE_LIMIT, $continued ? 'Model details' : null);
                 if ($continued) {
                     $rest[] = self::table($table, true, true, $doc, Format::RESULT_PLACES, self::FEATURE_LIMIT, self::ROW_LIMIT, null);
@@ -531,6 +537,10 @@ final class Renderer
             array_push($visible, ...self::samplingWarnings($tables, $metrics));
         }
         // The model type, response, and formula are details: the coefficients show the terms, and the post names the model
+        if (self::hidden($data, 'details')) {
+            return implode("\n", $visible);
+        }
+
         return implode("\n", [...$visible, ...self::details('Model details', [...$parts, ...$rest])]);
     }
 
@@ -631,7 +641,7 @@ final class Renderer
             $parts[] = self::pairs($main);
         }
 
-        return implode("\n", [...$parts, ...self::details('Test details', $rest)]);
+        return implode("\n", [...$parts, ...(self::hidden($data, 'details') ? [] : self::details('Test details', $rest))]);
     }
 
     private static function named(mixed $value): array
@@ -1636,7 +1646,7 @@ final class Renderer
         }
         $parts = ['<div class="fw-embed__dag">', self::dagSvg($doc, $graph, $nodes)];
         $roles = array_values(array_filter(array_keys(self::DAG_ROLES), fn (string $role) => array_filter($nodes, fn (array $node) => in_array($role, $node['roles'], true)) !== []));
-        if ($roles !== []) {
+        if ($roles !== [] && ! self::hidden($data, 'legend')) {
             $parts[] = '<p class="fw-embed__dag-legend">' . implode(' ', array_map(fn (string $role) => '<span class="fw-embed__dag-key fw-embed__dag-key--' . $role . '">' . self::DAG_ROLES[$role] . '</span>', $roles)) . '</p>';
         }
         $parts[] = '</div>';

@@ -439,6 +439,9 @@ function usableTables(data) {
 function usableMetrics(data) {
   return list(data.metrics).filter((metric) => isObject(metric) && text(metric.name) !== null);
 }
+function hidden(data, name) {
+  return isObject(data.display) && data.display[name] === false;
+}
 function details(label, blocks) {
   if (blocks.length === 0) return [];
   return [`<details class="fw-embed__details">`, `<summary>${label}</summary>`, ...blocks, "</details>"];
@@ -477,7 +480,7 @@ function renderModel(doc) {
     if (coefficients[index]) {
       visible.push(renderCoefficients(table, model, level, doc));
     } else if (index === importance) {
-      const continued = shownRows(table, FEATURE_LIMIT, ROW_LIMIT).length > 0;
+      const continued = !hidden(data, "details") && shownRows(table, FEATURE_LIMIT, ROW_LIMIT).length > 0;
       visible.push(renderTable(table, true, true, doc, RESULT_PLACES, 0, FEATURE_LIMIT, continued ? "Model details" : null));
       if (continued) rest.push(renderTable(table, true, true, doc, RESULT_PLACES, FEATURE_LIMIT, ROW_LIMIT, null));
     } else if (table.role === "random_effects") {
@@ -489,6 +492,7 @@ function renderModel(doc) {
   if (stats.length > 0) rest.push(renderMetrics(stats));
   if (visible.length === 0) return [...parts, ...rest].join("\n");
   if (bayesian) visible.push(...samplingWarnings(tables, metrics));
+  if (hidden(data, "details")) return visible.join("\n");
   return [...visible, ...details("Model details", [...parts, ...rest])].join("\n");
 }
 function renderTableKind(doc) {
@@ -542,7 +546,7 @@ function renderTest(doc) {
   if (metrics.length > 0) rest.push(renderMetrics(metrics));
   const parts = [`<p class="fw-embed__method">${escapeHtml(test.method)}</p>`];
   if (main.length > 0) parts.push(renderPairs(main));
-  return [...parts, ...details("Test details", rest)].join("\n");
+  return [...parts, ...hidden(data, "details") ? [] : details("Test details", rest)].join("\n");
 }
 function named(value) {
   return list(value).filter((entry) => isObject(entry) && text(entry.name) !== null);
@@ -1046,7 +1050,7 @@ function renderDag(doc) {
   const labels = new Map(nodes.map((node) => [node.name, node.label]));
   const parts = ['<div class="fw-embed__dag">', dagSvg(doc, graph, nodes)];
   const roles = Object.keys(DAG_ROLES).filter((role) => nodes.some((node) => node.roles.includes(role)));
-  if (roles.length > 0) {
+  if (roles.length > 0 && !hidden(data, "legend")) {
     parts.push(`<p class="fw-embed__dag-legend">${roles.map((role) => `<span class="fw-embed__dag-key fw-embed__dag-key--${role}">${DAG_ROLES[role]}</span>`).join(" ")}</p>`);
   }
   parts.push("</div>");

@@ -114,6 +114,11 @@
             }
           }
         },
+        "display": {
+          "type": "object",
+          "description": "Sections the artifact's owner turned off on Framework Cloud. legend false leaves out the role legend.",
+          "properties": { "legend": { "type": "boolean" } }
+        },
         "dagitty": {
           "type": "object",
           "required": ["text", "lines"],
@@ -216,6 +221,11 @@
       "properties": {
         "schema": { "const": "framework.artifact/v1" },
         "kind": { "enum": ["model", "table", "test"] },
+        "display": {
+          "type": "object",
+          "description": "Sections the artifact's owner turned off on Framework Cloud. details false leaves out a model's or test's details section.",
+          "properties": { "details": { "type": "boolean" } }
+        },
         "source": {
           "type": "object",
           "properties": {

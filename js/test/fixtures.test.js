@@ -15,7 +15,8 @@ describe('fixtures', () => {
         for (const name of ['r-glm-logit', 'r-lmer', 'python-xgboost', 'stata-regress', 'r-tibble', 'r-ttest-welch', 'r-ggplot',
             'python-altair', 'page', 'truncated-table', 'minimal-model', 'minimal-test', 'hostile-model', 'hostile-vega', 'hostile-page', 'hostile-image',
             'r-snippet', 'stata-snippet', 'python-snippet', 'snippet-truncated', 'snippet-output-hidden', 'hostile-snippet', 'r-ggplot-vega', 'hostile-vega-image',
-            'r-dag', 'dagitty-dag', 'dag-no-adjustment', 'dag-unidentified', 'hostile-dag']) {
+            'r-dag', 'dagitty-dag', 'dag-no-adjustment', 'dag-unidentified', 'hostile-dag',
+            'model-details-hidden', 'test-details-hidden', 'dag-display-hidden']) {
             expect(names).toContain(name);
         }
     });

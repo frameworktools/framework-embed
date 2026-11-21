@@ -50,7 +50,7 @@ Private, password-protected, missing, and deleted artifacts return `404` with `C
 - `spec` is set for `vega-lite` and contains the Vega-Lite specification with inlined data.
 - `image` contains `url`, `content_type`, `width`, and `height`. It is set for `image`. It is optional for `vega-lite`, where it is a static rendering of the same chart, such as the SVG a ggplot was drawn to, shown wherever the chart cannot draw (see `vega-lite` below). It may be set for other kinds in future updates as a fallback. `width` and `height` may be `null`.
 - `page` covers HTML documents, Quarto sites, PDFs, data files, and other outputs. Renderers display a link card with the title, description, author, and attribution link.
-- `author`, `author.url`, and `description` may be `null`. New optional fields may appear within `v1`, and renderers ignore unknown fields.
+- `author`, `author.url`, `title`, and `description` may be `null`. The artifact's owner sets what embeds show on Framework Cloud, and Cloud leaves out what they turn off (see "Display settings"). New optional fields may appear within `v1`, and renderers ignore unknown fields.
 - `alt` is a one-sentence text description for screen readers and image alt text.
 
 ## Model variables
@@ -117,6 +117,17 @@ Renderers:
 - Label the coefficient columns Posterior mean, Posterior SD, and `{level} interval` (such as `95% interval`), and show R-hat (two decimals) and Bulk ESS and Tail ESS (whole numbers) after the interval. On the ratio scale, the estimate column takes the ratio's label and the four `ratio_` columns supply the values; without them, the table shows only the model scale.
 - Flag an R-hat above 1.01 and any divergent transitions in a note under the coefficients: `R-hat above 1.01 for {n} parameters: the chains may not have converged.` and `{n} divergent transitions: the posterior may be biased.`
 - Put the priors table in Model details with the other extra tables, titled Priors.
+
+## Display settings
+
+The artifact's owner decides on Framework Cloud what its embeds show, and the packages can set the same settings when they publish. Cloud leaves out what is turned off: a hidden title, description, or author is `null`; a hidden DAG analysis, DAGitty code, or source code drops `data.analysis`, `data.dagitty`, or `data.code`; hidden variable tips drop `data.variables` and `data.terms`; hidden column summaries drop each column's `summary`; hidden snippet links leave `data.display.links` empty; and a chart shown without interaction arrives as `image`. Renderers need nothing for these.
+
+Two settings are flags, since what they hide also feeds what stays:
+
+- `data.display.details: false` on a `model` or `test`: no `Model details` or `Test details` disclosure. An importance table shows its first 10 rows, with the note a plain data table gets, and no continuation.
+- `data.display.legend: false` on a `dag`: no legend.
+
+Older renderers ignore the flags and show the sections.
 
 ## Renderer markup
 

@@ -1,0 +1,308 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "dagdisplayoff001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "dag",
+    "title": "Smoking and cancer",
+    "description": null,
+    "alt": "Causal diagram of 4 variables and 4 arrows. Exposure: Smoking status. Outcome: cancer.",
+    "url": "https://framework.pub/@ada/smoking/smoking-dag/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/rdag000000000001/versions/1",
+    "published_at": "2026-11-21T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/smoking-dag/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "dag",
+        "dag": {
+            "width": 509,
+            "height": 211,
+            "nodes": [
+                {
+                    "name": "U",
+                    "label": "Unmeasured genetics",
+                    "roles": [
+                        "latent"
+                    ],
+                    "x": 317,
+                    "y": 8,
+                    "width": 184,
+                    "height": 30
+                },
+                {
+                    "name": "age",
+                    "roles": [],
+                    "x": 219,
+                    "y": 8,
+                    "width": 50,
+                    "height": 30
+                },
+                {
+                    "name": "cancer",
+                    "roles": [
+                        "outcome"
+                    ],
+                    "x": 371,
+                    "y": 173,
+                    "width": 76,
+                    "height": 30
+                },
+                {
+                    "name": "smoking",
+                    "label": "Smoking status",
+                    "roles": [
+                        "exposure"
+                    ],
+                    "x": 8,
+                    "y": 173,
+                    "width": 142,
+                    "height": 30
+                }
+            ],
+            "edges": [
+                {
+                    "from": "U",
+                    "to": "cancer",
+                    "type": "<->",
+                    "path": "M 399.3 47.3 Q 376 105.5 399.3 163.7",
+                    "heads": [
+                        "M 402.3 171.1 L 394.7 164.5 L 403.1 161.1 Z",
+                        "M 402.3 39.9 L 403.1 49.9 L 394.7 46.5 Z"
+                    ]
+                },
+                {
+                    "from": "age",
+                    "to": "cancer",
+                    "type": "->",
+                    "path": "M 260.4 39.4 L 386.9 165.9",
+                    "heads": [
+                        "M 392.6 171.6 L 383 168.4 L 389.4 162 Z"
+                    ]
+                },
+                {
+                    "from": "age",
+                    "to": "smoking",
+                    "type": "->",
+                    "path": "M 227.6 39.4 L 101.1 165.9",
+                    "heads": [
+                        "M 95.4 171.6 L 98.6 162 L 105 168.4 Z"
+                    ]
+                },
+                {
+                    "from": "smoking",
+                    "to": "cancer",
+                    "type": "->",
+                    "path": "M 152 188 L 361 188",
+                    "heads": [
+                        "M 369 188 L 360 192.5 L 360 183.5 Z"
+                    ]
+                }
+            ]
+        },
+        "dagitty": {
+            "text": "dag {\nU [latent,pos=\"2,0\"]\nage [pos=\"1,0\"]\ncancer [outcome,pos=\"2,1\"]\nsmoking [exposure,pos=\"0,1\"]\nU <-> cancer\nage -> cancer\nage -> smoking\nsmoking -> cancer\n}",
+            "lines": [
+                [
+                    [
+                        "kw",
+                        "dag"
+                    ],
+                    [
+                        "",
+                        " {"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "U ["
+                    ],
+                    [
+                        "const",
+                        "latent"
+                    ],
+                    [
+                        "",
+                        ","
+                    ],
+                    [
+                        "const",
+                        "pos"
+                    ],
+                    [
+                        "",
+                        "="
+                    ],
+                    [
+                        "str",
+                        "\"2,0\""
+                    ],
+                    [
+                        "",
+                        "]"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "age ["
+                    ],
+                    [
+                        "const",
+                        "pos"
+                    ],
+                    [
+                        "",
+                        "="
+                    ],
+                    [
+                        "str",
+                        "\"1,0\""
+                    ],
+                    [
+                        "",
+                        "]"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "cancer ["
+                    ],
+                    [
+                        "const",
+                        "outcome"
+                    ],
+                    [
+                        "",
+                        ","
+                    ],
+                    [
+                        "const",
+                        "pos"
+                    ],
+                    [
+                        "",
+                        "="
+                    ],
+                    [
+                        "str",
+                        "\"2,1\""
+                    ],
+                    [
+                        "",
+                        "]"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "smoking ["
+                    ],
+                    [
+                        "const",
+                        "exposure"
+                    ],
+                    [
+                        "",
+                        ","
+                    ],
+                    [
+                        "const",
+                        "pos"
+                    ],
+                    [
+                        "",
+                        "="
+                    ],
+                    [
+                        "str",
+                        "\"0,1\""
+                    ],
+                    [
+                        "",
+                        "]"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "U "
+                    ],
+                    [
+                        "op",
+                        "<->"
+                    ],
+                    [
+                        "",
+                        " cancer"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "age "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " cancer"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "age "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " smoking"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "smoking "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " cancer"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "}"
+                    ]
+                ]
+            ]
+        },
+        "display": {
+            "legend": false
+        }
+    },
+    "spec": null,
+    "image": null
+}
