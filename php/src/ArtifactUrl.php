@@ -8,7 +8,7 @@ namespace Framework\Embed;
 final class ArtifactUrl
 {
     /**
-     * @param 'key'|'path'|'embed' $type key: /d/{key}; path: /@handle/project/slug; embed: /api/embed/v1/artifacts/{key}
+     * @param 'key'|'path'|'go'|'embed' $type key: /d/{key}; path: /@handle/project/slug; go: /go/{code}, a public artifact's short link; embed: /api/embed/v1/artifacts/{key}
      */
     public function __construct(
         public readonly string $type,

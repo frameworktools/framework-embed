@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.8.3
+Stable tag: 0.8.4
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -18,6 +18,7 @@ Supported URLs:
 
 * `https://framework.pub/d/{key}` and `https://framework.pub/d/{key}/versions/{n}`
 * `https://framework.pub/@{handle}/{project}/{slug}` and `…/versions/{n}`
+* `https://framework.pub/go/{code}`, a public artifact's short link
 
 You can embed an artifact in three ways:
 
@@ -93,6 +94,9 @@ Yes. Override custom properties such as `--fw-embed-font`, `--fw-embed-mono`, `-
 A bare host name such as `framework.example.org` allows HTTPS on the default port. An origin such as `http://localhost:8000` allows that exact scheme, host, and port. IP addresses and URL paths are rejected.
 
 == Changelog ==
+
+= 0.8.4 =
+* A public artifact's short link, such as framework.pub/go/abcd, embeds like its full link.
 
 = 0.8.3 =
 * The copy button on code reads Copy.

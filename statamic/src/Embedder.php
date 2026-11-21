@@ -116,6 +116,11 @@ class Embedder
             return "{$match->origin}/@{$match->handle}/{$match->project}/{$match->slug}";
         }
 
+        // A short link always opens the newest version
+        if ($match->type === 'go') {
+            return $match->url;
+        }
+
         return $match->origin . ($match->type === 'embed' ? '/api/embed/v1/artifacts/' : '/d/') . $match->key;
     }
 

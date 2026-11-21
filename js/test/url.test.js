@@ -51,12 +51,13 @@ describe('artifact URLs', () => {
         ['https://framework.pub/@ada/admissions/model', { type: 'path', handle: 'ada', project: 'admissions', slug: 'model', version: null }],
         ['https://framework.pub/@ada/admissions/model/versions/12/', { type: 'path', handle: 'ada', slug: 'model', version: 12 }],
         ['https://framework.pub/api/embed/v1/artifacts/abc/versions/2', { type: 'embed', key: 'abc', version: 2 }],
+        ['https://framework.pub/go/aqxh', { type: 'go', key: null, version: null, url: 'https://framework.pub/go/aqxh' }],
     ])('matches %s', (url, expected) => {
         expect(matchArtifactUrl(url)).toMatchObject(expected);
     });
 
     it.each(['https://framework.pub/', 'https://framework.pub/d/', 'https://framework.pub/d/a/b', 'https://framework.pub/@ada/../x/y',
-        'https://framework.pub/d/abc/versions/0', 'https://framework.pub/r/abc', 'https://framework.pub#@evil.com/d/abc'])('does not match %s', (url) => {
+        'https://framework.pub/d/abc/versions/0', 'https://framework.pub/r/abc', 'https://framework.pub#@evil.com/d/abc', 'https://framework.pub/go/', 'https://framework.pub/go/a/b', 'https://framework.pub/go/a_b'])('does not match %s', (url) => {
         expect(matchArtifactUrl(url)).toBeNull();
     });
 
@@ -64,6 +65,7 @@ describe('artifact URLs', () => {
         expect(embedRequestUrl('https://framework.pub/@ada/admissions/model/versions/2?utm=1'))
             .toBe('https://framework.pub/api/embed/v1/resolve?url=https%3A%2F%2Fframework.pub%2F%40ada%2Fadmissions%2Fmodel%2Fversions%2F2');
         expect(embedRequestUrl('https://framework.pub/api/embed/v1/artifacts/abc')).toBe('https://framework.pub/api/embed/v1/artifacts/abc');
+        expect(embedRequestUrl('https://framework.pub/go/aqxh')).toBe('https://framework.pub/api/embed/v1/resolve?url=https%3A%2F%2Fframework.pub%2Fgo%2Faqxh');
     });
 
     it('keeps output=none and no other query', () => {

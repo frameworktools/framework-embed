@@ -642,9 +642,10 @@ On an allowed host, these paths are artifact URLs. Fragments and query strings a
 |---|---|
 | `/d/{key}` and `/d/{key}/versions/{n}` | `key` |
 | `/@{handle}/{project}/{slug}` and `…/versions/{n}` | `path` |
+| `/go/{code}`, a public artifact's short link | `go` |
 | `/api/embed/v1/artifacts/{key}` and `…/versions/{n}` | `embed` |
 
-`{key}` is 1 to 64 of `A-Z a-z 0-9 _ -`. Handles, projects, and slugs are 1 to 200 of `A-Z a-z 0-9 _ . -`, and never `.` or `..`. `{n}` is a positive integer of at most nine digits. A trailing slash is allowed on `key` and `path` URLs.
+`{key}` is 1 to 64 of `A-Z a-z 0-9 _ -`, and `{code}` 1 to 80 of `A-Z a-z 0-9 -`. Handles, projects, and slugs are 1 to 200 of `A-Z a-z 0-9 _ . -`, and never `.` or `..`. `{n}` is a positive integer of at most nine digits. A trailing slash is allowed on `key` and `path` URLs.
 
 `embed` URLs are requested directly. Other artifact URLs are requested as `{origin}/api/embed/v1/resolve?url={origin}{path}`, with the inner URL percent-encoded. With the option, the inner URL is `{origin}{path}?output=none`, and an `embed` URL is requested as `{origin}{path}?output=none`.
 

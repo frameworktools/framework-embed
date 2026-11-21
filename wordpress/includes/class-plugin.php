@@ -112,7 +112,7 @@ final class Framework_Embed_Plugin {
 		// checks the host against the allow-list and declines the rest.
 		wp_embed_register_handler(
 			'framework',
-			'#^https?://[^/\s?\#]+/(?:d/|@|api/embed/v1/artifacts/)[^\s]*$#i',
+			'#^https?://[^/\s?\#]+/(?:d/|@|go/|api/embed/v1/artifacts/)[^\s]*$#i',
 			array( $this, 'handle_embed' )
 		);
 	}

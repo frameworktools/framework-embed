@@ -198,6 +198,7 @@ final class PluginTest extends TestCase
     {
         $this->assertSame('https://framework.pub/api/embed/v1/artifacts/abc', Framework_Embed_Stored::newest_url('https://framework.pub/api/embed/v1/artifacts/abc/versions/3'));
         $this->assertSame('https://framework.pub/d/abc', Framework_Embed_Stored::newest_url('https://framework.pub/d/abc/versions/3'));
+        $this->assertSame('https://framework.pub/go/aqxh', Framework_Embed_Stored::newest_url('https://framework.pub/go/aqxh'));
         $this->assertSame('https://framework.pub/@ada/p/s', Framework_Embed_Stored::newest_url('https://framework.pub/@ada/p/s/versions/3/'));
         $this->assertNull(Framework_Embed_Stored::newest_url('https://evil.example/d/abc'));
     }

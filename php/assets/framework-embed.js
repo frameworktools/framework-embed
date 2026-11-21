@@ -1134,7 +1134,9 @@ var VERSION = "([1-9][0-9]{0,8})";
 var PATHS = [
   ["embed", new RegExp(`^/api/embed/v1/artifacts/${KEY}(?:/versions/${VERSION})?$`)],
   ["key", new RegExp(`^/d/${KEY}(?:/versions/${VERSION})?/?$`)],
-  ["path", new RegExp(`^/@${NAME}/${NAME}/${NAME}(?:/versions/${VERSION})?/?$`)]
+  ["path", new RegExp(`^/@${NAME}/${NAME}/${NAME}(?:/versions/${VERSION})?/?$`)],
+  // A public artifact's short link, framework.pub/go/abcd
+  ["go", /^\/go\/([A-Za-z0-9-]{1,80})\/?$/]
 ];
 function parse(url) {
   if (typeof url !== "string" || url.length === 0 || url.length > 2048 || /[^\x21-\x7e]|\\/.test(url)) return null;
@@ -1186,6 +1188,9 @@ function matchArtifactUrl(url, hosts = DEFAULT_HOSTS) {
   for (const [type, pattern] of PATHS) {
     const m = pattern.exec(path);
     if (!m) continue;
+    if (type === "go") {
+      return { type, origin, url: origin + path + option, handle: null, project: null, slug: null, key: null, version: null };
+    }
     if (type === "path") {
       if ([m[1], m[2], m[3]].some((part) => part === "." || part === "..")) return null;
       return { type, origin, url: origin + path + option, handle: m[1], project: m[2], slug: m[3], key: null, version: m[4] ? Number(m[4]) : null };

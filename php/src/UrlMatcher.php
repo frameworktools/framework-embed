@@ -128,6 +128,10 @@ final class UrlMatcher
 
             return new ArtifactUrl('path', $origin, $origin . $path . $option, handle: $m[1], project: $m[2], slug: $m[3], version: isset($m[4]) ? (int) $m[4] : null);
         }
+        // A public artifact's short link, framework.pub/go/abcd
+        if (preg_match('#^/go/([A-Za-z0-9-]{1,80})/?$#D', $path) === 1) {
+            return new ArtifactUrl('go', $origin, $origin . $path . $option);
+        }
 
         return null;
     }

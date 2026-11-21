@@ -118,6 +118,10 @@ final class Framework_Embed_Stored {
 		if ( 'path' === $match->type ) {
 			return $match->origin . '/@' . $match->handle . '/' . $match->project . '/' . $match->slug;
 		}
+		// A short link always opens the newest version.
+		if ( 'go' === $match->type ) {
+			return $match->url;
+		}
 
 		return $match->origin . ( 'embed' === $match->type ? '/api/embed/v1/artifacts/' : '/d/' ) . $match->key;
 	}

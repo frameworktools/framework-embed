@@ -56,6 +56,7 @@ final class UrlMatcherTest extends TestCase
             ['https://framework.pub/@ada/admissions/model', 'path', ['handle' => 'ada', 'project' => 'admissions', 'slug' => 'model', 'version' => null]],
             ['https://framework.pub/@ada/admissions/model/versions/12/', 'path', ['handle' => 'ada', 'slug' => 'model', 'version' => 12]],
             ['https://framework.pub/api/embed/v1/artifacts/abc/versions/2', 'embed', ['key' => 'abc', 'version' => 2]],
+            ['https://framework.pub/go/aqxh', 'go', ['key' => null, 'version' => null, 'url' => 'https://framework.pub/go/aqxh']],
         ];
     }
 
@@ -74,7 +75,7 @@ final class UrlMatcherTest extends TestCase
     {
         $matcher = new UrlMatcher();
         foreach (['https://framework.pub/', 'https://framework.pub/d/', 'https://framework.pub/d/a/b', 'https://framework.pub/@ada/../x/y',
-            'https://framework.pub/d/abc/versions/0', 'https://framework.pub/r/abc', 'https://framework.pub#@evil.com/d/abc'] as $url) {
+            'https://framework.pub/d/abc/versions/0', 'https://framework.pub/r/abc', 'https://framework.pub#@evil.com/d/abc', 'https://framework.pub/go/', 'https://framework.pub/go/a/b', 'https://framework.pub/go/a_b'] as $url) {
             $this->assertNull($matcher->match($url), $url);
         }
     }
@@ -85,6 +86,7 @@ final class UrlMatcherTest extends TestCase
         $this->assertSame('https://framework.pub/api/embed/v1/resolve?url=https%3A%2F%2Fframework.pub%2F%40ada%2Fadmissions%2Fmodel%2Fversions%2F2',
             $matcher->requestUrl('https://framework.pub/@ada/admissions/model/versions/2?utm=1'));
         $this->assertSame('https://framework.pub/api/embed/v1/artifacts/abc', $matcher->requestUrl('https://framework.pub/api/embed/v1/artifacts/abc'));
+        $this->assertSame('https://framework.pub/api/embed/v1/resolve?url=https%3A%2F%2Fframework.pub%2Fgo%2Faqxh', $matcher->requestUrl('https://framework.pub/go/aqxh'));
     }
 
     public function test_keeps_output_none_and_no_other_query(): void
