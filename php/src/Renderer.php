@@ -19,7 +19,11 @@ final class Renderer
     /** Text values longer than this many characters take a full row of the statistics grid. */
     public const WIDE_TEXT = 24;
 
-    private const KINDS = ['model', 'table', 'test', 'code_snippet', 'image', 'vega-lite', 'page'];
+    private const KINDS = ['model', 'table', 'test', 'code_snippet', 'dag', 'image', 'vega-lite', 'page'];
+
+    private const DAG_ROLES = ['exposure' => 'Exposure', 'outcome' => 'Outcome', 'adjusted' => 'Adjusted', 'latent' => 'Latent', 'selected' => 'Selected'];
+
+    private const DAG_LABEL_CHARS = 32;
 
     private const SNIPPET_LANGUAGES = ['r' => 'R', 'python' => 'Python', 'stata' => 'Stata'];
 
@@ -94,6 +98,7 @@ final class Renderer
             'table' => self::tableKind($doc),
             'test' => self::test($doc),
             'code_snippet' => self::snippet($doc),
+            'dag' => self::dag($doc),
             'image' => self::image($doc),
             'vega-lite' => self::chart($doc),
             default => null,
@@ -1469,6 +1474,176 @@ final class Renderer
             $parts[] = '<p class="fw-embed__links">' . implode(' ', $links) . '</p>';
         }
         $parts[] = '</div>';
+
+        return implode("\n", $parts);
+    }
+
+    // --- DAGs: Framework Cloud lays the graph out; renderers write the boxes and edge paths it sends ---
+
+    private static function dagSize(mixed $value): bool
+    {
+        return Format::isInteger($value) && $value >= 0 && $value <= 100000;
+    }
+
+    private static function dagPath(mixed $value): bool
+    {
+        return is_string($value) && preg_match('/^[MLQZ0-9 .-]{1,400}$/D', $value) === 1;
+    }
+
+    /** At most 32 code points, cut to 31 with trailing spaces dropped and an ellipsis added. */
+    private static function dagShown(string $label): string
+    {
+        return mb_strlen($label, 'UTF-8') > self::DAG_LABEL_CHARS
+            ? rtrim(mb_substr($label, 0, self::DAG_LABEL_CHARS - 1, 'UTF-8'), ' ') . '…'
+            : $label;
+    }
+
+    /** @return list<array{name: string, label: string, roles: list<string>, x: int|float, y: int|float, width: int|float, height: int|float}> */
+    private static function dagNodes(array $graph): array
+    {
+        $nodes = [];
+        foreach (self::lst($graph['nodes'] ?? null) as $node) {
+            if (! self::isObject($node) || self::text($node['name'] ?? null) === null) {
+                continue;
+            }
+            $sizes = [$node['x'] ?? null, $node['y'] ?? null, $node['width'] ?? null, $node['height'] ?? null];
+            if (count(array_filter($sizes, self::dagSize(...))) !== 4) {
+                continue;
+            }
+            $given = self::lst($node['roles'] ?? null);
+            $roles = array_values(array_filter(array_keys(self::DAG_ROLES), fn (string $role) => in_array($role, $given, true)));
+            $nodes[] = ['name' => $node['name'], 'label' => self::text($node['label'] ?? null) ?? $node['name'], 'roles' => $roles,
+                'x' => $node['x'], 'y' => $node['y'], 'width' => $node['width'], 'height' => $node['height']];
+        }
+
+        return $nodes;
+    }
+
+    private static function dagSvg(array $doc, array $graph, array $nodes): string
+    {
+        $label = self::text($doc['alt'] ?? null) ?? self::text($doc['title'] ?? null) ?? 'Causal diagram';
+        $width = self::integer($graph['width']);
+        $height = self::integer($graph['height']);
+        $lines = ['<svg class="fw-embed__dag-graph" viewBox="0 0 ' . $width . ' ' . $height . '" width="' . $width . '" height="' . $height . '"'
+            . ' style="min-width: ' . self::integer(floor($graph['width'] * 3 / 4)) . 'px" role="img" aria-label="' . self::e($label) . '">'];
+        foreach (self::lst($graph['edges'] ?? null) as $edge) {
+            if (! self::isObject($edge) || ! self::dagPath($edge['path'] ?? null)) {
+                continue;
+            }
+            $lines[] = '<path class="fw-embed__dag-edge' . (($edge['type'] ?? null) === '<->' ? ' fw-embed__dag-edge--bidirected' : '') . '" d="' . $edge['path'] . '"/>';
+            foreach (self::lst($edge['heads'] ?? null) as $head) {
+                if (self::dagPath($head)) {
+                    $lines[] = '<path class="fw-embed__dag-head" d="' . $head . '"/>';
+                }
+            }
+        }
+        foreach ($nodes as $node) {
+            $shown = self::dagShown($node['label']);
+            $classes = implode(' ', ['fw-embed__dag-node', ...array_map(fn (string $role) => 'fw-embed__dag-node--' . $role, $node['roles'])]);
+            $lines[] = '<g class="' . $classes . '">' . ($shown === $node['label'] ? '' : '<title>' . self::e($node['label']) . '</title>')
+                . '<rect x="' . self::integer($node['x']) . '" y="' . self::integer($node['y']) . '" width="' . self::integer($node['width']) . '" height="' . self::integer($node['height']) . '" rx="6"/>'
+                . '<text x="' . self::integer($node['x'] + floor($node['width'] / 2)) . '" y="' . self::integer($node['y'] + floor($node['height'] / 2)) . '">' . self::e($shown) . '</text></g>';
+        }
+        $lines[] = '</svg>';
+
+        return implode("\n", $lines);
+    }
+
+    /** @param  array<array-key, string>  $labels */
+    private static function dagNames(array $names, array $labels): string
+    {
+        return implode(', ', array_map(fn (string $name) => '<code class="fw-embed__var">' . self::e($labels[$name] ?? $name) . '</code>', $names));
+    }
+
+    private static function dagNameList(mixed $value): ?array
+    {
+        if (! is_array($value) || ! array_is_list($value)) {
+            return null;
+        }
+        foreach ($value as $name) {
+            if (! is_string($name)) {
+                return null;
+            }
+        }
+
+        return $value;
+    }
+
+    private static function dagAnalysis(mixed $analysis, array $labels): array
+    {
+        if (! self::isObject($analysis)) {
+            return [];
+        }
+        $blocks = [];
+        $exposures = self::dagNameList($analysis['exposures'] ?? null) ?? [];
+        $outcomes = self::dagNameList($analysis['outcomes'] ?? null) ?? [];
+        $sets = $analysis['adjustment_sets'] ?? null;
+        if ($exposures !== [] && $outcomes !== [] && is_array($sets) && array_is_list($sets)) {
+            $sets = array_values(array_filter(array_map(self::dagNameList(...), $sets), fn (?array $set) => $set !== null));
+            $effect = ($analysis['effect'] ?? null) === 'direct' ? 'direct' : 'total';
+            $blocks[] = '<p class="fw-embed__note">Minimal sufficient adjustment sets for the ' . $effect . ' effect of ' . self::dagNames($exposures, $labels) . ' on ' . self::dagNames($outcomes, $labels) . ':</p>';
+            if ($sets === []) {
+                $blocks[] = '<p class="fw-embed__dag-result">No set of observed variables identifies the effect.</p>';
+            } elseif (count($sets) === 1 && $sets[0] === []) {
+                $blocks[] = '<p class="fw-embed__dag-result">No adjustment is needed.</p>';
+            } else {
+                $blocks = [...$blocks, '<ul class="fw-embed__dag-list">', ...array_map(fn (array $set) => '<li>{ ' . self::dagNames($set, $labels) . ' }</li>', $sets), '</ul>'];
+            }
+        }
+        $implications = array_values(array_filter(self::lst($analysis['implications'] ?? null), fn (mixed $entry) => self::isObject($entry)
+            && is_string($entry['x'] ?? null) && is_string($entry['y'] ?? null) && self::dagNameList($entry['given'] ?? null) !== null));
+        if ($implications !== []) {
+            $blocks = [...$blocks, '<p class="fw-embed__note">Testable implications:</p>', '<ul class="fw-embed__dag-list">',
+                ...array_map(fn (array $entry) => '<li>' . self::dagNames([$entry['x']], $labels) . ' ⫫ ' . self::dagNames([$entry['y']], $labels)
+                    . ($entry['given'] !== [] ? ' | ' . self::dagNames($entry['given'], $labels) : '') . '</li>', $implications), '</ul>'];
+        }
+
+        return $blocks;
+    }
+
+    private static function dagCode(string $label, mixed $block): ?string
+    {
+        if (! self::isObject($block)) {
+            return null;
+        }
+        $html = self::snippetHtml($block);
+        if ($html === null) {
+            return null;
+        }
+
+        return implode("\n", ['<div class="fw-embed__snippet">', '<div class="fw-embed__snippet-head">', '<span class="fw-embed__lang">' . $label . '</span>',
+            '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', '</div>',
+            '<pre class="fw-embed__code"><code>' . implode("\n", $html) . '</code></pre>', '</div>']);
+    }
+
+    private static function dag(array $doc): ?string
+    {
+        $data = $doc['data'] ?? null;
+        if (! self::isObject($data) || ! self::isObject($data['dag'] ?? null)) {
+            return null;
+        }
+        $graph = $data['dag'];
+        if (! self::dagSize($graph['width'] ?? null) || ! self::dagSize($graph['height'] ?? null) || $graph['width'] == 0 || $graph['height'] == 0) {
+            return null;
+        }
+        $nodes = self::dagNodes($graph);
+        if ($nodes === []) {
+            return null;
+        }
+        $labels = [];
+        foreach ($nodes as $node) {
+            $labels[$node['name']] = $node['label'];
+        }
+        $parts = ['<div class="fw-embed__dag">', self::dagSvg($doc, $graph, $nodes)];
+        $roles = array_values(array_filter(array_keys(self::DAG_ROLES), fn (string $role) => array_filter($nodes, fn (array $node) => in_array($role, $node['roles'], true)) !== []));
+        if ($roles !== []) {
+            $parts[] = '<p class="fw-embed__dag-legend">' . implode(' ', array_map(fn (string $role) => '<span class="fw-embed__dag-key fw-embed__dag-key--' . $role . '">' . self::DAG_ROLES[$role] . '</span>', $roles)) . '</p>';
+        }
+        $parts[] = '</div>';
+        $code = $data['code'] ?? null;
+        $code = self::isObject($code) && self::known(self::SNIPPET_LANGUAGES, $code['language'] ?? null) ? self::dagCode(self::SNIPPET_LANGUAGES[$code['language']], $code) : null;
+        $parts = [...$parts, ...self::details('Analysis', self::dagAnalysis($data['analysis'] ?? null, $labels)),
+            ...self::details('Code', array_values(array_filter([self::dagCode('DAGitty', $data['dagitty'] ?? null), $code], fn (?string $panel) => $panel !== null)))];
 
         return implode("\n", $parts);
     }

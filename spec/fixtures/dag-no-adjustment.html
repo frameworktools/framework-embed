@@ -1,0 +1,53 @@
+<figure class="fw-embed fw-embed--dag" data-fw-embed-kind="dag" data-fw-embed-key="dagnone000000001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">No adjustment</span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/smoking/direct/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+<div class="fw-embed__body">
+<div class="fw-embed__dag">
+<svg class="fw-embed__dag-graph" viewBox="0 0 236 110" width="236" height="110" style="min-width: 177px" role="img" aria-label="Causal diagram of 4 variables and 3 arrows. Exposure: x. Outcome: y.">
+<path class="fw-embed__dag-edge" d="M 45.9 29.9 L 90.6 45.5"/>
+<path class="fw-embed__dag-head" d="M 98.1 48.1 L 88.1 49.4 L 91.1 40.9 Z"/>
+<path class="fw-embed__dag-edge" d="M 45.9 80.1 L 90.6 64.5"/>
+<path class="fw-embed__dag-head" d="M 98.1 61.9 L 91.1 69.1 L 88.1 60.6 Z"/>
+<path class="fw-embed__dag-edge" d="M 138 55 L 182 55"/>
+<path class="fw-embed__dag-head" d="M 190 55 L 181 59.5 L 181 50.5 Z"/>
+<g class="fw-embed__dag-node fw-embed__dag-node--exposure"><rect x="8" y="8" width="36" height="30" rx="6"/><text x="26" y="23">x</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--outcome"><rect x="100" y="40" width="36" height="30" rx="6"/><text x="118" y="55">y</text></g>
+<g class="fw-embed__dag-node"><rect x="8" y="72" width="36" height="30" rx="6"/><text x="26" y="87">z</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--adjusted"><rect x="192" y="40" width="36" height="30" rx="6"/><text x="210" y="55">m</text></g>
+</svg>
+<p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> <span class="fw-embed__dag-key fw-embed__dag-key--outcome">Outcome</span> <span class="fw-embed__dag-key fw-embed__dag-key--adjusted">Adjusted</span></p>
+</div>
+<details class="fw-embed__details">
+<summary>Analysis</summary>
+<p class="fw-embed__note">Minimal sufficient adjustment sets for the direct effect of <code class="fw-embed__var">x</code> on <code class="fw-embed__var">y</code>:</p>
+<p class="fw-embed__dag-result">No adjustment is needed.</p>
+<p class="fw-embed__note">Testable implications:</p>
+<ul class="fw-embed__dag-list">
+<li><code class="fw-embed__var">x</code> ⫫ <code class="fw-embed__var">z</code></li>
+<li><code class="fw-embed__var">m</code> ⫫ <code class="fw-embed__var">x</code> | <code class="fw-embed__var">y</code></li>
+</ul>
+</details>
+<details class="fw-embed__details">
+<summary>Code</summary>
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">DAGitty</span>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-kw">dag</span> { x [<span class="fw-t-const">exposure</span>] y [<span class="fw-t-const">outcome</span>] x <span class="fw-t-op">-&gt;</span> y <span class="fw-t-op">&lt;-</span> z m [<span class="fw-t-const">adjusted</span>] y <span class="fw-t-op">-&gt;</span> m }</code></pre>
+</div>
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">Python</span>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code>dag <span class="fw-t-op">=</span> <span class="fw-t-str">&quot;dag { x [exposure] y [outcome] x -&gt; y &lt;- z m [adjusted] y -&gt; m }&quot;</span></code></pre>
+</div>
+</details>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

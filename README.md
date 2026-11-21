@@ -10,6 +10,7 @@ Each public or unlisted artifact on [framework.pub](https://framework.pub) or a 
 - **Tables.** Static HTML tables displaying the first 25 rows with a link to the full table.
 - **Hypothesis tests.** Test statistic, p-value, and estimate with its confidence interval, with additional parameters under **Test details**.
 - **Code snippets.** R, Python, or Stata code with highlighting, and the output, messages, warnings, and errors it printed. Long output folds. The JavaScript bundle adds buttons to copy the code and show or hide the output. `?output=none` on the artifact URL starts with the output hidden.
+- **DAGs.** Causal diagrams drawn as SVG, with exposure, outcome, adjusted, and latent variables marked. The DAGitty code that defines the graph, and the R, Python, or Stata code that built it, sit under **Code** with copy buttons. Adjustment sets and testable implications sit under **Analysis**.
 - **Figures.** SVG, PNG, JPEG, GIF, and WebP images.
 - **Charts.** Interactive Vega-Lite charts rendered with `vega-embed`. A chart published with a static image, such as a ggplot, shows that image until the chart draws, and wherever it cannot: without JavaScript, in feed readers and email, and in print. On a dark page, a chart without its own palette uses a palette made for dark backgrounds.
 - **Other artifacts.** Link cards for HTML documents, Quarto sites, PDFs, and downloadable files.

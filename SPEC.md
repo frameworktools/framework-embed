@@ -45,8 +45,8 @@ Private, password-protected, missing, and deleted artifacts return `404` with `C
 }
 ```
 
-- `kind` is `model`, `table`, `test`, `code_snippet`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
-- `data` is set for `code_snippet` with the normalized snippet (see `code_snippet` below), and for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
+- `kind` is `model`, `table`, `test`, `code_snippet`, `dag`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
+- `data` is set for `code_snippet` with the normalized snippet (see `code_snippet` below), for `dag` with the laid-out graph (see `dag` below), and for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
 - `spec` is set for `vega-lite` and contains the Vega-Lite specification with inlined data.
 - `image` contains `url`, `content_type`, `width`, and `height`. It is set for `image`. It is optional for `vega-lite`, where it is a static rendering of the same chart, such as the SVG a ggplot was drawn to, shown wherever the chart cannot draw (see `vega-lite` below). It may be set for other kinds in future updates as a fallback. `width` and `height` may be `null`.
 - `page` covers HTML documents, Quarto sites, PDFs, data files, and other outputs. Renderers display a link card with the title, description, author, and attribution link.
@@ -139,6 +139,7 @@ The JavaScript and PHP renderers produce identical HTML for each embed document,
 - `table`: a static `<table>` with the first 25 rows and a note stating the row count with a link to the full artifact.
 - `test`: method, test statistic, p-value, estimates, and confidence interval, followed by parameters and additional details in a `Test details` disclosure.
 - `code_snippet`: a bordered panel with a header, the code blocks, and the output blocks between them, then links to the notebook and model.
+- `dag`: an inline SVG of the graph and a legend of its roles, then `Analysis` and `Code` disclosures.
 - `image`: `<img src alt loading="lazy">`.
 - `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback: the chart's static image when the document has one, otherwise its alt text and a link to the artifact. The JavaScript bundle renders the chart with `vega-embed`, which replaces the fallback. Without JavaScript, the fallback remains visible.
 - `page`: a link card.
@@ -425,6 +426,68 @@ A chunk's code and the text it printed, as a notebook showed them. `data` is the
 
 Code and output use `--fw-embed-code`, a system monospace stack by default (`ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace`), so box-drawing characters in Stata tables share one font and columns stay aligned. Lines do not wrap; a long line scrolls. Output lines sit at 1.45 so Stata's box lines nearly join. Messages are muted, warnings carry an amber rule, and errors a red rule.
 
+### `dag`
+
+A causal diagram with the DAGitty code that defines it. Framework Cloud parses the DAGitty text and lays the graph out once, so renderers write the boxes and edge paths it sends and never compute a layout. `data`:
+
+```json
+{
+  "schema": "framework.artifact/v1",
+  "kind": "dag",
+  "dag": {
+    "width": 509, "height": 211,
+    "nodes": [{"name": "smoking", "label": "Smoking status", "roles": ["exposure"], "x": 8, "y": 173, "width": 142, "height": 30}],
+    "edges": [{"from": "smoking", "to": "cancer", "type": "->", "path": "M 152 188 L 361 188", "heads": ["M 369 188 L 360 192.5 L 360 183.5 Z"]}]
+  },
+  "dagitty": {"text": "dag { … }", "lines": [[["kw", "dag"], ["", " {"]]]},
+  "code": {"language": "r", "text": "dag <- dagify(…)", "lines": […]},
+  "analysis": {"effect": "total", "exposures": ["smoking"], "outcomes": ["cancer"], "adjustment_sets": [["age"]], "implications": [{"x": "a", "y": "b", "given": ["c"]}]}
+}
+```
+
+- `dag.width` and `dag.height` are the drawing's size in pixels, integers from 1 to 100,000. Each node's `x`, `y`, `width`, and `height` are integers from 0 to 100,000: its box, top-left corner first. Boxes fit their label at 14px in a monospace font.
+- `label` is optional; the name stands in for it. `roles` holds `exposure`, `outcome`, `adjusted`, `latent`, and `selected`; renderers ignore other values.
+- An edge's `type` is `->` or `<->`. `path` is an SVG path from box edge to box edge and each entry of `heads` is a closed arrowhead, both matching `^[MLQZ0-9 .-]{1,400}$`. A directed edge has one head and a bidirected edge two.
+- `dagitty` and `code` carry `text` and styled `lines`, as code snippet blocks do. `code.language` is `r`, `python`, or `stata`. `code` and `analysis` are optional.
+- `analysis` comes from the producer, such as R's dagitty. `adjustment_sets` lists minimal sufficient sets: `[[]]` means no adjustment is needed and `[]` means none exists. `implications` lists testable conditional independencies.
+
+```html
+<div class="fw-embed__dag">
+<svg class="fw-embed__dag-graph" viewBox="0 0 509 211" width="509" height="211" style="min-width: 381px" role="img" aria-label="{alt}">
+<path class="fw-embed__dag-edge" d="M 152 188 L 361 188"/>
+<path class="fw-embed__dag-head" d="M 369 188 L 360 192.5 L 360 183.5 Z"/>
+<g class="fw-embed__dag-node fw-embed__dag-node--exposure"><rect x="8" y="173" width="142" height="30" rx="6"/><text x="79" y="188">Smoking status</text></g>
+</svg>
+<p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> …</p>
+</div>
+<details class="fw-embed__details">
+<summary>Analysis</summary>
+<p class="fw-embed__note">Minimal sufficient adjustment sets for the total effect of <code class="fw-embed__var">Smoking status</code> on <code class="fw-embed__var">cancer</code>:</p>
+<ul class="fw-embed__dag-list">
+<li>{ <code class="fw-embed__var">age</code> }</li>
+</ul>
+</details>
+<details class="fw-embed__details">
+<summary>Code</summary>
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">DAGitty</span>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code>…</code></pre>
+</div>
+</details>
+```
+
+- A document without `dag`, with an unusable `width` or `height` (or either 0), or with no usable node renders as `page`. A node is usable when `name` is a non-empty string and its four sizes are usable. Unusable edges and heads are skipped.
+- The SVG's `aria-label` is `alt`, then `title`, then `Causal diagram`. `min-width` is `floor(width * 3 / 4)` pixels: the drawing shrinks to fit the figure down to three quarters of its size, then scrolls. Edges come first, each path followed by its heads; bidirected edges add `fw-embed__dag-edge--bidirected`. Nodes follow in document order, with a class per role in the order exposure, outcome, adjusted, latent, selected.
+- The label shows at most 32 code points. A longer one shows its first 31 with trailing ASCII spaces removed and `…` added, and its full text goes in a `<title>` first in the `<g>`. The text sits at `x + floor(width / 2)`, `y + floor(height / 2)`.
+- The legend lists the roles present, in that order: Exposure, Outcome, Adjusted, Latent, Selected. It is left out when no node has a role.
+- `Analysis` holds, when `exposures` and `outcomes` are both non-empty lists of strings and `adjustment_sets` is a list: the note naming the effect (`direct` when `effect` is `direct`, else `total`), then `No set of observed variables identifies the effect.` for no usable sets, `No adjustment is needed.` for one empty set, or a list of sets. Sets that aren't lists of strings are skipped. Then, when any `implications` entry has string `x` and `y` and a list of strings `given`, the note `Testable implications:` and a list reading `x ⫫ y`, with ` | given` when `given` is non-empty. Names show as their node's label. The disclosure is left out when empty.
+- `Code` holds a panel for `dagitty` (`DAGitty`) and one for `code` (`R`, `Python`, or `Stata`), each drawn from its `lines` as code snippet blocks are, with a copy button the JS bundle shows. It is left out when neither panel renders.
+
+Colors follow DAGitty: exposure green (`--fw-embed-dag-exposure`), outcome blue (`--fw-embed-dag-outcome`), adjusted with a heavy border, latent dashed. Edges use `--fw-embed-muted`.
+
 ### `image`
 
 ```html
@@ -579,6 +642,8 @@ The stylesheet themes through these custom properties, set on `.fw-embed` or any
 | `--fw-embed-bg` | `transparent` | Background of the `<figure class="fw-embed">` wrapper and the scale switch |
 | `--fw-embed-accent` | `#1d4ed8`, or `#7aa7ff` in dark mode | Links and focus outlines |
 | `--fw-embed-warning` | `#b45309`, or `#f59e0b` in dark mode | Sampling warnings under a Bayesian model's coefficients |
+| `--fw-embed-dag-exposure` | `#047857`, or `#34d399` in dark mode | Exposure nodes in a DAG |
+| `--fw-embed-dag-outcome` | `#0369a1`, or `#38bdf8` in dark mode | Outcome nodes in a DAG |
 | `--fw-embed-tip-bg` | `#1f2229` in both modes | Variable tip background |
 | `--fw-embed-tip-fg` | `#f4f5f7` in both modes | Variable tip text |
 

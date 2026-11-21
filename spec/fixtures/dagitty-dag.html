@@ -1,0 +1,63 @@
+<figure class="fw-embed fw-embed--dag" data-fw-embed-kind="dag" data-fw-embed-key="dagittydag000001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">Income and health</span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/smoking/income-health/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+<div class="fw-embed__body">
+<div class="fw-embed__dag">
+<svg class="fw-embed__dag-graph" viewBox="0 0 894 166" width="894" height="166" style="min-width: 670px" role="img" aria-label="Causal diagram of 6 variables and 10 arrows. Exposure: income. Outcome: health.">
+<path class="fw-embed__dag-edge" d="M 436 63 L 480 63"/>
+<path class="fw-embed__dag-head" d="M 488 63 L 479 67.5 L 479 58.5 Z"/>
+<path class="fw-embed__dag-edge" d="M 579.4 78.7 Q 694 124.6 801.2 81.7"/>
+<path class="fw-embed__dag-head" d="M 808.6 78.7 L 802 86.3 L 798.6 77.9 Z"/>
+<path class="fw-embed__dag-edge" d="M 435.4 78.7 Q 622 153.4 801.2 81.7"/>
+<path class="fw-embed__dag-head" d="M 808.6 78.7 L 802 86.3 L 798.6 77.9 Z"/>
+<path class="fw-embed__dag-edge" d="M 270 46.3 L 348.1 56.6"/>
+<path class="fw-embed__dag-head" d="M 356 57.7 L 346.5 61 L 347.7 52 Z"/>
+<path class="fw-embed__dag-edge" d="M 186.8 46.9 Q 341.1 124 481.5 80.9"/>
+<path class="fw-embed__dag-head" d="M 489.2 78.6 L 481.9 85.5 L 479.3 76.9 Z"/>
+<path class="fw-embed__dag-edge" d="M 220 86.4 L 348.1 69.4"/>
+<path class="fw-embed__dag-head" d="M 356 68.3 L 347.7 74 L 346.5 65 Z"/>
+<path class="fw-embed__dag-edge" d="M 200.1 110.7 Q 507.9 217.6 805.9 82.1"/>
+<path class="fw-embed__dag-head" d="M 813.2 78.8 L 806.9 86.6 L 803.1 78.5 Z"/>
+<path class="fw-embed__dag-edge" d="M 592 63 L 636 63"/>
+<path class="fw-embed__dag-head" d="M 644 63 L 635 67.5 L 635 58.5 Z"/>
+<path class="fw-embed__dag-edge" d="M 756 63 L 800 63"/>
+<path class="fw-embed__dag-head" d="M 808 63 L 799 67.5 L 799 58.5 Z"/>
+<path class="fw-embed__dag-edge fw-embed__dag-edge--bidirected" d="M 801.2 44.3 Q 622 -27.4 442.8 44.3"/>
+<path class="fw-embed__dag-head" d="M 435.4 47.3 L 442 39.7 L 445.4 48.1 Z"/>
+<path class="fw-embed__dag-head" d="M 808.6 47.3 L 798.6 48.1 L 802 39.7 Z"/>
+<g class="fw-embed__dag-node fw-embed__dag-node--exposure"><rect x="358" y="48" width="76" height="30" rx="6"/><text x="396" y="63">income</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--outcome"><rect x="810" y="48" width="76" height="30" rx="6"/><text x="848" y="63">health</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--latent"><title>parental education and occupation</title><rect x="8" y="16" width="294" height="30" rx="6"/><text x="155" y="31">parental education and occupati…</text></g>
+<g class="fw-embed__dag-node"><rect x="490" y="48" width="100" height="30" rx="6"/><text x="540" y="63">education</text></g>
+<g class="fw-embed__dag-node"><rect x="92" y="80" width="126" height="30" rx="6"/><text x="155" y="95">neighborhood</text></g>
+<g class="fw-embed__dag-node"><rect x="646" y="48" width="108" height="30" rx="6"/><text x="700" y="63">occupation</text></g>
+</svg>
+<p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> <span class="fw-embed__dag-key fw-embed__dag-key--outcome">Outcome</span> <span class="fw-embed__dag-key fw-embed__dag-key--latent">Latent</span></p>
+</div>
+<details class="fw-embed__details">
+<summary>Code</summary>
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">DAGitty</span>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-kw">dag</span> {
+  income [<span class="fw-t-const">exposure</span>]
+  health [<span class="fw-t-const">outcome</span>]
+  <span class="fw-t-str">&quot;parental education and occupation&quot;</span> [<span class="fw-t-const">latent</span>]
+  income <span class="fw-t-op">-&gt;</span> education <span class="fw-t-op">-&gt;</span> health
+  income <span class="fw-t-op">-&gt;</span> health
+  <span class="fw-t-str">&quot;parental education and occupation&quot;</span> <span class="fw-t-op">-&gt;</span> {income education}
+  neighborhood <span class="fw-t-op">-&gt;</span> {income health}
+  education <span class="fw-t-op">-&gt;</span> occupation <span class="fw-t-op">-&gt;</span> health
+  income <span class="fw-t-op">&lt;-&gt;</span> health
+}</code></pre>
+</div>
+</details>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

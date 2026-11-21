@@ -1,0 +1,68 @@
+<figure class="fw-embed fw-embed--dag" data-fw-embed-kind="dag" data-fw-embed-key="rdag000000000001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">Smoking and cancer</span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/smoking/smoking-dag/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+<div class="fw-embed__body">
+<div class="fw-embed__dag">
+<svg class="fw-embed__dag-graph" viewBox="0 0 509 211" width="509" height="211" style="min-width: 381px" role="img" aria-label="Causal diagram of 4 variables and 4 arrows. Exposure: Smoking status. Outcome: cancer.">
+<path class="fw-embed__dag-edge fw-embed__dag-edge--bidirected" d="M 399.3 47.3 Q 376 105.5 399.3 163.7"/>
+<path class="fw-embed__dag-head" d="M 402.3 171.1 L 394.7 164.5 L 403.1 161.1 Z"/>
+<path class="fw-embed__dag-head" d="M 402.3 39.9 L 403.1 49.9 L 394.7 46.5 Z"/>
+<path class="fw-embed__dag-edge" d="M 260.4 39.4 L 386.9 165.9"/>
+<path class="fw-embed__dag-head" d="M 392.6 171.6 L 383 168.4 L 389.4 162 Z"/>
+<path class="fw-embed__dag-edge" d="M 227.6 39.4 L 101.1 165.9"/>
+<path class="fw-embed__dag-head" d="M 95.4 171.6 L 98.6 162 L 105 168.4 Z"/>
+<path class="fw-embed__dag-edge" d="M 152 188 L 361 188"/>
+<path class="fw-embed__dag-head" d="M 369 188 L 360 192.5 L 360 183.5 Z"/>
+<g class="fw-embed__dag-node fw-embed__dag-node--latent"><rect x="317" y="8" width="184" height="30" rx="6"/><text x="409" y="23">Unmeasured genetics</text></g>
+<g class="fw-embed__dag-node"><rect x="219" y="8" width="50" height="30" rx="6"/><text x="244" y="23">age</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--outcome"><rect x="371" y="173" width="76" height="30" rx="6"/><text x="409" y="188">cancer</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--exposure"><rect x="8" y="173" width="142" height="30" rx="6"/><text x="79" y="188">Smoking status</text></g>
+</svg>
+<p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> <span class="fw-embed__dag-key fw-embed__dag-key--outcome">Outcome</span> <span class="fw-embed__dag-key fw-embed__dag-key--latent">Latent</span></p>
+</div>
+<details class="fw-embed__details">
+<summary>Analysis</summary>
+<p class="fw-embed__note">Minimal sufficient adjustment sets for the total effect of <code class="fw-embed__var">Smoking status</code> on <code class="fw-embed__var">cancer</code>:</p>
+<ul class="fw-embed__dag-list">
+<li>{ <code class="fw-embed__var">age</code> }</li>
+</ul>
+</details>
+<details class="fw-embed__details">
+<summary>Code</summary>
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">DAGitty</span>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code><span class="fw-t-kw">dag</span> {
+U [<span class="fw-t-const">latent</span>,<span class="fw-t-const">pos</span>=<span class="fw-t-str">&quot;2,0&quot;</span>]
+age [<span class="fw-t-const">pos</span>=<span class="fw-t-str">&quot;1,0&quot;</span>]
+cancer [<span class="fw-t-const">outcome</span>,<span class="fw-t-const">pos</span>=<span class="fw-t-str">&quot;2,1&quot;</span>]
+smoking [<span class="fw-t-const">exposure</span>,<span class="fw-t-const">pos</span>=<span class="fw-t-str">&quot;0,1&quot;</span>]
+U <span class="fw-t-op">&lt;-&gt;</span> cancer
+age <span class="fw-t-op">-&gt;</span> cancer
+age <span class="fw-t-op">-&gt;</span> smoking
+smoking <span class="fw-t-op">-&gt;</span> cancer
+}</code></pre>
+</div>
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">R</span>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code>dag <span class="fw-t-op">&lt;-</span> <span class="fw-t-fn">dagify</span>(
+  cancer <span class="fw-t-kw">~</span> smoking <span class="fw-t-op">+</span> age,
+  smoking <span class="fw-t-kw">~</span> age,
+  cancer <span class="fw-t-kw">~~</span> U,
+  <span class="fw-t-var">exposure</span> <span class="fw-t-op">=</span> <span class="fw-t-str">&quot;smoking&quot;</span>, <span class="fw-t-var">outcome</span> <span class="fw-t-op">=</span> <span class="fw-t-str">&quot;cancer&quot;</span>, <span class="fw-t-var">latent</span> <span class="fw-t-op">=</span> <span class="fw-t-str">&quot;U&quot;</span>
+)</code></pre>
+</div>
+</details>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__description">Age confounds smoking and cancer.</span>
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

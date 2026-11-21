@@ -7,7 +7,7 @@ export const FEATURE_LIMIT = 10;
 // Text values longer than this many characters take a full row of the statistics grid.
 export const WIDE_TEXT = 24;
 
-const KINDS = new Set(['model', 'table', 'test', 'code_snippet', 'image', 'vega-lite', 'page']);
+const KINDS = new Set(['model', 'table', 'test', 'code_snippet', 'dag', 'image', 'vega-lite', 'page']);
 
 const COLUMN_LABELS = {
     term: 'Term', estimate: 'Estimate', std_error: 'Std. error', statistic: 'Statistic', p_value: 'p-value',
@@ -79,6 +79,7 @@ export function render(doc) {
     else if (kind === 'table') body = renderTableKind(doc);
     else if (kind === 'test') body = renderTest(doc);
     else if (kind === 'code_snippet') body = renderSnippet(doc);
+    else if (kind === 'dag') body = renderDag(doc);
     else if (kind === 'image') body = renderImage(doc);
     else if (kind === 'vega-lite') body = renderChart(doc);
     if (body === null) {
@@ -861,6 +862,111 @@ function renderSnippet(doc) {
     });
     if (links.length > 0) parts.push(`<p class="fw-embed__links">${links.join(' ')}</p>`);
     parts.push('</div>');
+    return parts.join('\n');
+}
+
+// --- DAGs -----------------------------------------------------------------
+// Framework Cloud lays the graph out: renderers write the boxes and the edge paths it sends.
+
+const DAG_ROLES = { exposure: 'Exposure', outcome: 'Outcome', adjusted: 'Adjusted', latent: 'Latent', selected: 'Selected' };
+const DAG_LABEL_CHARS = 32;
+const DAG_PATH = /^[MLQZ0-9 .-]{1,400}$/;
+const DAG_CODE = { r: 'R', python: 'Python', stata: 'Stata' };
+
+const dagSize = (value) => Number.isInteger(value) && value >= 0 && value <= 100000;
+const dagPath = (value) => typeof value === 'string' && DAG_PATH.test(value);
+
+// At most 32 code points, cut to 31 with trailing spaces dropped and an ellipsis added.
+function dagShown(label) {
+    const points = Array.from(label);
+    return points.length > DAG_LABEL_CHARS ? points.slice(0, DAG_LABEL_CHARS - 1).join('').replace(/ +$/, '') + '…' : label;
+}
+
+function dagNodes(graph) {
+    return list(graph.nodes).flatMap((node) => {
+        if (!isObject(node) || text(node.name) === null || ![node.x, node.y, node.width, node.height].every(dagSize)) return [];
+        const roles = Object.keys(DAG_ROLES).filter((role) => list(node.roles).includes(role));
+        return [{ name: node.name, label: text(node.label) ?? node.name, roles, x: node.x, y: node.y, width: node.width, height: node.height }];
+    });
+}
+
+function dagSvg(doc, graph, nodes) {
+    const label = text(doc.alt) ?? text(doc.title) ?? 'Causal diagram';
+    const lines = [`<svg class="fw-embed__dag-graph" viewBox="0 0 ${graph.width} ${graph.height}" width="${graph.width}" height="${graph.height}"`
+        + ` style="min-width: ${Math.floor(graph.width * 3 / 4)}px" role="img" aria-label="${escapeHtml(label)}">`];
+    for (const edge of list(graph.edges)) {
+        if (!isObject(edge) || !dagPath(edge.path)) continue;
+        lines.push(`<path class="fw-embed__dag-edge${edge.type === '<->' ? ' fw-embed__dag-edge--bidirected' : ''}" d="${edge.path}"/>`);
+        for (const head of list(edge.heads)) {
+            if (dagPath(head)) lines.push(`<path class="fw-embed__dag-head" d="${head}"/>`);
+        }
+    }
+    for (const node of nodes) {
+        const shown = dagShown(node.label);
+        const classes = ['fw-embed__dag-node', ...node.roles.map((role) => `fw-embed__dag-node--${role}`)].join(' ');
+        lines.push(`<g class="${classes}">${shown === node.label ? '' : `<title>${escapeHtml(node.label)}</title>`}`
+            + `<rect x="${node.x}" y="${node.y}" width="${node.width}" height="${node.height}" rx="6"/>`
+            + `<text x="${node.x + Math.floor(node.width / 2)}" y="${node.y + Math.floor(node.height / 2)}">${escapeHtml(shown)}</text></g>`);
+    }
+    lines.push('</svg>');
+    return lines.join('\n');
+}
+
+function dagNames(names, labels) {
+    return names.map((name) => `<code class="fw-embed__var">${escapeHtml(labels.get(name) ?? name)}</code>`).join(', ');
+}
+
+const dagNameList = (value) => (Array.isArray(value) && value.every((name) => typeof name === 'string') ? value : null);
+
+function dagAnalysis(analysis, labels) {
+    if (!isObject(analysis)) return [];
+    const blocks = [];
+    const exposures = dagNameList(analysis.exposures) ?? [];
+    const outcomes = dagNameList(analysis.outcomes) ?? [];
+    if (exposures.length > 0 && outcomes.length > 0 && Array.isArray(analysis.adjustment_sets)) {
+        const sets = analysis.adjustment_sets.map(dagNameList).filter((set) => set !== null);
+        const effect = analysis.effect === 'direct' ? 'direct' : 'total';
+        blocks.push(`<p class="fw-embed__note">Minimal sufficient adjustment sets for the ${effect} effect of ${dagNames(exposures, labels)} on ${dagNames(outcomes, labels)}:</p>`);
+        if (sets.length === 0) blocks.push('<p class="fw-embed__dag-result">No set of observed variables identifies the effect.</p>');
+        else if (sets.length === 1 && sets[0].length === 0) blocks.push('<p class="fw-embed__dag-result">No adjustment is needed.</p>');
+        else blocks.push('<ul class="fw-embed__dag-list">', ...sets.map((set) => `<li>{ ${dagNames(set, labels)} }</li>`), '</ul>');
+    }
+    const implications = list(analysis.implications).filter((entry) => isObject(entry) && typeof entry.x === 'string'
+        && typeof entry.y === 'string' && dagNameList(entry.given) !== null);
+    if (implications.length > 0) {
+        blocks.push('<p class="fw-embed__note">Testable implications:</p>', '<ul class="fw-embed__dag-list">',
+            ...implications.map((entry) => `<li>${dagNames([entry.x], labels)} ⫫ ${dagNames([entry.y], labels)}`
+                + `${entry.given.length > 0 ? ` | ${dagNames(entry.given, labels)}` : ''}</li>`), '</ul>');
+    }
+    return blocks;
+}
+
+function dagCode(label, block) {
+    if (!isObject(block)) return null;
+    const html = snippetHtml(block);
+    if (html === null) return null;
+    return ['<div class="fw-embed__snippet">', '<div class="fw-embed__snippet-head">', `<span class="fw-embed__lang">${label}</span>`,
+        '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', '</div>',
+        `<pre class="fw-embed__code"><code>${html.join('\n')}</code></pre>`, '</div>'].join('\n');
+}
+
+function renderDag(doc) {
+    const data = doc.data;
+    if (!isObject(data) || !isObject(data.dag)) return null;
+    const graph = data.dag;
+    if (!dagSize(graph.width) || !dagSize(graph.height) || graph.width === 0 || graph.height === 0) return null;
+    const nodes = dagNodes(graph);
+    if (nodes.length === 0) return null;
+    const labels = new Map(nodes.map((node) => [node.name, node.label]));
+    const parts = ['<div class="fw-embed__dag">', dagSvg(doc, graph, nodes)];
+    const roles = Object.keys(DAG_ROLES).filter((role) => nodes.some((node) => node.roles.includes(role)));
+    if (roles.length > 0) {
+        parts.push(`<p class="fw-embed__dag-legend">${roles.map((role) => `<span class="fw-embed__dag-key fw-embed__dag-key--${role}">${DAG_ROLES[role]}</span>`).join(' ')}</p>`);
+    }
+    parts.push('</div>');
+    const code = isObject(data.code) && known(DAG_CODE, data.code.language) ? dagCode(DAG_CODE[data.code.language], data.code) : null;
+    parts.push(...details('Analysis', dagAnalysis(data.analysis, labels)),
+        ...details('Code', [dagCode('DAGitty', data.dagitty), code].filter((panel) => panel !== null)));
     return parts.join('\n');
 }
 

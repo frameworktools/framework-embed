@@ -1,0 +1,169 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "daglatent0000001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "dag",
+    "title": "Unmeasured confounding",
+    "description": null,
+    "alt": "Causal diagram of 3 variables and 3 arrows. Exposure: x. Outcome: y.",
+    "url": "https://framework.pub/@ada/smoking/unidentified/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/daglatent0000001/versions/1",
+    "published_at": "2026-11-21T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/unidentified/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "dag",
+        "dag": {
+            "width": 236,
+            "height": 72,
+            "nodes": [
+                {
+                    "name": "x",
+                    "roles": [
+                        "exposure"
+                    ],
+                    "x": 100,
+                    "y": 8,
+                    "width": 36,
+                    "height": 30
+                },
+                {
+                    "name": "y",
+                    "roles": [
+                        "outcome"
+                    ],
+                    "x": 192,
+                    "y": 8,
+                    "width": 36,
+                    "height": 30
+                },
+                {
+                    "name": "u",
+                    "roles": [
+                        "latent"
+                    ],
+                    "x": 8,
+                    "y": 8,
+                    "width": 36,
+                    "height": 30
+                }
+            ],
+            "edges": [
+                {
+                    "from": "u",
+                    "to": "x",
+                    "type": "->",
+                    "path": "M 46 23 L 90 23",
+                    "heads": [
+                        "M 98 23 L 89 27.5 L 89 18.5 Z"
+                    ]
+                },
+                {
+                    "from": "u",
+                    "to": "y",
+                    "type": "->",
+                    "path": "M 45.6 36.7 Q 118 87.4 183.8 41.3",
+                    "heads": [
+                        "M 190.4 36.7 L 185.6 45.6 L 180.4 38.2 Z"
+                    ]
+                },
+                {
+                    "from": "x",
+                    "to": "y",
+                    "type": "->",
+                    "path": "M 138 23 L 182 23",
+                    "heads": [
+                        "M 190 23 L 181 27.5 L 181 18.5 Z"
+                    ]
+                }
+            ]
+        },
+        "dagitty": {
+            "text": "dag { x [exposure] y [outcome] u [latent] u -> x u -> y x -> y }",
+            "lines": [
+                [
+                    [
+                        "kw",
+                        "dag"
+                    ],
+                    [
+                        "",
+                        " { x ["
+                    ],
+                    [
+                        "const",
+                        "exposure"
+                    ],
+                    [
+                        "",
+                        "] y ["
+                    ],
+                    [
+                        "const",
+                        "outcome"
+                    ],
+                    [
+                        "",
+                        "] u ["
+                    ],
+                    [
+                        "const",
+                        "latent"
+                    ],
+                    [
+                        "",
+                        "] u "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " x u "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " y x "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " y }"
+                    ]
+                ]
+            ]
+        },
+        "analysis": {
+            "effect": "total",
+            "exposures": [
+                "x"
+            ],
+            "outcomes": [
+                "y"
+            ],
+            "adjustment_sets": []
+        }
+    },
+    "spec": null,
+    "image": null
+}

@@ -1,0 +1,48 @@
+<figure class="fw-embed fw-embed--dag" data-fw-embed-kind="dag" data-fw-embed-key="hostiledag000001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">&lt;script&gt;alert(1)&lt;/script&gt;</span>
+<a class="fw-embed__credit" href="https://framework.pub/@ada/smoking/smoking-dag/versions/1" target="_blank" rel="noopener">Framework</a>
+</figcaption>
+<div class="fw-embed__body">
+<div class="fw-embed__dag">
+<svg class="fw-embed__dag-graph" viewBox="0 0 509 211" width="509" height="211" style="min-width: 381px" role="img" aria-label="&quot;&gt;&lt;img src=x onerror=alert(1)&gt;">
+<path class="fw-embed__dag-edge" d="M 260.4 39.4 L 386.9 165.9"/>
+<path class="fw-embed__dag-head" d="M 1 1 L 2 2 Z"/>
+<path class="fw-embed__dag-edge" d="M 227.6 39.4 L 101.1 165.9"/>
+<path class="fw-embed__dag-head" d="M 95.4 171.6 L 98.6 162 L 105 168.4 Z"/>
+<path class="fw-embed__dag-edge" d="M 152 188 L 361 188"/>
+<path class="fw-embed__dag-head" d="M 369 188 L 360 192.5 L 360 183.5 Z"/>
+<g class="fw-embed__dag-node fw-embed__dag-node--latent"><title>&lt;b onmouseover=&quot;x&quot;&gt;U&lt;/b&gt; &amp; a very long label that goes on and on</title><rect x="317" y="8" width="184" height="30" rx="6"/><text x="409" y="23">&lt;b onmouseover=&quot;x&quot;&gt;U&lt;/b&gt; &amp; a ve…</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--exposure"><rect x="219" y="8" width="50" height="30" rx="6"/><text x="244" y="23">age</text></g>
+<g class="fw-embed__dag-node fw-embed__dag-node--exposure"><rect x="8" y="173" width="142" height="30" rx="6"/><text x="79" y="188">Smoking status</text></g>
+</svg>
+<p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> <span class="fw-embed__dag-key fw-embed__dag-key--latent">Latent</span></p>
+</div>
+<details class="fw-embed__details">
+<summary>Analysis</summary>
+<p class="fw-embed__note">Minimal sufficient adjustment sets for the total effect of <code class="fw-embed__var">Smoking status</code>, <code class="fw-embed__var">&lt;i&gt;</code> on <code class="fw-embed__var">cancer</code>:</p>
+<ul class="fw-embed__dag-list">
+<li>{ <code class="fw-embed__var">age</code> }</li>
+<li>{ <code class="fw-embed__var">&lt;u&gt;</code> }</li>
+</ul>
+<p class="fw-embed__note">Testable implications:</p>
+<ul class="fw-embed__dag-list">
+<li><code class="fw-embed__var">&lt;a&gt;</code> ⫫ <code class="fw-embed__var">age</code></li>
+</ul>
+</details>
+<details class="fw-embed__details">
+<summary>Code</summary>
+<div class="fw-embed__snippet">
+<div class="fw-embed__snippet-head">
+<span class="fw-embed__lang">DAGitty</span>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+</div>
+<pre class="fw-embed__code"><code>dag { &quot;&lt;x&gt;&quot; -&gt; y }</code></pre>
+</div>
+</details>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__description">Age confounds smoking and cancer.</span>
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

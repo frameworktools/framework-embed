@@ -1,0 +1,209 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "hostiledag000001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "dag",
+    "title": "<script>alert(1)</script>",
+    "description": "Age confounds smoking and cancer.",
+    "alt": "\"><img src=x onerror=alert(1)>",
+    "url": "https://framework.pub/@ada/smoking/smoking-dag/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/rdag000000000001/versions/1",
+    "published_at": "2026-11-21T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/smoking-dag/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "dag",
+        "dag": {
+            "width": 509,
+            "height": 211,
+            "nodes": [
+                {
+                    "name": "U",
+                    "label": "<b onmouseover=\"x\">U</b> & a very long label that goes on and on",
+                    "roles": [
+                        "latent"
+                    ],
+                    "x": 317,
+                    "y": 8,
+                    "width": 184,
+                    "height": 30
+                },
+                {
+                    "name": "age",
+                    "roles": [
+                        "exposure",
+                        "<evil>",
+                        "outcome\""
+                    ],
+                    "x": 219,
+                    "y": 8,
+                    "width": 50,
+                    "height": 30
+                },
+                {
+                    "name": "cancer",
+                    "roles": [
+                        "outcome"
+                    ],
+                    "x": -5,
+                    "y": 173,
+                    "width": 76,
+                    "height": 30
+                },
+                {
+                    "name": "smoking",
+                    "label": "Smoking status",
+                    "roles": [
+                        "exposure"
+                    ],
+                    "x": 8,
+                    "y": 173,
+                    "width": 142,
+                    "height": 30
+                },
+                {
+                    "name": "bad",
+                    "x": "10",
+                    "y": 1,
+                    "width": 10,
+                    "height": 10
+                },
+                {
+                    "name": "",
+                    "x": 1,
+                    "y": 1,
+                    "width": 10,
+                    "height": 10
+                }
+            ],
+            "edges": [
+                {
+                    "from": "U",
+                    "to": "cancer",
+                    "type": "<->",
+                    "path": "M 0 0\" onload=\"alert(1)",
+                    "heads": [
+                        "M 402.3 171.1 L 394.7 164.5 L 403.1 161.1 Z",
+                        "M 402.3 39.9 L 403.1 49.9 L 394.7 46.5 Z"
+                    ]
+                },
+                {
+                    "from": "age",
+                    "to": "cancer",
+                    "type": "->",
+                    "path": "M 260.4 39.4 L 386.9 165.9",
+                    "heads": [
+                        "M 1 1 L 2 2 Z",
+                        "<script>",
+                        5
+                    ]
+                },
+                {
+                    "from": "age",
+                    "to": "smoking",
+                    "type": "->",
+                    "path": "M 227.6 39.4 L 101.1 165.9",
+                    "heads": [
+                        "M 95.4 171.6 L 98.6 162 L 105 168.4 Z"
+                    ]
+                },
+                {
+                    "from": "smoking",
+                    "to": "cancer",
+                    "type": "->",
+                    "path": "M 152 188 L 361 188",
+                    "heads": [
+                        "M 369 188 L 360 192.5 L 360 183.5 Z"
+                    ]
+                },
+                {
+                    "from": "a",
+                    "to": "b",
+                    "type": "->",
+                    "path": "M 1 1 L 2 2 javascript:alert(1)"
+                }
+            ]
+        },
+        "dagitty": {
+            "text": "dag { \"<x>\" -> y }",
+            "lines": [
+                [
+                    [
+                        "kw\" onclick=\"x",
+                        "dag"
+                    ],
+                    [
+                        "",
+                        " { \"<x>\" -> y }"
+                    ]
+                ]
+            ]
+        },
+        "code": {
+            "language": "javascript",
+            "text": "alert(1)",
+            "lines": [
+                [
+                    [
+                        "",
+                        "alert(1)"
+                    ]
+                ]
+            ]
+        },
+        "analysis": {
+            "effect": "<b>",
+            "exposures": [
+                "smoking",
+                "<i>"
+            ],
+            "outcomes": [
+                "cancer"
+            ],
+            "adjustment_sets": [
+                [
+                    "age"
+                ],
+                [
+                    1,
+                    2
+                ],
+                "x",
+                [
+                    "<u>"
+                ]
+            ],
+            "implications": [
+                {
+                    "x": "<a>",
+                    "y": "age",
+                    "given": []
+                },
+                {
+                    "x": "age",
+                    "y": 5,
+                    "given": []
+                },
+                {
+                    "x": "age",
+                    "y": "cancer",
+                    "given": "smoking"
+                }
+            ]
+        }
+    },
+    "spec": null,
+    "image": null
+}
