@@ -5,6 +5,6 @@
   "features": { "networking": true },
   "preferredVersions": { "php": "8.3", "wp": "latest" },
   "steps": [
-    { "step": "installPlugin", "pluginData": { "resource": "url", "url": "https://frameworktools.github.io/framework-embed/framework-embed-0.8.1.zip" } }
+    { "step": "installPlugin", "pluginData": { "resource": "url", "url": "https://frameworktools.github.io/framework-embed/framework-embed-0.8.2.zip" } }
   ]
 }
