@@ -83,7 +83,7 @@ export function enhanceCopy(root = document) {
                 button.textContent = 'Copy failed';
             }
             clearTimeout(timer);
-            timer = setTimeout(() => { button.textContent = 'Copy code'; }, 2000);
+            timer = setTimeout(() => { button.textContent = 'Copy'; }, 2000);
         });
     }
 }

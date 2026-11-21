@@ -413,7 +413,7 @@ A chunk's code and the text it printed, as a notebook showed them. `data` is the
 <span class="fw-embed__source">02-partial-pooling.qmd · fit-bayes</span>
 <a class="fw-embed__lines" href="{permalink}" target="_blank" rel="noopener">Lines 41–44</a>
 <button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>Hide output</button>
-<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>
 </div>
 <pre class="fw-embed__code"><code><span class="fw-t-fn">summary</span>(fit)</code></pre>
 <div class="fw-embed__block fw-embed__block--output">
@@ -488,7 +488,7 @@ A causal diagram with the DAGitty code that defines it. Framework Cloud parses t
 <div class="fw-embed__snippet">
 <div class="fw-embed__snippet-head">
 <span class="fw-embed__lang">DAGitty</span>
-<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>
+<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>
 </div>
 <pre class="fw-embed__code"><code>…</code></pre>
 </div>

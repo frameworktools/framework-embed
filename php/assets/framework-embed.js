@@ -921,7 +921,7 @@ function snippetHead(source, output, shown2) {
     parts.push(href === null ? `<span class="fw-embed__lines">${label}</span>` : `<a class="fw-embed__lines" href="${escapeHtml(href)}" target="_blank" rel="noopener">${label}</a>`);
   }
   if (output) parts.push(`<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>${shown2 ? "Hide output" : "Show output"}</button>`);
-  parts.push('<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', "</div>");
+  parts.push('<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>', "</div>");
   return parts.join("\n");
 }
 function snippetBlock(block, shown2) {
@@ -1044,7 +1044,7 @@ function dagCode(label, block) {
     '<div class="fw-embed__snippet">',
     '<div class="fw-embed__snippet-head">',
     `<span class="fw-embed__lang">${label}</span>`,
-    '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>',
+    '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>',
     "</div>",
     `<pre class="fw-embed__code"><code>${html.join("\n")}</code></pre>`,
     "</div>"
@@ -1275,7 +1275,7 @@ function enhanceCopy(root = document) {
       }
       clearTimeout(timer);
       timer = setTimeout(() => {
-        button.textContent = "Copy code";
+        button.textContent = "Copy";
       }, 2e3);
     });
   }

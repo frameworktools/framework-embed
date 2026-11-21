@@ -826,7 +826,7 @@ function snippetHead(source, output, shown) {
             : `<a class="fw-embed__lines" href="${escapeHtml(href)}" target="_blank" rel="noopener">${label}</a>`);
     }
     if (output) parts.push(`<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>${shown ? 'Hide output' : 'Show output'}</button>`);
-    parts.push('<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', '</div>');
+    parts.push('<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>', '</div>');
     return parts.join('\n');
 }
 
@@ -965,7 +965,7 @@ function dagCode(label, block) {
     const html = snippetHtml(block);
     if (html === null) return null;
     return ['<div class="fw-embed__snippet">', '<div class="fw-embed__snippet-head">', `<span class="fw-embed__lang">${label}</span>`,
-        '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', '</div>',
+        '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>', '</div>',
         `<pre class="fw-embed__code"><code>${html.join('\n')}</code></pre>`, '</div>'].join('\n');
 }
 

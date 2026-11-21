@@ -1419,7 +1419,7 @@ final class Renderer
         if ($output) {
             $parts[] = '<button type="button" class="fw-embed__copy fw-embed__toggle" data-fw-output hidden>' . ($shown ? 'Hide output' : 'Show output') . '</button>';
         }
-        $parts[] = '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>';
+        $parts[] = '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>';
         $parts[] = '</div>';
 
         return implode("\n", $parts);
@@ -1643,7 +1643,7 @@ final class Renderer
         }
 
         return implode("\n", ['<div class="fw-embed__snippet">', '<div class="fw-embed__snippet-head">', '<span class="fw-embed__lang">' . $label . '</span>',
-            '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy code</button>', '</div>',
+            '<button type="button" class="fw-embed__copy" data-fw-copy hidden>Copy</button>', '</div>',
             '<pre class="fw-embed__code"><code>' . implode("\n", $html) . '</code></pre>', '</div>']);
     }
 
