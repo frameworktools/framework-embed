@@ -150,7 +150,7 @@ The JavaScript and PHP renderers produce identical HTML for each embed document,
 - `table`: a static `<table>` with the first 25 rows and a note stating the row count with a link to the full artifact.
 - `test`: method, test statistic, p-value, estimates, and confidence interval, followed by parameters and additional details in a `Test details` disclosure.
 - `code_snippet`: a bordered panel with a header, the code blocks, and the output blocks between them, then links to the notebook and model.
-- `dag`: an inline SVG of the graph and a legend of its roles, then `Analysis` and `Code` disclosures.
+- `dag`: an inline SVG of the graph and a legend of its roles, then disclosures for its description, analysis, DAGitty specification, and code.
 - `image`: `<img src alt loading="lazy">`.
 - `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback: the chart's static image when the document has one, otherwise its alt text and a link to the artifact. The JavaScript bundle renders the chart with `vega-embed`, which replaces the fallback. Without JavaScript, the fallback remains visible.
 - `page`: a link card.
@@ -472,14 +472,18 @@ A causal diagram with the DAGitty code that defines it. Framework Cloud parses t
 <p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> …</p>
 </div>
 <details class="fw-embed__details">
-<summary>Analysis</summary>
+<summary>Description</summary>
+<p class="fw-embed__note">{description}</p>
+</details>
+<details class="fw-embed__details">
+<summary>Causal adjustment sets</summary>
 <p class="fw-embed__note">Minimal sufficient adjustment sets for the total effect of <code class="fw-embed__var">Smoking status</code> on <code class="fw-embed__var">cancer</code>:</p>
 <ul class="fw-embed__dag-list">
 <li>{ <code class="fw-embed__var">age</code> }</li>
 </ul>
 </details>
 <details class="fw-embed__details">
-<summary>Code</summary>
+<summary>DAGitty specification</summary>
 <div class="fw-embed__snippet">
 <div class="fw-embed__snippet-head">
 <span class="fw-embed__lang">DAGitty</span>
@@ -488,14 +492,20 @@ A causal diagram with the DAGitty code that defines it. Framework Cloud parses t
 <pre class="fw-embed__code"><code>…</code></pre>
 </div>
 </details>
+<details class="fw-embed__details">
+<summary>R code</summary>
+…
+</details>
 ```
 
 - A document without `dag`, with an unusable `width` or `height` (or either 0), or with no usable node renders as `page`. A node is usable when `name` is a non-empty string and its four sizes are usable. Unusable edges and heads are skipped.
 - The SVG's `aria-label` is `alt`, then `title`, then `Causal diagram`. `min-width` is `floor(width * 3 / 4)` pixels: the drawing shrinks to fit the figure down to three quarters of its size, then scrolls. Edges come first, each path followed by its heads; bidirected edges add `fw-embed__dag-edge--bidirected`. Nodes follow in document order, with a class per role in the order exposure, outcome, adjusted, latent, selected.
 - The label shows at most 32 code points. A longer one shows its first 31 with trailing ASCII spaces removed and `…` added, and its full text goes in a `<title>` first in the `<g>`. The text sits at `x + floor(width / 2)`, `y + floor(height / 2)`.
 - The legend lists the roles present, in that order: Exposure, Outcome, Adjusted, Latent, Selected. It is left out when no node has a role.
-- `Analysis` holds, when `exposures` and `outcomes` are both non-empty lists of strings and `adjustment_sets` is a list: the note naming the effect (`direct` when `effect` is `direct`, else `total`), then `No set of observed variables identifies the effect.` for no usable sets, `No adjustment is needed.` for one empty set, or a list of sets. Sets that aren't lists of strings are skipped. Then, when any `implications` entry has string `x` and `y` and a list of strings `given`, the note `Testable implications:` and a list reading `x ⫫ y`, with ` | given` when `given` is non-empty. Names show as their node's label. The disclosure is left out when empty.
-- `Code` holds a panel for `dagitty` (`DAGitty`) and one for `code` (`R`, `Python`, or `Stata`), each drawn from its `lines` as code snippet blocks are, with a copy button the JS bundle shows. It is left out when neither panel renders.
+- The disclosures come in this order, and each is left out when empty. A diagram's description shows in the `Description` disclosure, not under the figure; its author stays under the figure.
+- `Description` holds `description` as a note.
+- The analysis disclosure is named by what it holds: `Causal adjustment sets`, `Testable implications`, or `Adjustment sets and testable implications`. It holds, when `exposures` and `outcomes` are both non-empty lists of strings and `adjustment_sets` is a list: the note naming the effect (`direct` when `effect` is `direct`, else `total`), then `No set of observed variables identifies the effect.` for no usable sets, `No adjustment is needed.` for one empty set, or a list of sets. Sets that aren't lists of strings are skipped. Then, when any `implications` entry has string `x` and `y` and a list of strings `given`, the note `Testable implications:` and a list reading `x ⫫ y`, with ` | given` when `given` is non-empty. Names show as their node's label.
+- `DAGitty specification` holds a panel for `dagitty` (`DAGitty`), and `{Language} code` (`R code`, `Python code`, or `Stata code`) one for `code` (`R`, `Python`, or `Stata`). Each panel is drawn from its `lines` as code snippet blocks are, with a copy button the JS bundle shows.
 
 Colors follow DAGitty: exposure green (`--fw-embed-dag-exposure`), outcome blue (`--fw-embed-dag-outcome`), adjusted with a heavy border, latent dashed. Edges use `--fw-embed-muted`.
 

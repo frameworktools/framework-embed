@@ -94,7 +94,9 @@ export function render(doc) {
     const caption = renderCaption(doc, kind);
     const inner = [`<div class="fw-embed__body">`, body, '</div>'];
     if (kind === 'page') return [open + '>', ...inner, caption, '</figure>', ''].join('\n');
-    return [open + '>', caption, ...inner, ...renderAbout(doc), '</figure>', ''].join('\n');
+    // A diagram's description opens in a section of its own, beside its analysis and code.
+    const about = kind === 'dag' ? renderAbout({ ...doc, description: null }) : renderAbout(doc);
+    return [open + '>', caption, ...inner, ...about, '</figure>', ''].join('\n');
 }
 
 function renderCaption(doc, kind) {
@@ -924,6 +926,14 @@ function dagNames(names, labels) {
 
 const dagNameList = (value) => (Array.isArray(value) && value.every((name) => typeof name === 'string') ? value : null);
 
+// Names the analysis section by what it holds: adjustment sets, testable implications, or both.
+function dagAnalysisLabel(blocks) {
+    const sets = blocks.some((block) => block.includes('adjustment sets'));
+    const implications = blocks.includes('<p class="fw-embed__note">Testable implications:</p>');
+    if (sets && implications) return 'Adjustment sets and testable implications';
+    return implications ? 'Testable implications' : 'Causal adjustment sets';
+}
+
 function dagAnalysis(analysis, labels) {
     if (!isObject(analysis)) return [];
     const blocks = [];
@@ -970,9 +980,15 @@ function renderDag(doc) {
         parts.push(`<p class="fw-embed__dag-legend">${roles.map((role) => `<span class="fw-embed__dag-key fw-embed__dag-key--${role}">${DAG_ROLES[role]}</span>`).join(' ')}</p>`);
     }
     parts.push('</div>');
-    const code = isObject(data.code) && known(DAG_CODE, data.code.language) ? dagCode(DAG_CODE[data.code.language], data.code) : null;
-    parts.push(...details('Analysis', dagAnalysis(data.analysis, labels)),
-        ...details('Code', [dagCode('DAGitty', data.dagitty), code].filter((panel) => panel !== null)));
+    const language = isObject(data.code) && known(DAG_CODE, data.code.language) ? DAG_CODE[data.code.language] : null;
+    const code = language === null ? null : dagCode(language, data.code);
+    const dagitty = dagCode('DAGitty', data.dagitty);
+    const description = text(doc.description) === null ? [] : [`<p class="fw-embed__note">${escapeHtml(doc.description)}</p>`];
+    const analysis = dagAnalysis(data.analysis, labels);
+    parts.push(...details('Description', description),
+        ...details(dagAnalysisLabel(analysis), analysis),
+        ...details('DAGitty specification', dagitty === null ? [] : [dagitty]),
+        ...details(`${language} code`, code === null ? [] : [code]));
     return parts.join('\n');
 }
 

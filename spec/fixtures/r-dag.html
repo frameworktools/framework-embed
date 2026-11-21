@@ -23,14 +23,18 @@
 <p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> <span class="fw-embed__dag-key fw-embed__dag-key--outcome">Outcome</span> <span class="fw-embed__dag-key fw-embed__dag-key--latent">Latent</span></p>
 </div>
 <details class="fw-embed__details">
-<summary>Analysis</summary>
+<summary>Description</summary>
+<p class="fw-embed__note">Age confounds smoking and cancer.</p>
+</details>
+<details class="fw-embed__details">
+<summary>Causal adjustment sets</summary>
 <p class="fw-embed__note">Minimal sufficient adjustment sets for the total effect of <code class="fw-embed__var">Smoking status</code> on <code class="fw-embed__var">cancer</code>:</p>
 <ul class="fw-embed__dag-list">
 <li>{ <code class="fw-embed__var">age</code> }</li>
 </ul>
 </details>
 <details class="fw-embed__details">
-<summary>Code</summary>
+<summary>DAGitty specification</summary>
 <div class="fw-embed__snippet">
 <div class="fw-embed__snippet-head">
 <span class="fw-embed__lang">DAGitty</span>
@@ -47,6 +51,9 @@ age <span class="fw-t-op">-&gt;</span> smoking
 smoking <span class="fw-t-op">-&gt;</span> cancer
 }</code></pre>
 </div>
+</details>
+<details class="fw-embed__details">
+<summary>R code</summary>
 <div class="fw-embed__snippet">
 <div class="fw-embed__snippet-head">
 <span class="fw-embed__lang">R</span>
@@ -62,7 +69,6 @@ smoking <span class="fw-t-op">-&gt;</span> cancer
 </details>
 </div>
 <div class="fw-embed__about">
-<span class="fw-embed__description">Age confounds smoking and cancer.</span>
 <span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
 </div>
 </figure>

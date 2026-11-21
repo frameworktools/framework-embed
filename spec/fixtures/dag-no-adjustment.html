@@ -20,7 +20,7 @@
 <p class="fw-embed__dag-legend"><span class="fw-embed__dag-key fw-embed__dag-key--exposure">Exposure</span> <span class="fw-embed__dag-key fw-embed__dag-key--outcome">Outcome</span> <span class="fw-embed__dag-key fw-embed__dag-key--adjusted">Adjusted</span></p>
 </div>
 <details class="fw-embed__details">
-<summary>Analysis</summary>
+<summary>Adjustment sets and testable implications</summary>
 <p class="fw-embed__note">Minimal sufficient adjustment sets for the direct effect of <code class="fw-embed__var">x</code> on <code class="fw-embed__var">y</code>:</p>
 <p class="fw-embed__dag-result">No adjustment is needed.</p>
 <p class="fw-embed__note">Testable implications:</p>
@@ -30,7 +30,7 @@
 </ul>
 </details>
 <details class="fw-embed__details">
-<summary>Code</summary>
+<summary>DAGitty specification</summary>
 <div class="fw-embed__snippet">
 <div class="fw-embed__snippet-head">
 <span class="fw-embed__lang">DAGitty</span>
@@ -38,6 +38,9 @@
 </div>
 <pre class="fw-embed__code"><code><span class="fw-t-kw">dag</span> { x [<span class="fw-t-const">exposure</span>] y [<span class="fw-t-const">outcome</span>] x <span class="fw-t-op">-&gt;</span> y <span class="fw-t-op">&lt;-</span> z m [<span class="fw-t-const">adjusted</span>] y <span class="fw-t-op">-&gt;</span> m }</code></pre>
 </div>
+</details>
+<details class="fw-embed__details">
+<summary>Python code</summary>
 <div class="fw-embed__snippet">
 <div class="fw-embed__snippet-head">
 <span class="fw-embed__lang">Python</span>

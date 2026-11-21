@@ -123,7 +123,10 @@ final class Renderer
             return implode("\n", [$open . '>', ...$inner, $caption, '</figure>', '']);
         }
 
-        return implode("\n", [$open . '>', $caption, ...$inner, ...self::about($doc), '</figure>', '']);
+        // A diagram's description opens in a section of its own, beside its analysis and code.
+        $about = $kind === 'dag' ? self::about([...$doc, 'description' => null]) : self::about($doc);
+
+        return implode("\n", [$open . '>', $caption, ...$inner, ...$about, '</figure>', '']);
     }
 
     /** Render embed JSON as served by Framework Cloud. */
@@ -1579,6 +1582,18 @@ final class Renderer
         return $value;
     }
 
+    /** Names the analysis section by what it holds: adjustment sets, testable implications, or both. */
+    private static function dagAnalysisLabel(array $blocks): string
+    {
+        $sets = array_filter($blocks, fn (string $block) => str_contains($block, 'adjustment sets')) !== [];
+        $implications = in_array('<p class="fw-embed__note">Testable implications:</p>', $blocks, true);
+        if ($sets && $implications) {
+            return 'Adjustment sets and testable implications';
+        }
+
+        return $implications ? 'Testable implications' : 'Causal adjustment sets';
+    }
+
     private static function dagAnalysis(mixed $analysis, array $labels): array
     {
         if (! self::isObject($analysis)) {
@@ -1651,9 +1666,15 @@ final class Renderer
         }
         $parts[] = '</div>';
         $code = $data['code'] ?? null;
-        $code = self::isObject($code) && self::known(self::SNIPPET_LANGUAGES, $code['language'] ?? null) ? self::dagCode(self::SNIPPET_LANGUAGES[$code['language']], $code) : null;
-        $parts = [...$parts, ...self::details('Analysis', self::dagAnalysis($data['analysis'] ?? null, $labels)),
-            ...self::details('Code', array_values(array_filter([self::dagCode('DAGitty', $data['dagitty'] ?? null), $code], fn (?string $panel) => $panel !== null)))];
+        $language = self::isObject($code) && self::known(self::SNIPPET_LANGUAGES, $code['language'] ?? null) ? self::SNIPPET_LANGUAGES[$code['language']] : null;
+        $code = $language === null ? null : self::dagCode($language, $code);
+        $dagitty = self::dagCode('DAGitty', $data['dagitty'] ?? null);
+        $description = self::text($doc['description'] ?? null) === null ? [] : ['<p class="fw-embed__note">' . self::e($doc['description']) . '</p>'];
+        $analysis = self::dagAnalysis($data['analysis'] ?? null, $labels);
+        $parts = [...$parts, ...self::details('Description', $description),
+            ...self::details(self::dagAnalysisLabel($analysis), $analysis),
+            ...self::details('DAGitty specification', $dagitty === null ? [] : [$dagitty]),
+            ...self::details($language . ' code', $code === null ? [] : [$code])];
 
         return implode("\n", $parts);
     }
