@@ -1,0 +1,375 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "credittitleoff01",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "dag",
+    "title": null,
+    "description": null,
+    "alt": "Causal diagram of 6 variables and 10 arrows. Exposure: income. Outcome: health.",
+    "url": "https://framework.pub/@ada/smoking/income-health/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/dagittydag000001/versions/1",
+    "published_at": "2026-11-21T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/income-health/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "dag",
+        "dag": {
+            "width": 894,
+            "height": 166,
+            "nodes": [
+                {
+                    "name": "income",
+                    "roles": [
+                        "exposure"
+                    ],
+                    "x": 358,
+                    "y": 48,
+                    "width": 76,
+                    "height": 30
+                },
+                {
+                    "name": "health",
+                    "roles": [
+                        "outcome"
+                    ],
+                    "x": 810,
+                    "y": 48,
+                    "width": 76,
+                    "height": 30
+                },
+                {
+                    "name": "parental education and occupation",
+                    "roles": [
+                        "latent"
+                    ],
+                    "x": 8,
+                    "y": 16,
+                    "width": 294,
+                    "height": 30
+                },
+                {
+                    "name": "education",
+                    "roles": [],
+                    "x": 490,
+                    "y": 48,
+                    "width": 100,
+                    "height": 30
+                },
+                {
+                    "name": "neighborhood",
+                    "roles": [],
+                    "x": 92,
+                    "y": 80,
+                    "width": 126,
+                    "height": 30
+                },
+                {
+                    "name": "occupation",
+                    "roles": [],
+                    "x": 646,
+                    "y": 48,
+                    "width": 108,
+                    "height": 30
+                }
+            ],
+            "edges": [
+                {
+                    "from": "income",
+                    "to": "education",
+                    "type": "->",
+                    "path": "M 436 63 L 480 63",
+                    "heads": [
+                        "M 488 63 L 479 67.5 L 479 58.5 Z"
+                    ]
+                },
+                {
+                    "from": "education",
+                    "to": "health",
+                    "type": "->",
+                    "path": "M 579.4 78.7 Q 694 124.6 801.2 81.7",
+                    "heads": [
+                        "M 808.6 78.7 L 802 86.3 L 798.6 77.9 Z"
+                    ]
+                },
+                {
+                    "from": "income",
+                    "to": "health",
+                    "type": "->",
+                    "path": "M 435.4 78.7 Q 622 153.4 801.2 81.7",
+                    "heads": [
+                        "M 808.6 78.7 L 802 86.3 L 798.6 77.9 Z"
+                    ]
+                },
+                {
+                    "from": "parental education and occupation",
+                    "to": "income",
+                    "type": "->",
+                    "path": "M 270 46.3 L 348.1 56.6",
+                    "heads": [
+                        "M 356 57.7 L 346.5 61 L 347.7 52 Z"
+                    ]
+                },
+                {
+                    "from": "parental education and occupation",
+                    "to": "education",
+                    "type": "->",
+                    "path": "M 186.8 46.9 Q 341.1 124 481.5 80.9",
+                    "heads": [
+                        "M 489.2 78.6 L 481.9 85.5 L 479.3 76.9 Z"
+                    ]
+                },
+                {
+                    "from": "neighborhood",
+                    "to": "income",
+                    "type": "->",
+                    "path": "M 220 86.4 L 348.1 69.4",
+                    "heads": [
+                        "M 356 68.3 L 347.7 74 L 346.5 65 Z"
+                    ]
+                },
+                {
+                    "from": "neighborhood",
+                    "to": "health",
+                    "type": "->",
+                    "path": "M 200.1 110.7 Q 507.9 217.6 805.9 82.1",
+                    "heads": [
+                        "M 813.2 78.8 L 806.9 86.6 L 803.1 78.5 Z"
+                    ]
+                },
+                {
+                    "from": "education",
+                    "to": "occupation",
+                    "type": "->",
+                    "path": "M 592 63 L 636 63",
+                    "heads": [
+                        "M 644 63 L 635 67.5 L 635 58.5 Z"
+                    ]
+                },
+                {
+                    "from": "occupation",
+                    "to": "health",
+                    "type": "->",
+                    "path": "M 756 63 L 800 63",
+                    "heads": [
+                        "M 808 63 L 799 67.5 L 799 58.5 Z"
+                    ]
+                },
+                {
+                    "from": "health",
+                    "to": "income",
+                    "type": "<->",
+                    "path": "M 801.2 44.3 Q 622 -27.4 442.8 44.3",
+                    "heads": [
+                        "M 435.4 47.3 L 442 39.7 L 445.4 48.1 Z",
+                        "M 808.6 47.3 L 798.6 48.1 L 802 39.7 Z"
+                    ]
+                }
+            ]
+        },
+        "dagitty": {
+            "text": "dag {\n  income [exposure]\n  health [outcome]\n  \"parental education and occupation\" [latent]\n  income -> education -> health\n  income -> health\n  \"parental education and occupation\" -> {income education}\n  neighborhood -> {income health}\n  education -> occupation -> health\n  income <-> health\n}",
+            "lines": [
+                [
+                    [
+                        "kw",
+                        "dag"
+                    ],
+                    [
+                        "",
+                        " {"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  income ["
+                    ],
+                    [
+                        "const",
+                        "exposure"
+                    ],
+                    [
+                        "",
+                        "]"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  health ["
+                    ],
+                    [
+                        "const",
+                        "outcome"
+                    ],
+                    [
+                        "",
+                        "]"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  "
+                    ],
+                    [
+                        "str",
+                        "\"parental education and occupation\""
+                    ],
+                    [
+                        "",
+                        " ["
+                    ],
+                    [
+                        "const",
+                        "latent"
+                    ],
+                    [
+                        "",
+                        "]"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  income "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " education "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " health"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  income "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " health"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  "
+                    ],
+                    [
+                        "str",
+                        "\"parental education and occupation\""
+                    ],
+                    [
+                        "",
+                        " "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " {income education}"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  neighborhood "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " {income health}"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  education "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " occupation "
+                    ],
+                    [
+                        "op",
+                        "->"
+                    ],
+                    [
+                        "",
+                        " health"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "  income "
+                    ],
+                    [
+                        "op",
+                        "<->"
+                    ],
+                    [
+                        "",
+                        " health"
+                    ]
+                ],
+                [
+                    [
+                        "",
+                        "}"
+                    ]
+                ]
+            ]
+        },
+        "analysis": {
+            "effect": "total",
+            "exposures": [
+                "income"
+            ],
+            "outcomes": [
+                "health"
+            ]
+        }
+    },
+    "spec": null,
+    "image": null,
+    "display": {
+        "credit": false
+    }
+}

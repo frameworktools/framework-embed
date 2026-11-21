@@ -93,26 +93,29 @@ export function render(doc) {
     // content. A page's link card already shows all three, so its caption (the link back alone) follows the card.
     const caption = renderCaption(doc, kind);
     const inner = [`<div class="fw-embed__body">`, body, '</div>'];
-    if (kind === 'page') return [open + '>', ...inner, caption, '</figure>', ''].join('\n');
+    const captions = caption === null ? [] : [caption];
+    if (kind === 'page') return [open + '>', ...inner, ...captions, '</figure>', ''].join('\n');
     // A diagram's description opens in a section of its own, beside its analysis and code.
     const about = kind === 'dag' ? renderAbout({ ...doc, description: null }) : renderAbout(doc);
-    return [open + '>', caption, ...inner, ...about, '</figure>', ''].join('\n');
+    return [open + '>', ...captions, ...inner, ...about, '</figure>', ''].join('\n');
 }
 
 function renderCaption(doc, kind) {
-    const parts = ['<figcaption class="fw-embed__caption">'];
+    const parts = [];
     if (kind !== 'page' && text(doc.title) !== null) parts.push(`<span class="fw-embed__title">${escapeHtml(doc.title)}</span>`);
-    const attribution = isObject(doc.attribution) ? doc.attribution : {};
-    const credit = escapeHtml(text(attribution.text) ?? 'Framework');
-    const href = safeUrl(attribution.url) ?? safeUrl(doc.url);
-    parts.push(href === null
-        ? `<span class="fw-embed__credit">${credit}</span>`
-        : `<a class="fw-embed__credit" href="${escapeHtml(href)}" target="_blank" rel="noopener">${credit}</a>`);
-    parts.push('</figcaption>');
-    return parts.join('\n');
+    // The owner may turn the link back off on Framework Cloud: display.credit is false
+    if (!(isObject(doc.display) && doc.display.credit === false)) {
+        const attribution = isObject(doc.attribution) ? doc.attribution : {};
+        const credit = escapeHtml(text(attribution.text) ?? 'Framework');
+        const href = safeUrl(attribution.url) ?? safeUrl(doc.url);
+        parts.push(href === null
+            ? `<span class="fw-embed__credit">${credit}</span>`
+            : `<a class="fw-embed__credit" href="${escapeHtml(href)}" target="_blank" rel="noopener">${credit}</a>`);
+    }
+    if (parts.length === 0) return null;
+    return ['<figcaption class="fw-embed__caption">', ...parts, '</figcaption>'].join('\n');
 }
 
-// The description and author, under the content.
 function renderAbout(doc) {
     const parts = [];
     if (text(doc.description) !== null) parts.push(`<span class="fw-embed__description">${escapeHtml(doc.description)}</span>`);

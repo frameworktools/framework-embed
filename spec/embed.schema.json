@@ -37,6 +37,11 @@
       "description": "Set for model, table, test, code_snippet, and dag: the framework.artifact/v1 representation as Cloud normalizes it.",
       "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/representation" }, { "$ref": "#/$defs/code_snippet" }, { "$ref": "#/$defs/dag" }]
     },
+    "display": {
+      "type": "object",
+      "description": "Parts of the embed the artifact's owner turned off on Framework Cloud. credit false leaves out the link back.",
+      "properties": { "credit": { "type": "boolean" } }
+    },
     "spec": {
       "type": ["object", "null"],
       "description": "Set for vega-lite: the Vega-Lite specification with its data inlined."

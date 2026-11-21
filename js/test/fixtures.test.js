@@ -16,7 +16,8 @@ describe('fixtures', () => {
             'python-altair', 'page', 'truncated-table', 'minimal-model', 'minimal-test', 'hostile-model', 'hostile-vega', 'hostile-page', 'hostile-image',
             'r-snippet', 'stata-snippet', 'python-snippet', 'snippet-truncated', 'snippet-output-hidden', 'hostile-snippet', 'r-ggplot-vega', 'hostile-vega-image',
             'r-dag', 'dagitty-dag', 'dag-no-adjustment', 'dag-unidentified', 'hostile-dag',
-            'model-details-hidden', 'test-details-hidden', 'dag-display-hidden']) {
+            'model-details-hidden', 'test-details-hidden', 'dag-display-hidden',
+            'credit-hidden', 'credit-and-title-hidden', 'page-credit-hidden']) {
             expect(names).toContain(name);
         }
     });

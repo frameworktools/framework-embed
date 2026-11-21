@@ -1,0 +1,61 @@
+<figure class="fw-embed fw-embed--model" data-fw-embed-kind="model" data-fw-embed-key="credithidden0001" data-fw-embed-version="1">
+<figcaption class="fw-embed__caption">
+<span class="fw-embed__title">Transmission model</span>
+</figcaption>
+<div class="fw-embed__body">
+<form class="fw-embed__scales">
+<div class="fw-embed__switch" role="radiogroup" aria-label="Scale">
+<label><input type="radio" name="fw-embed-scale" value="ratio" checked=""> Odds ratio</label>
+<label><input type="radio" name="fw-embed-scale" value="model"> Log odds</label>
+</div>
+<div class="fw-embed__scale fw-embed__scale--ratio">
+<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
+<table class="fw-embed__table fw-embed__table--coefficients">
+<caption>Coefficients</caption>
+<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Odds ratio</th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">Statistic</th><th scope="col" class="fw-embed__num">p-value</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
+<tbody>
+<tr><th scope="row">(Intercept)</th><td class="fw-embed__num" title="156,145,483.50632063">156,145,483.51</td><td class="fw-embed__num" title="1,162,277,972.318125">1,162,277,972.32</td><td class="fw-embed__num" title="2.5345807159169">2.53</td><td class="fw-embed__num" title="0.0112581987166137">0.011</td><td class="fw-embed__num" title="72.03794559698156 to 338,452,350,596,257.2">72.04 to 338,452,350,596,257.20</td></tr>
+<tr><th scope="row">wt</th><td class="fw-embed__num" title="0.00030859673984047167">0.00</td><td class="fw-embed__num" title="0.0009469831355182743">0.00</td><td class="fw-embed__num" title="-2.63419061472362">-2.63</td><td class="fw-embed__num" title="0.00843381259970714">0.008</td><td class="fw-embed__num" title="0.0000007539288141883696 to 0.12631424353066031">0.00 to 0.13</td></tr>
+<tr><th scope="row">hp</th><td class="fw-embed__num" title="1.036920845528809">1.04</td><td class="fw-embed__num" title="0.01838891359829362">0.02</td><td class="fw-embed__num" title="2.0443939302761">2.04</td><td class="fw-embed__num" title="0.04091464645903">0.041</td><td class="fw-embed__num" title="1.0014984151341872 to 1.0735961471772446">1.00 to 1.07</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="fw-embed__scale fw-embed__scale--model">
+<div class="fw-embed__scroll" role="region" tabindex="0" aria-label="Coefficients">
+<table class="fw-embed__table fw-embed__table--coefficients">
+<caption>Coefficients</caption>
+<thead><tr><th scope="col">Term</th><th scope="col" class="fw-embed__num">Log odds</th><th scope="col" class="fw-embed__num">Std. error</th><th scope="col" class="fw-embed__num">Statistic</th><th scope="col" class="fw-embed__num">p-value</th><th scope="col" class="fw-embed__num">95% CI</th></tr></thead>
+<tbody>
+<tr><th scope="row">(Intercept)</th><td class="fw-embed__num" title="18.8662987172041">18.87</td><td class="fw-embed__num" title="7.44355806020529">7.44</td><td class="fw-embed__num" title="2.5345807159169">2.53</td><td class="fw-embed__num" title="0.0112581987166137">0.011</td><td class="fw-embed__num" title="4.27719300236894 to 33.4554044320393">4.28 to 33.46</td></tr>
+<tr><th scope="row">wt</th><td class="fw-embed__num" title="-8.08347518244464">-8.08</td><td class="fw-embed__num" title="3.06867511305471">3.07</td><td class="fw-embed__num" title="-2.63419061472362">-2.63</td><td class="fw-embed__num" title="0.00843381259970714">0.008</td><td class="fw-embed__num" title="-14.0979678842862 to -2.06898248060304">-14.10 to -2.07</td></tr>
+<tr><th scope="row">hp</th><td class="fw-embed__num" title="0.0362555960822166">0.04</td><td class="fw-embed__num" title="0.0177341536507694">0.02</td><td class="fw-embed__num" title="2.0443939302761">2.04</td><td class="fw-embed__num" title="0.04091464645903">0.041</td><td class="fw-embed__num" title="0.00149729363040912 to 0.071013898534024">0.00 to 0.07</td></tr>
+</tbody>
+</table>
+</div>
+</div>
+</form>
+<details class="fw-embed__details">
+<summary>Model details</summary>
+<p class="fw-embed__meta"><span>Logistic regression · Outcome: </span><code class="fw-embed__var">am</code></p>
+<p class="fw-embed__formula"><code>am ~ wt + hp</code></p>
+<dl class="fw-embed__stats">
+<div><dt>Confidence level</dt><dd class="fw-embed__num">95%</dd></div>
+<div class="fw-embed__stat--text"><dt>Interval method</dt><dd>Wald normal</dd></div>
+<div><dt>Observations</dt><dd class="fw-embed__num">32</dd></div>
+<div><dt>AIC</dt><dd class="fw-embed__num" title="16.059110472267">16.06</dd></div>
+<div><dt>BIC</dt><dd class="fw-embed__num" title="20.4563181806662">20.46</dd></div>
+<div><dt>Log likelihood</dt><dd class="fw-embed__num" title="-5.0295552361335">-5.03</dd></div>
+<div><dt>Residual df</dt><dd class="fw-embed__num">29</dd></div>
+<div><dt>Dispersion</dt><dd class="fw-embed__num">1</dd></div>
+<div><dt>Deviance</dt><dd class="fw-embed__num" title="10.059110472267">10.06</dd></div>
+<div><dt>Null deviance</dt><dd class="fw-embed__num" title="43.2297332768578">43.23</dd></div>
+<div class="fw-embed__stat--text"><dt>Converged</dt><dd>Yes</dd></div>
+</dl>
+</details>
+</div>
+<div class="fw-embed__about">
+<span class="fw-embed__description">Manual transmission by weight and horsepower, from mtcars.</span>
+<span class="fw-embed__author"><a href="https://framework.pub/@ada">Ada Example</a></span>
+</div>
+</figure>

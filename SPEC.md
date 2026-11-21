@@ -126,6 +126,7 @@ Two settings are flags, since what they hide also feeds what stays:
 
 - `data.display.details: false` on a `model` or `test`: no `Model details` or `Test details` disclosure. An importance table shows its first 10 rows, with the note a plain data table gets, and no continuation.
 - `data.display.legend: false` on a `dag`: no legend.
+- `display.credit: false`, at the top level of any document: no link back (`fw-embed__credit`). When the title is hidden too, or the document is a `page`, the caption is left out.
 
 Older renderers ignore the flags and show the sections.
 
@@ -203,10 +204,10 @@ The `<figure>` carries `data-fw-embed-key` when `key` is a non-empty string and 
 
 ### Caption
 
-`<figcaption class="fw-embed__caption">` comes first in the figure, before `fw-embed__body`, except for `page`, where it follows the body. It holds, in order:
+`<figcaption class="fw-embed__caption">`, when it holds anything, comes first in the figure, before `fw-embed__body`, except for `page`, where it follows the body. It holds, in order:
 
 - `fw-embed__title`: `title`, when present. Left out for `page`.
-- `fw-embed__credit`: `attribution.text` (default `Framework`), linked to `attribution.url`, or to `url` when that is missing or unsafe, with `target="_blank" rel="noopener"`. A `<span>` when neither URL is safe.
+- `fw-embed__credit`, unless `display.credit` is `false`: `attribution.text` (default `Framework`), linked to `attribution.url`, or to `url` when that is missing or unsafe, with `target="_blank" rel="noopener"`. A `<span>` when neither URL is safe.
 
 After `fw-embed__body`, a `<div class="fw-embed__about">` holds, in order, when either is present (never for `page`):
 

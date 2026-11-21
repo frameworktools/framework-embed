@@ -119,14 +119,15 @@ final class Renderer
         // content. A page's link card already shows all three, so its caption (the link back alone) follows the card.
         $caption = self::caption($doc, $kind);
         $inner = ['<div class="fw-embed__body">', $body, '</div>'];
+        $captions = $caption === null ? [] : [$caption];
         if ($kind === 'page') {
-            return implode("\n", [$open . '>', ...$inner, $caption, '</figure>', '']);
+            return implode("\n", [$open . '>', ...$inner, ...$captions, '</figure>', '']);
         }
 
         // A diagram's description opens in a section of its own, beside its analysis and code.
         $about = $kind === 'dag' ? self::about([...$doc, 'description' => null]) : self::about($doc);
 
-        return implode("\n", [$open . '>', $caption, ...$inner, ...$about, '</figure>', '']);
+        return implode("\n", [$open . '>', ...$captions, ...$inner, ...$about, '</figure>', '']);
     }
 
     /** Render embed JSON as served by Framework Cloud. */
@@ -173,21 +174,26 @@ final class Renderer
         return is_int($value) ? (string) $value : Format::fixed($value, 0);
     }
 
-    private static function caption(array $doc, string $kind): string
+    private static function caption(array $doc, string $kind): ?string
     {
-        $parts = ['<figcaption class="fw-embed__caption">'];
+        $parts = [];
         if ($kind !== 'page' && self::text($doc['title'] ?? null) !== null) {
             $parts[] = '<span class="fw-embed__title">' . self::e($doc['title']) . '</span>';
         }
-        $attribution = self::obj($doc['attribution'] ?? null);
-        $credit = self::e(self::text($attribution['text'] ?? null) ?? 'Framework');
-        $href = self::safeUrl($attribution['url'] ?? null) ?? self::safeUrl($doc['url'] ?? null);
-        $parts[] = $href === null
-            ? '<span class="fw-embed__credit">' . $credit . '</span>'
-            : '<a class="fw-embed__credit" href="' . self::e($href) . '" target="_blank" rel="noopener">' . $credit . '</a>';
-        $parts[] = '</figcaption>';
+        // The owner may turn the link back off on Framework Cloud: display.credit is false
+        if ((self::obj($doc['display'] ?? null)['credit'] ?? null) !== false) {
+            $attribution = self::obj($doc['attribution'] ?? null);
+            $credit = self::e(self::text($attribution['text'] ?? null) ?? 'Framework');
+            $href = self::safeUrl($attribution['url'] ?? null) ?? self::safeUrl($doc['url'] ?? null);
+            $parts[] = $href === null
+                ? '<span class="fw-embed__credit">' . $credit . '</span>'
+                : '<a class="fw-embed__credit" href="' . self::e($href) . '" target="_blank" rel="noopener">' . $credit . '</a>';
+        }
+        if ($parts === []) {
+            return null;
+        }
 
-        return implode("\n", $parts);
+        return implode("\n", ['<figcaption class="fw-embed__caption">', ...$parts, '</figcaption>']);
     }
 
     /**
