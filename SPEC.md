@@ -548,24 +548,24 @@ A project structure: a folder tree with notes on its paths and the `.gitignore` 
 <div class="fw-embed__tree" style="--fw-embed-tree-names: 15ch">
 <div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">my-project/</span></div>
 <details class="fw-embed__tree-dir" open>
-<summary class="fw-embed__tree-row fw-embed__tree-row--dir"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├─  </span>R/</span><span class="fw-embed__tree-note">Reusable functions</span></summary>
+<summary class="fw-embed__tree-row fw-embed__tree-row--dir"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├── </span>R/</span><span class="fw-embed__tree-note"># Reusable functions</span></summary>
 <div class="fw-embed__tree-row fw-embed__tree-row--file"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">│   └── </span>clean.R</span></div>
 </details>
-<div class="fw-embed__tree-row fw-embed__tree-row--dir fw-embed__tree-row--stub"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├── </span>raw/</span><span class="fw-embed__tree-badge" title=".gitignore line 4">ignored · data/raw/ · 12 files</span></div>
-<div class="fw-embed__tree-row fw-embed__tree-row--group fw-embed__tree-row--stub"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├── </span>*.rds</span><span class="fw-embed__tree-badge" title=".gitignore line 7">ignored · *.rds · 4 files</span></div>
-<div class="fw-embed__tree-row fw-embed__tree-row--file fw-embed__tree-row--highlight"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">└── </span>README.md</span><span class="fw-embed__tree-note">Start here</span></div>
+<div class="fw-embed__tree-row fw-embed__tree-row--dir fw-embed__tree-row--stub"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├── </span>raw/</span><span class="fw-embed__tree-badge" title=".gitignore line 4"># ignored · data/raw/ · 12 files</span></div>
+<div class="fw-embed__tree-row fw-embed__tree-row--group fw-embed__tree-row--stub"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├── </span>*.rds</span><span class="fw-embed__tree-badge" title=".gitignore line 7"># ignored · *.rds · 4 files</span></div>
+<div class="fw-embed__tree-row fw-embed__tree-row--file fw-embed__tree-row--highlight"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">└── </span>README.md</span><span class="fw-embed__tree-note"># Start here</span></div>
 </div>
 </div>
 ```
 
 - A document without `tree`, or whose `root` isn't a non-empty string, renders as `page`. A node is usable when it is an object with a non-empty string `name` and a known `type`; an ignored group may instead take its name from its rule. Unusable nodes are skipped.
 - The root row reads `root/`. When `base` is set, its folders above `root` (`base` split on `/`, with a last part equal to `root` dropped) lead the name in `fw-embed__tree-crumb`, ending in `/`.
-- Each row's guide is the guides of the folders above, `│   ` for a folder with later siblings and four spaces for a last one, then `├── `, or `└── ` for a last row. A folder with usable children is a `<details class="fw-embed__tree-dir">`, open when `open` is `true`, whose `<summary>` is its row and whose rows follow; its guide ends `├─  ` or `└─  `, leaving a cell for the disclosure marker. Other folders, files, and groups are `<div>` rows.
+- Each row's guide is the guides of the folders above, `│   ` for a folder with later siblings and four spaces for a last one, then `├── `, or `└── ` for a last row. A folder with usable children is a `<details class="fw-embed__tree-dir">`, open when `open` is `true`, whose `<summary>` is its row and whose rows follow. Its guide is the same as a file's, and the stylesheet draws its chevron after the name. Other folders, files, and groups are `<div>` rows.
 - Row classes name the type (`--dir`, `--file`, `--group`), then `--stub` for stub folders and groups, then `--highlight`. Folder names end in `/`.
-- A stub or group carries a badge after its name, joined with ` · `: `private` when private, `ignored` for a group or an ignored folder, the rule, then the file count (`1 file`, `12 files`, `1,520 files`, `10,000+ files`). Its `title` names the rule's source: the source (`global` reads `global excludes file`, `info/exclude` reads `.git/info/exclude`), then `line N` for a positive integer line up to 1,000,000. No title without either.
-- A note follows the name, or the badge, in `fw-embed__tree-note`.
-- The bordered `fw-embed__tree-panel` holds the tree, and the button when there is one.
-- `--fw-embed-tree-names` is the widest root, guide, and name in code points, at most 48, in `ch`. Every name cell is at least that wide, so notes and badges line up. Rows inside closed folders count, so opening one never moves the column.
+- A stub or group carries a badge after its name, written as a code comment: `# `, then, joined with ` · `, `private` when private, `ignored` for a group or an ignored folder, the rule, then the file count (`1 file`, `12 files`, `1,520 files`, `10,000+ files`). Its `title` names the rule's source: the source (`global` reads `global excludes file`, `info/exclude` reads `.git/info/exclude`), then `line N` for a positive integer line up to 1,000,000. No title without either.
+- A note follows the name, or the badge, in `fw-embed__tree-note`, written as a code comment: `# Start here`. The `# ` is in the markup, so copied text and pages without the stylesheet keep it.
+- `fw-embed__tree-panel` holds the tree, and the button when there is one. It draws no border; rows line up with the embed's text.
+- `--fw-embed-tree-names` is the widest root, guide, and name in code points, with two more for a folder that opens and closes (its chevron), at most 48, in `ch`. Every name cell is at least that wide, so notes and badges line up. Rows inside closed folders count, so opening one never moves the column.
 - Folders deeper than 32 levels show as rows without their contents. Rendering stops after 5,000 rows.
 - A long tree starts clipped. When more than 15 rows show at first (the root row, and every row whose folders all start open; rows inside a closed folder don't count) and `data.display.full` isn't `true`, the tree carries `data-fw-embed-clip` and a button follows it inside the panel:
 
@@ -578,9 +578,9 @@ A project structure: a folder tree with notes on its paths and the `.gitignore` 
 </div>
 ```
 
-- The JS bundle's `enhanceTrees` adds `fw-embed__tree--clipped`, which shows the top 12 rows, the last rows dissolving before the bottom edge. The panel's border stays solid, and the button sits under the rows inside it, unfaded, and shows the button. A click toggles the class, `Show more` and `Show less`, and `aria-expanded`. Without the bundle the whole tree shows and the button stays hidden. Print shows the whole tree.
+- The JS bundle's `enhanceTrees` adds `fw-embed__tree--clipped`, which shows the top 12 rows, the last rows dissolving before the bottom edge, and shows the button under the rows, unfaded. A click toggles the class, `Show more` and `Show less`, and `aria-expanded`. Without the bundle the whole tree shows and the button stays hidden. Print shows the whole tree.
 
-The tree uses `--fw-embed-code`, so the box-drawing guides join. Guides are faint, folder names bold, stubs and groups muted, and a highlighted row is tinted with `--fw-embed-accent`.
+The tree uses `--fw-embed-code`, so the box-drawing guides join. Guides are faint, folder names bold with a muted chevron after them (right while closed, down while open), notes, badges, stubs, and groups muted, and a highlighted row is tinted with `--fw-embed-accent`. `Show more` and `Show less` read in the text colour, bold, with a chevron down or up.
 
 ### `image`
 

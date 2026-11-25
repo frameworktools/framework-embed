@@ -1007,6 +1007,8 @@ const TREE_ROWS = 5000;
 // The name column, in ch, never starts wider than this; a longer name pushes its note right.
 const TREE_NAMES = 48;
 const TREE_COUNT_CAP = 10000;
+// The cells a folder's chevron takes after its name.
+const TREE_MARKER = 2;
 // A tree showing more rows than this at first starts clipped, unless data.display.full is true.
 const TREE_CLIP_ROWS = 15;
 const TREE_SOURCES = { global: 'global excludes file', 'info/exclude': '.git/info/exclude' };
@@ -1056,7 +1058,7 @@ function treeNodes(children, data) {
     });
 }
 
-// The badge on a stub or an ignored group: "ignored · *.rds · 4 files", "private · 3 files", "12 files".
+// The badge on a stub or an ignored group, written as a code comment: "# ignored · *.rds · 4 files", "# private · 3 files", "# 12 files".
 function treeBadge(node) {
     const parts = [];
     if (node.private) parts.push('private');
@@ -1065,7 +1067,7 @@ function treeBadge(node) {
     if (node.hidden !== null) parts.push(treeCount(node.hidden));
     if (parts.length === 0) return '';
     const source = node.ignored === null ? null : treeSource(node.ignored);
-    return `<span class="fw-embed__tree-badge"${source === null ? '' : ` title="${escapeHtml(source)}"`}>${parts.join(' · ')}</span>`;
+    return `<span class="fw-embed__tree-badge"${source === null ? '' : ` title="${escapeHtml(source)}"`}># ${parts.join(' · ')}</span>`;
 }
 
 function treeRow(tag, node, guide, data) {
@@ -1074,7 +1076,7 @@ function treeRow(tag, node, guide, data) {
     if (stub) classes.push('fw-embed__tree-row--stub');
     if (node.highlight) classes.push('fw-embed__tree-row--highlight');
     const label = node.type === 'dir' ? node.name + '/' : node.name;
-    const note = node.note === null || hidden(data, 'notes') ? '' : `<span class="fw-embed__tree-note">${escapeHtml(node.note)}</span>`;
+    const note = node.note === null || hidden(data, 'notes') ? '' : `<span class="fw-embed__tree-note"># ${escapeHtml(node.note)}</span>`;
     return `<${tag} class="${classes.join(' ')}"><span class="fw-embed__tree-name">`
         + `<span class="fw-embed__tree-guide" aria-hidden="true">${guide}</span>${escapeHtml(label)}</span>`
         + `${stub ? treeBadge(node) : ''}${note}</${tag}>`;
@@ -1095,9 +1097,9 @@ function treeRows(nodes, prefix, depth, data, state, out, visible) {
             out.push(treeRow('div', node, guide, data));
             return;
         }
-        // A folder's guide leaves a cell for its disclosure marker: "├─  R/"
-        const guide = prefix + (last ? '└─  ' : '├─  ');
-        state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + 1);
+        // A folder's guide runs into its name like a file's; its chevron follows the name, in two more cells
+        const guide = prefix + (last ? '└── ' : '├── ');
+        state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + 1 + TREE_MARKER);
         out.push(`<details class="fw-embed__tree-dir"${node.open ? ' open' : ''}>`, treeRow('summary', node, guide, data));
         treeRows(children, prefix + (last ? '    ' : '│   '), depth + 1, data, state, out, visible && node.open);
         out.push('</details>');

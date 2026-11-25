@@ -95,6 +95,9 @@ A bare host name such as `framework.example.org` allows HTTPS on the default por
 
 == Changelog ==
 
+= 0.12.0 =
+* Project structures sit flush with the text, without a border. Notes and badges read as code comments, a folder's chevron follows its name, and Show more is bold with a chevron.
+
 = 0.11.2 =
 * The Show less chevron points straight up.
 

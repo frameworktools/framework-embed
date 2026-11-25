@@ -43,17 +43,17 @@ final class TreeTest extends TestCase
     public function test_rows_follow_fw_structure(): void
     {
         $xpath = self::xpath(self::load('r-tree'));
-        $this->assertSame(['my-project/', '├─  data/', '│   ├── private/', '│   └── raw/', '├─  outputs/', '│   ├── table.csv',
-            '│   └── *.rds', '├─  R/', '│   └── clean.R', '├── renv/', '└── README.md'], self::texts($xpath, 'fw-embed__tree-name'));
+        $this->assertSame(['my-project/', '├── data/', '│   ├── private/', '│   └── raw/', '├── outputs/', '│   ├── table.csv',
+            '│   └── *.rds', '├── R/', '│   └── clean.R', '├── renv/', '└── README.md'], self::texts($xpath, 'fw-embed__tree-name'));
         $this->assertSame(3, $xpath->query('//details[@open]')->length);
-        $this->assertSame(['private · 3 files', 'ignored · data/raw/ · 12 files', 'ignored · *.rds · 4 files', '1,520 files'], self::texts($xpath, 'fw-embed__tree-badge'));
+        $this->assertSame(['# private · 3 files', '# ignored · data/raw/ · 12 files', '# ignored · *.rds · 4 files', '# 1,520 files'], self::texts($xpath, 'fw-embed__tree-badge'));
         $this->assertSame(['.gitignore line 4', '.gitignore line 7'], array_map(fn ($a) => $a->value, iterator_to_array($xpath->query('//span[@title]/@title'))));
     }
 
     public function test_counts_and_rule_sources(): void
     {
         $xpath = self::xpath(self::load('tree-subfolder'));
-        $this->assertSame(['ignored · fits/ · 10,000+ files', 'private · ignored · scratch/ · 1 file', 'ignored · *.log · 11 files'], self::texts($xpath, 'fw-embed__tree-badge'));
+        $this->assertSame(['# ignored · fits/ · 10,000+ files', '# private · ignored · scratch/ · 1 file', '# ignored · *.log · 11 files'], self::texts($xpath, 'fw-embed__tree-badge'));
         $this->assertSame(['analysis/'], self::texts($xpath, 'fw-embed__tree-crumb'));
     }
 
@@ -61,9 +61,9 @@ final class TreeTest extends TestCase
     {
         $xpath = self::xpath(self::load('tree-display-hidden'));
         $this->assertSame([], self::texts($xpath, 'fw-embed__tree-note'));
-        $this->assertSame(['private · 3 files', '1,520 files'], self::texts($xpath, 'fw-embed__tree-badge'));
+        $this->assertSame(['# private · 3 files', '# 1,520 files'], self::texts($xpath, 'fw-embed__tree-badge'));
         $doc = self::tree([['name' => 'secret_private', 'type' => 'dir', 'private' => true, 'ignored' => ['rule' => 'secret_private/'], 'hidden' => 2, 'children' => []]], ['display' => ['ignored' => false]]);
-        $this->assertSame(['private · 2 files'], self::texts(self::xpath($doc), 'fw-embed__tree-badge'));
+        $this->assertSame(['# private · 2 files'], self::texts(self::xpath($doc), 'fw-embed__tree-badge'));
     }
 
     public function test_unusable_trees_render_as_page(): void
@@ -92,6 +92,12 @@ final class TreeTest extends TestCase
         $folder = fn (bool $open) => [['name' => 'd', 'type' => 'dir', 'open' => $open, 'children' => $files(20)]];
         $this->assertStringNotContainsString('data-fw-embed-clip', Renderer::render(self::tree($folder(false))));
         $this->assertStringContainsString('data-fw-embed-clip', Renderer::render(self::tree($folder(true))));
+    }
+
+    public function test_folder_chevrons_widen_the_name_column(): void
+    {
+        $this->assertStringContainsString('--fw-embed-tree-names: 17ch', Renderer::render(self::tree([['name' => 'abcdefghij', 'type' => 'dir', 'open' => true, 'children' => [['name' => 'f', 'type' => 'file']]]])));
+        $this->assertStringContainsString('--fw-embed-tree-names: 15ch', Renderer::render(self::tree([['name' => 'abcdefghij', 'type' => 'dir', 'open' => true, 'children' => []]])));
     }
 
     public function test_depth_and_row_limits(): void

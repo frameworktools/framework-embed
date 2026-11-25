@@ -35,6 +35,9 @@ final class Renderer
 
     private const TREE_COUNT_CAP = 10000;
 
+    /** The cells a folder's chevron takes after its name. */
+    private const TREE_MARKER = 2;
+
     /** A tree showing more rows than this at first starts clipped, unless data.display.full is true. */
     private const TREE_CLIP_ROWS = 15;
 
@@ -1793,7 +1796,7 @@ final class Renderer
         return $nodes;
     }
 
-    /** The badge on a stub or an ignored group: "ignored · *.rds · 4 files", "private · 3 files", "12 files". */
+    /** The badge on a stub or an ignored group, written as a code comment: "# ignored · *.rds · 4 files", "# private · 3 files", "# 12 files". */
     private static function treeBadge(array $node): string
     {
         $parts = [];
@@ -1814,7 +1817,7 @@ final class Renderer
         }
         $source = $node['ignored'] === null ? null : self::treeSource($node['ignored']);
 
-        return '<span class="fw-embed__tree-badge"' . ($source === null ? '' : ' title="' . self::e($source) . '"') . '>' . implode(' · ', $parts) . '</span>';
+        return '<span class="fw-embed__tree-badge"' . ($source === null ? '' : ' title="' . self::e($source) . '"') . '># ' . implode(' · ', $parts) . '</span>';
     }
 
     private static function treeRow(string $tag, array $node, string $guide, array $data): string
@@ -1828,7 +1831,7 @@ final class Renderer
             $classes[] = 'fw-embed__tree-row--highlight';
         }
         $label = $node['type'] === 'dir' ? $node['name'] . '/' : $node['name'];
-        $note = $node['note'] === null || self::hidden($data, 'notes') ? '' : '<span class="fw-embed__tree-note">' . self::e($node['note']) . '</span>';
+        $note = $node['note'] === null || self::hidden($data, 'notes') ? '' : '<span class="fw-embed__tree-note"># ' . self::e($node['note']) . '</span>';
 
         return '<' . $tag . ' class="' . implode(' ', $classes) . '"><span class="fw-embed__tree-name">'
             . '<span class="fw-embed__tree-guide" aria-hidden="true">' . $guide . '</span>' . self::e($label) . '</span>'
@@ -1856,9 +1859,9 @@ final class Renderer
 
                 continue;
             }
-            // A folder's guide leaves a cell for its disclosure marker: "├─  R/"
-            $guide = $prefix . ($last ? '└─  ' : '├─  ');
-            $state['width'] = max($state['width'], self::treeLength($guide) + self::treeLength($node['name']) + 1);
+            // A folder's guide runs into its name like a file's; its chevron follows the name, in two more cells
+            $guide = $prefix . ($last ? '└── ' : '├── ');
+            $state['width'] = max($state['width'], self::treeLength($guide) + self::treeLength($node['name']) + 1 + self::TREE_MARKER);
             $out[] = '<details class="fw-embed__tree-dir"' . ($node['open'] ? ' open' : '') . '>';
             $out[] = self::treeRow('summary', $node, $guide, $data);
             self::treeRows($children, $prefix . ($last ? '    ' : '│   '), $depth + 1, $data, $state, $out, $visible && $node['open']);

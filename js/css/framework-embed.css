@@ -587,16 +587,17 @@ framework-artifact { display: block; }
 .fw-embed__details > .fw-embed__snippet + .fw-embed__snippet { margin-top: 0.75em; }
 
 /*
- * Project structures. A monospace tree with box-drawing guides, as fw_structure() prints it.
- * The renderer sets --fw-embed-tree-names to the widest guide and name, in ch, so notes and
- * badges line up in one column. A folder's guide leaves a blank cell before its name for the
- * disclosure marker. Stubs and ignored groups are dimmed; highlighted rows are tinted.
+ * Project structures. A monospace tree with box-drawing guides, as fw_structure() prints it, set flush
+ * with the embed's text, with no panel. The renderer sets --fw-embed-tree-names to the widest guide and
+ * name, in ch, so notes and badges line up in one column; both are code comments ("# Start here").
+ * A folder's chevron follows its name: right while closed, down while open. Stubs and ignored groups
+ * are dimmed; highlighted rows are tinted.
  */
-.fw-embed__tree-panel { min-width: 0; overflow: hidden; border: 1px solid var(--fw-embed-border); border-radius: 0.5em; }
+.fw-embed__tree-panel { min-width: 0; }
 .fw-embed__tree {
     min-width: 0;
     overflow-x: auto;
-    padding: 0.75em 0.875em;
+    padding: 0;
     font-family: var(--fw-embed-code);
     font-size: calc(0.8125em / 0.875);
     font-variant-ligatures: none;
@@ -606,8 +607,8 @@ framework-artifact { display: block; }
     display: flex;
     align-items: baseline;
     gap: 0 2ch;
-    margin: 0 -0.875em;
-    padding: 0 0.875em;
+    margin: 0;
+    padding: 0;
 }
 .fw-embed__tree-name { flex: none; min-width: var(--fw-embed-tree-names, auto); white-space: pre; }
 .fw-embed__tree-guide { color: color-mix(in srgb, currentColor 35%, transparent); font-weight: 400; }
@@ -616,16 +617,7 @@ framework-artifact { display: block; }
 .fw-embed__tree-crumb { color: var(--fw-embed-muted); font-weight: 400; }
 .fw-embed__tree-note { flex: 1 1 auto; min-width: 16ch; color: var(--fw-embed-muted); white-space: normal; overflow-wrap: anywhere; }
 .fw-embed__tree-row--stub > .fw-embed__tree-name { color: var(--fw-embed-muted); font-weight: 400; }
-.fw-embed__tree-badge {
-    flex: none;
-    padding: 0 0.5em;
-    border: 1px solid var(--fw-embed-border);
-    border-radius: 999px;
-    font-size: 0.85em;
-    line-height: 1.2;
-    color: var(--fw-embed-muted);
-    white-space: nowrap;
-}
+.fw-embed__tree-badge { flex: none; color: var(--fw-embed-muted); white-space: nowrap; }
 .fw-embed__tree-badge[title] { cursor: help; }
 .fw-embed__tree-row--highlight { background: color-mix(in srgb, var(--fw-embed-accent) 12%, transparent); }
 .fw-embed__tree-row--highlight > .fw-embed__tree-name { font-weight: 600; }
@@ -634,68 +626,62 @@ framework-artifact { display: block; }
 .fw-embed__tree-dir > summary:hover { background: color-mix(in srgb, currentColor 5%, transparent); }
 .fw-embed__tree-dir > summary.fw-embed__tree-row--highlight:hover { background: color-mix(in srgb, var(--fw-embed-accent) 18%, transparent); }
 .fw-embed__tree-dir > summary:focus-visible { outline: 2px solid var(--fw-embed-accent); outline-offset: -2px; }
-.fw-embed__tree-dir > summary .fw-embed__tree-guide { position: relative; }
-/* The marker sits in the blank cell before the folder's name: right while closed, down while open */
-.fw-embed__tree-dir > summary .fw-embed__tree-guide::after {
+/* The chevron after a folder's name: right while closed, down while open */
+.fw-embed__tree-dir > summary > .fw-embed__tree-name::after {
     content: "";
-    position: absolute;
-    top: 50%;
-    right: calc(1.5ch - 0.2em);
+    display: inline-block;
+    box-sizing: border-box;
     width: 0.4em;
     height: 0.4em;
+    margin-left: 0.7em;
     border-right: 1.5px solid var(--fw-embed-muted);
     border-bottom: 1.5px solid var(--fw-embed-muted);
-    transform: translateY(-50%) rotate(-45deg);
+    transform: translateY(-0.12em) rotate(-45deg);
     transition: transform 0.15s ease;
 }
-.fw-embed__tree-dir[open] > summary .fw-embed__tree-guide::after { transform: translateY(-70%) rotate(45deg); }
+.fw-embed__tree-dir[open] > summary > .fw-embed__tree-name::after { transform: translateY(-0.24em) rotate(45deg); }
 
 /*
- * A long tree starts clipped at 12 rows (the top padding plus 12 line boxes of 1.25em), fading out
- * over its last three through a mask, so it suits light and dark pages. The border is on the panel,
- * so it stays solid. The Show more button sits under the rows inside the panel, unfaded, its text in
- * line with the tree's. The JS bundle adds the class and shows the button; without it the whole tree shows.
+ * A long tree starts clipped at 12 rows, the last ones dissolving through a mask, so it suits
+ * light and dark pages. The Show more button sits under the rows, unfaded, in line with them.
+ * The JS bundle adds the class and shows the button; without it the whole tree shows.
  */
 .fw-embed__tree--clipped {
-    max-height: calc(0.75em + 12 * 1.25em);
+    max-height: calc(12 * 1.25em);
     overflow: hidden;
-    /* Fully transparent before the bottom edge, so the last rows dissolve into the button */
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 5em), transparent calc(100% - 0.75em));
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 5em), transparent calc(100% - 0.75em));
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 5em), rgb(0 0 0 / 0.3) calc(100% - 2em), transparent calc(100% - 0.5em));
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 5em), rgb(0 0 0 / 0.3) calc(100% - 2em), transparent calc(100% - 0.5em));
 }
 .fw-embed__tree-panel > .fw-embed__more {
-    display: flex;
+    display: inline-flex;
     align-items: center;
     gap: 0.5em;
-    width: max-content;
     margin: 0;
-    /* Left edge in line with the tree's text: 0.875em of the tree's 0.8125em type, in this 0.75em type */
-    padding: 0.125em calc(0.875em * 0.8125 / 0.75) 0.75em;
+    padding: 0.5em 0 0;
     border: 0;
     background: none;
     color: var(--fw-embed-fg, inherit);
     font: inherit;
     font-size: calc(0.75em / 0.875);
-    font-weight: 500;
+    font-weight: 600;
     cursor: pointer;
 }
-/* A chevron after the label, like the folder marker: down to show more, up to show less */
+/* A chevron after the label: down to show more, up to show less, centred on the label either way */
 .fw-embed__tree-panel > .fw-embed__more::after {
     content: "";
     flex: none;
     box-sizing: border-box;
-    width: 0.45em;
-    height: 0.45em;
-    border-right: 1.5px solid currentColor;
-    border-bottom: 1.5px solid currentColor;
+    width: 0.5em;
+    height: 0.5em;
+    border-right: 1.75px solid currentColor;
+    border-bottom: 1.75px solid currentColor;
     transform-origin: 50% 50%;
-    /* The point sits low after the turn, so the down chevron lifts and the up chevron drops by the same amount */
     transform: translateY(-0.12em) rotate(45deg);
     transition: transform 0.15s ease;
 }
-.fw-embed__tree-panel > .fw-embed__more[aria-expanded="true"]::after { transform: translateY(0.12em) rotate(225deg); }
+.fw-embed__tree-panel > .fw-embed__more[aria-expanded="true"]::after { transform: translateY(0.12em) rotate(-135deg); }
 .fw-embed__tree-panel > .fw-embed__more:hover { text-decoration: underline; text-underline-offset: 0.15em; }
-.fw-embed__tree-panel > .fw-embed__more:focus-visible { outline: 2px solid var(--fw-embed-accent); outline-offset: -2px; border-radius: 0.375em; }
+.fw-embed__tree-panel > .fw-embed__more:focus-visible { outline: 2px solid var(--fw-embed-accent); outline-offset: 2px; border-radius: 0.25em; }
 .fw-embed__tree-panel > .fw-embed__more[hidden] { display: none; }
 
 @media print {

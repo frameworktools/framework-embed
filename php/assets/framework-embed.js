@@ -1082,6 +1082,7 @@ var TREE_DEPTH = 32;
 var TREE_ROWS = 5e3;
 var TREE_NAMES = 48;
 var TREE_COUNT_CAP = 1e4;
+var TREE_MARKER = 2;
 var TREE_CLIP_ROWS = 15;
 var TREE_SOURCES = { global: "global excludes file", "info/exclude": ".git/info/exclude" };
 var treeLength = (value) => Array.from(value).length;
@@ -1127,7 +1128,7 @@ function treeBadge(node) {
   if (node.hidden !== null) parts.push(treeCount(node.hidden));
   if (parts.length === 0) return "";
   const source = node.ignored === null ? null : treeSource(node.ignored);
-  return `<span class="fw-embed__tree-badge"${source === null ? "" : ` title="${escapeHtml(source)}"`}>${parts.join(" \xB7 ")}</span>`;
+  return `<span class="fw-embed__tree-badge"${source === null ? "" : ` title="${escapeHtml(source)}"`}># ${parts.join(" \xB7 ")}</span>`;
 }
 function treeRow(tag, node, guide, data) {
   const stub = node.type === "group" || node.type === "dir" && node.stub;
@@ -1135,7 +1136,7 @@ function treeRow(tag, node, guide, data) {
   if (stub) classes.push("fw-embed__tree-row--stub");
   if (node.highlight) classes.push("fw-embed__tree-row--highlight");
   const label = node.type === "dir" ? node.name + "/" : node.name;
-  const note = node.note === null || hidden(data, "notes") ? "" : `<span class="fw-embed__tree-note">${escapeHtml(node.note)}</span>`;
+  const note = node.note === null || hidden(data, "notes") ? "" : `<span class="fw-embed__tree-note"># ${escapeHtml(node.note)}</span>`;
   return `<${tag} class="${classes.join(" ")}"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">${guide}</span>${escapeHtml(label)}</span>${stub ? treeBadge(node) : ""}${note}</${tag}>`;
 }
 function treeRows(nodes, prefix, depth, data, state, out, visible) {
@@ -1151,8 +1152,8 @@ function treeRows(nodes, prefix, depth, data, state, out, visible) {
       out.push(treeRow("div", node, guide2, data));
       return;
     }
-    const guide = prefix + (last ? "\u2514\u2500  " : "\u251C\u2500  ");
-    state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + 1);
+    const guide = prefix + (last ? "\u2514\u2500\u2500 " : "\u251C\u2500\u2500 ");
+    state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + 1 + TREE_MARKER);
     out.push(`<details class="fw-embed__tree-dir"${node.open ? " open" : ""}>`, treeRow("summary", node, guide, data));
     treeRows(children, prefix + (last ? "    " : "\u2502   "), depth + 1, data, state, out, visible && node.open);
     out.push("</details>");
