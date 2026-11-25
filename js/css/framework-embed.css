@@ -652,15 +652,22 @@ framework-artifact { display: block; }
 .fw-embed__tree-dir[open] > summary .fw-embed__tree-guide::after { transform: translateY(-70%) rotate(45deg); }
 
 /*
- * A long tree starts clipped at 12 rows (the top padding plus 12 line boxes of 1.25em), fading out
- * over its last three through a mask, so it suits light and dark pages. The JS bundle adds the class
+ * A long tree starts clipped at 12 rows (the top padding plus 12 line boxes of 1.25em), its contents
+ * fading out over the last three through a mask, so it suits light and dark pages. The mask keeps
+ * the border solid: a solid layer over the border box, XOR a solid layer over the padding box, is
+ * the border ring, and the fade over the padding box is added on top. The JS bundle adds the class
  * and shows the button; without it the whole tree shows.
  */
 .fw-embed__tree--clipped {
+    --fw-embed-tree-fade: linear-gradient(to bottom, #000 calc(100% - 3.75em), transparent);
     max-height: calc(0.75em + 12 * 1.25em + 1px);
     overflow: hidden;
-    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3.75em), transparent);
-    mask-image: linear-gradient(to bottom, #000 calc(100% - 3.75em), transparent);
+    -webkit-mask-image: var(--fw-embed-tree-fade), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    mask-image: var(--fw-embed-tree-fade), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
+    -webkit-mask-clip: padding-box, padding-box, border-box;
+    mask-clip: padding-box, padding-box, border-box;
+    -webkit-mask-composite: source-over, xor;
+    mask-composite: add, exclude;
 }
 .fw-embed__tree + .fw-embed__more {
     display: block;

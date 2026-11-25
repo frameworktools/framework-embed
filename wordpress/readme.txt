@@ -95,6 +95,9 @@ A bare host name such as `framework.example.org` allows HTTPS on the default por
 
 == Changelog ==
 
+= 0.10.1 =
+* A clipped project structure keeps its border; only its contents fade.
+
 = 0.10.0 =
 * A long project structure starts clipped at its top rows, with a Show more button, unless its owner chooses Whole tree on Framework Cloud.
 
