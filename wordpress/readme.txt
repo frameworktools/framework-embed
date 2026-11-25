@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.9.0
+Stable tag: 0.9.1
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
@@ -94,6 +94,9 @@ Yes. Override custom properties such as `--fw-embed-font`, `--fw-embed-mono`, `-
 A bare host name such as `framework.example.org` allows HTTPS on the default port. An origin such as `http://localhost:8000` allows that exact scheme, host, and port. IP addresses and URL paths are rejected.
 
 == Changelog ==
+
+= 0.9.1 =
+* A project structure's lines join from row to row.
 
 = 0.9.0 =
 * Project structures: folder trees with folders that open and close, notes in a column, and ignored, private, and deep folders shown as dimmed stubs with their file counts and the .gitignore rule that hides them.
