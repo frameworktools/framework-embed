@@ -9,7 +9,7 @@ The addon fetches embed documents from framework.pub and from self-hosted Framew
 The addon and `framework-cloud/embed` are not on Packagist. Clone this repository at a release tag and register both directories as path repositories in the site's root `composer.json`:
 
 ```sh
-git clone --branch v0.11.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+git clone --branch v0.11.2 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-statamic '{"type":"path","url":"/path/to/framework-embed/statamic","options":{"versions":{"framework-cloud/statamic-embed":"0.1.0"}}}'
 composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0

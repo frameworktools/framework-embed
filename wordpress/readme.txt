@@ -4,7 +4,7 @@ Tags: statistics, regression, embed, tables, charts
 Requires at least: 6.5
 Tested up to: 7.1
 Requires PHP: 8.1
-Stable tag: 0.11.1
+Stable tag: 0.11.2
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
