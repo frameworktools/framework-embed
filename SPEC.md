@@ -578,7 +578,7 @@ A project structure: a folder tree with notes on its paths and the `.gitignore` 
 </div>
 ```
 
-- The JS bundle's `enhanceTrees` adds `fw-embed__tree--clipped`, which shows the top 12 rows fading out over the last three. The panel's border stays solid, and the button sits under the rows inside it, unfaded, and shows the button. A click toggles the class, `Show more` and `Show less`, and `aria-expanded`. Without the bundle the whole tree shows and the button stays hidden. Print shows the whole tree.
+- The JS bundle's `enhanceTrees` adds `fw-embed__tree--clipped`, which shows the top 12 rows, the last rows dissolving before the bottom edge. The panel's border stays solid, and the button sits under the rows inside it, unfaded, and shows the button. A click toggles the class, `Show more` and `Show less`, and `aria-expanded`. Without the bundle the whole tree shows and the button stays hidden. Print shows the whole tree.
 
 The tree uses `--fw-embed-code`, so the box-drawing guides join. Guides are faint, folder names bold, stubs and groups muted, and a highlighted row is tinted with `--fw-embed-accent`.
 
