@@ -12,8 +12,8 @@
     "latest_version": { "type": "integer", "minimum": 1 },
     "kind": {
       "type": "string",
-      "description": "model, table, test, code_snippet, dag, image, vega-lite, or page. Renderers treat any other value as page.",
-      "examples": ["model", "table", "test", "code_snippet", "dag", "image", "vega-lite", "page"]
+      "description": "model, table, test, code_snippet, dag, tree, image, vega-lite, or page. Renderers treat any other value as page.",
+      "examples": ["model", "table", "test", "code_snippet", "dag", "tree", "image", "vega-lite", "page"]
     },
     "title": { "type": ["string", "null"] },
     "description": { "type": ["string", "null"] },
@@ -34,8 +34,8 @@
       "properties": { "text": { "type": "string" }, "url": { "type": "string" } }
     },
     "data": {
-      "description": "Set for model, table, test, code_snippet, and dag: the framework.artifact/v1 representation as Cloud normalizes it.",
-      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/representation" }, { "$ref": "#/$defs/code_snippet" }, { "$ref": "#/$defs/dag" }]
+      "description": "Set for model, table, test, code_snippet, dag, and tree: the framework.artifact/v1 representation as Cloud normalizes it.",
+      "oneOf": [{ "type": "null" }, { "$ref": "#/$defs/representation" }, { "$ref": "#/$defs/code_snippet" }, { "$ref": "#/$defs/dag" }, { "$ref": "#/$defs/tree" }]
     },
     "display": {
       "type": "object",
@@ -154,6 +154,66 @@
               }
             }
           }
+        }
+      }
+    },
+    "tree": {
+      "type": "object",
+      "description": "A project's folder tree, sorted by Cloud, with notes and the .gitignore rules that hide paths.",
+      "required": ["schema", "kind", "tree"],
+      "properties": {
+        "schema": { "const": "framework.artifact/v1" },
+        "kind": { "const": "tree" },
+        "tree": {
+          "type": "object",
+          "required": ["root", "children"],
+          "properties": {
+            "root": { "type": "string", "minLength": 1 },
+            "base": { "type": "string" },
+            "method": { "enum": ["git", "gitignore", "none"] },
+            "counts": {
+              "type": "object",
+              "properties": {
+                "dirs": { "type": "integer", "minimum": 0 },
+                "files": { "type": "integer", "minimum": 0 },
+                "hidden": { "type": "integer", "minimum": 0 }
+              }
+            },
+            "children": { "$ref": "#/$defs/tree_nodes" }
+          }
+        },
+        "display": {
+          "type": "object",
+          "properties": { "notes": { "type": "boolean" }, "ignored": { "type": "boolean" } }
+        }
+      }
+    },
+    "tree_nodes": {
+      "type": "array",
+      "maxItems": 5000,
+      "items": {
+        "type": "object",
+        "required": ["name", "path", "type"],
+        "properties": {
+          "name": { "type": "string", "minLength": 1 },
+          "path": { "type": "string", "maxLength": 1024 },
+          "type": { "enum": ["dir", "file", "ignored"] },
+          "note": { "type": "string", "maxLength": 500 },
+          "open": { "type": "boolean" },
+          "highlight": { "const": true },
+          "private": { "const": true },
+          "depth": { "const": true },
+          "hidden": { "type": "integer", "minimum": 0, "maximum": 10000 },
+          "ignored": {
+            "type": "object",
+            "required": ["rule"],
+            "properties": {
+              "rule": { "type": "string", "minLength": 1 },
+              "source": { "type": "string" },
+              "line": { "type": "integer", "minimum": 1 }
+            }
+          },
+          "children": { "$ref": "#/$defs/tree_nodes" }
         }
       }
     },

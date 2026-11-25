@@ -19,11 +19,23 @@ final class Renderer
     /** Text values longer than this many characters take a full row of the statistics grid. */
     public const WIDE_TEXT = 24;
 
-    private const KINDS = ['model', 'table', 'test', 'code_snippet', 'dag', 'image', 'vega-lite', 'page'];
+    private const KINDS = ['model', 'table', 'test', 'code_snippet', 'dag', 'tree', 'image', 'vega-lite', 'page'];
 
     private const DAG_ROLES = ['exposure' => 'Exposure', 'outcome' => 'Outcome', 'adjusted' => 'Adjusted', 'latent' => 'Latent', 'selected' => 'Selected'];
 
     private const DAG_LABEL_CHARS = 32;
+
+    /** Deeper folders show as rows without their contents, and rows past the limit are left out. */
+    private const TREE_DEPTH = 32;
+
+    private const TREE_ROWS = 5000;
+
+    /** The name column, in ch, never starts wider than this; a longer name pushes its note right. */
+    private const TREE_NAMES = 48;
+
+    private const TREE_COUNT_CAP = 10000;
+
+    private const TREE_SOURCES = ['global' => 'global excludes file', 'info/exclude' => '.git/info/exclude'];
 
     private const SNIPPET_LANGUAGES = ['r' => 'R', 'python' => 'Python', 'stata' => 'Stata'];
 
@@ -99,6 +111,7 @@ final class Renderer
             'test' => self::test($doc),
             'code_snippet' => self::snippet($doc),
             'dag' => self::dag($doc),
+            'tree' => self::tree($doc),
             'image' => self::image($doc),
             'vega-lite' => self::chart($doc),
             default => null,
@@ -1683,6 +1696,191 @@ final class Renderer
             ...self::details($language . ' code', $code === null ? [] : [$code])];
 
         return implode("\n", $parts);
+    }
+
+    // --- project structures ---------------------------------------------------------
+    // A folder tree, drawn as fw_structure() prints it: box-drawing guides, folders as native
+    // disclosures, and notes in a column. Framework Cloud sorts the tree and strips what the
+    // owner turned off; renderers draw what they get.
+
+    private static function treeLength(string $value): int
+    {
+        return mb_strlen($value, 'UTF-8');
+    }
+
+    private static function treeCountValid(mixed $value): bool
+    {
+        return Format::isInteger($value) && $value >= 0;
+    }
+
+    /** 1 file, 12 files, 1,520 files; 10,000 or more reads 10,000+ files. */
+    private static function treeCount(int|float $count): string
+    {
+        if ($count >= self::TREE_COUNT_CAP) {
+            return '10,000+ files';
+        }
+
+        return number_format($count) . ($count == 1 ? ' file' : ' files');
+    }
+
+    /** The rule that ignores a path, when it names one. */
+    private static function treeIgnored(mixed $value): ?array
+    {
+        return self::isObject($value) && self::text($value['rule'] ?? null) !== null ? $value : null;
+    }
+
+    /** Where a rule comes from: ".gitignore line 7", or null when the document doesn't say. */
+    private static function treeSource(array $ignored): ?string
+    {
+        $source = self::text($ignored['source'] ?? null);
+        $parts = $source === null ? [] : [self::known(self::TREE_SOURCES, $source) ? self::TREE_SOURCES[$source] : $source];
+        $line = $ignored['line'] ?? null;
+        if (Format::isInteger($line) && $line > 0 && $line <= 1000000) {
+            $parts[] = 'line ' . self::integer($line);
+        }
+
+        return $parts === [] ? null : implode(' ', $parts);
+    }
+
+    /** A list's usable nodes, in document order. */
+    private static function treeNodes(mixed $children, array $data): array
+    {
+        $showIgnored = ! self::hidden($data, 'ignored');
+        $nodes = [];
+        foreach (self::lst($children) as $node) {
+            if (! self::isObject($node)) {
+                continue;
+            }
+            $ignored = $showIgnored ? self::treeIgnored($node['ignored'] ?? null) : null;
+            $hiddenCount = self::treeCountValid($node['hidden'] ?? null) ? $node['hidden'] : null;
+            $shared = ['note' => self::text($node['note'] ?? null), 'highlight' => ($node['highlight'] ?? null) === true, 'hidden' => $hiddenCount];
+            $type = $node['type'] ?? null;
+            $name = self::text($node['name'] ?? null);
+            if ($type === 'file') {
+                if ($name !== null) {
+                    $nodes[] = [...$shared, 'type' => 'file', 'name' => $name, 'ignored' => null, 'private' => false];
+                }
+
+                continue;
+            }
+            if ($type === 'ignored') {
+                if (! $showIgnored) {
+                    continue;
+                }
+                $name ??= $ignored === null ? null : self::text(rtrim($ignored['rule'], '/'));
+                if ($name !== null) {
+                    $nodes[] = [...$shared, 'type' => 'group', 'name' => $name, 'ignored' => $ignored, 'private' => false];
+                }
+
+                continue;
+            }
+            if ($type !== 'dir' || $name === null) {
+                continue;
+            }
+            $private = ($node['private'] ?? null) === true;
+            // An ignored folder that isn't private leaves with the other ignored paths
+            if (! $showIgnored && self::treeIgnored($node['ignored'] ?? null) !== null && ! $private) {
+                continue;
+            }
+            $stub = $hiddenCount !== null || $private || $ignored !== null || ($node['depth'] ?? null) === true;
+            $nodes[] = [...$shared, 'type' => 'dir', 'name' => $name, 'ignored' => $ignored, 'private' => $private, 'stub' => $stub,
+                'open' => ($node['open'] ?? null) === true, 'children' => $stub ? [] : ($node['children'] ?? null)];
+        }
+
+        return $nodes;
+    }
+
+    /** The badge on a stub or an ignored group: "ignored · *.rds · 4 files", "private · 3 files", "12 files". */
+    private static function treeBadge(array $node): string
+    {
+        $parts = [];
+        if ($node['private']) {
+            $parts[] = 'private';
+        }
+        if ($node['type'] === 'group' || $node['ignored'] !== null) {
+            $parts[] = 'ignored';
+        }
+        if ($node['ignored'] !== null) {
+            $parts[] = self::e($node['ignored']['rule']);
+        }
+        if ($node['hidden'] !== null) {
+            $parts[] = self::treeCount($node['hidden']);
+        }
+        if ($parts === []) {
+            return '';
+        }
+        $source = $node['ignored'] === null ? null : self::treeSource($node['ignored']);
+
+        return '<span class="fw-embed__tree-badge"' . ($source === null ? '' : ' title="' . self::e($source) . '"') . '>' . implode(' · ', $parts) . '</span>';
+    }
+
+    private static function treeRow(string $tag, array $node, string $guide, array $data): string
+    {
+        $stub = $node['type'] === 'group' || ($node['type'] === 'dir' && $node['stub']);
+        $classes = ['fw-embed__tree-row', 'fw-embed__tree-row--' . $node['type']];
+        if ($stub) {
+            $classes[] = 'fw-embed__tree-row--stub';
+        }
+        if ($node['highlight']) {
+            $classes[] = 'fw-embed__tree-row--highlight';
+        }
+        $label = $node['type'] === 'dir' ? $node['name'] . '/' : $node['name'];
+        $note = $node['note'] === null || self::hidden($data, 'notes') ? '' : '<span class="fw-embed__tree-note">' . self::e($node['note']) . '</span>';
+
+        return '<' . $tag . ' class="' . implode(' ', $classes) . '"><span class="fw-embed__tree-name">'
+            . '<span class="fw-embed__tree-guide" aria-hidden="true">' . $guide . '</span>' . self::e($label) . '</span>'
+            . ($stub ? self::treeBadge($node) : '') . $note . '</' . $tag . '>';
+    }
+
+    /** Rows for one folder's contents. `$prefix` carries the guides of the folders above. */
+    private static function treeRows(array $nodes, string $prefix, int $depth, array $data, array &$state, array &$out): void
+    {
+        $count = count($nodes);
+        foreach ($nodes as $index => $node) {
+            if ($state['rows'] >= self::TREE_ROWS) {
+                return;
+            }
+            $state['rows']++;
+            $last = $index === $count - 1;
+            $children = $node['type'] === 'dir' && ! $node['stub'] && $depth < self::TREE_DEPTH ? self::treeNodes($node['children'], $data) : [];
+            if ($children === []) {
+                $guide = $prefix . ($last ? '└── ' : '├── ');
+                $state['width'] = max($state['width'], self::treeLength($guide) + self::treeLength($node['name']) + ($node['type'] === 'dir' ? 1 : 0));
+                $out[] = self::treeRow('div', $node, $guide, $data);
+
+                continue;
+            }
+            // A folder's guide leaves a cell for its disclosure marker: "├─  R/"
+            $guide = $prefix . ($last ? '└─  ' : '├─  ');
+            $state['width'] = max($state['width'], self::treeLength($guide) + self::treeLength($node['name']) + 1);
+            $out[] = '<details class="fw-embed__tree-dir"' . ($node['open'] ? ' open' : '') . '>';
+            $out[] = self::treeRow('summary', $node, $guide, $data);
+            self::treeRows($children, $prefix . ($last ? '    ' : '│   '), $depth + 1, $data, $state, $out);
+            $out[] = '</details>';
+        }
+    }
+
+    private static function tree(array $doc): ?string
+    {
+        $data = $doc['data'] ?? null;
+        if (! self::isObject($data) || ! self::isObject($data['tree'] ?? null) || self::text($data['tree']['root'] ?? null) === null) {
+            return null;
+        }
+        $tree = $data['tree'];
+        // The breadcrumb: the folders above the published one, when it isn't the project root
+        $base = self::text($tree['base'] ?? null) === null ? [] : array_values(array_filter(explode('/', $tree['base']), fn (string $part) => $part !== ''));
+        if ($base !== [] && $base[count($base) - 1] === $tree['root']) {
+            array_pop($base);
+        }
+        $crumb = $base === [] ? '' : implode('/', $base) . '/';
+        $state = ['rows' => 0, 'width' => self::treeLength($crumb) + self::treeLength($tree['root']) + 1];
+        $rows = [];
+        self::treeRows(self::treeNodes($tree['children'] ?? null, $data), '', 1, $data, $state, $rows);
+
+        return implode("\n", ['<div class="fw-embed__tree" style="--fw-embed-tree-names: ' . min($state['width'], self::TREE_NAMES) . 'ch">',
+            '<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">'
+                . ($crumb === '' ? '' : '<span class="fw-embed__tree-crumb">' . self::e($crumb) . '</span>') . self::e($tree['root']) . '/</span></div>',
+            ...$rows, '</div>']);
     }
 
     private static function page(array $doc): string

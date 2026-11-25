@@ -1,0 +1,120 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "hostiletree00001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "tree",
+    "title": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+    "description": null,
+    "alt": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+    "url": "javascript:alert(1)",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/hostiletree00001/versions/1",
+    "published_at": "2026-11-25T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/hostile-tree/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "tree",
+        "tree": {
+            "root": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+            "base": "<b>x</b>/<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+            "children": [
+                {
+                    "name": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+                    "type": "dir",
+                    "open": "yes",
+                    "note": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+                    "children": [
+                        {
+                            "name": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+                            "type": "file",
+                            "note": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+                            "highlight": "true"
+                        },
+                        null,
+                        5,
+                        "x",
+                        [],
+                        {},
+                        {
+                            "type": "file"
+                        },
+                        {
+                            "type": "file",
+                            "name": ""
+                        },
+                        {
+                            "type": "symlink",
+                            "name": "x"
+                        },
+                        {
+                            "type": "ignored",
+                            "ignored": {
+                                "rule": "/"
+                            }
+                        },
+                        {
+                            "type": "ignored"
+                        },
+                        {
+                            "type": "ignored",
+                            "name": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+                            "ignored": {
+                                "rule": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+                                "source": "<script>alert(1)</script> & \"><img src=x onerror=alert(1)>",
+                                "line": -3
+                            },
+                            "hidden": -1
+                        },
+                        {
+                            "type": "dir",
+                            "name": "stub",
+                            "hidden": 12.5,
+                            "private": "true",
+                            "children": [
+                                {
+                                    "type": "file",
+                                    "name": "inside"
+                                }
+                            ]
+                        }
+                    ]
+                },
+                {
+                    "name": "deep",
+                    "type": "dir",
+                    "ignored": {
+                        "rule": ""
+                    },
+                    "hidden": "12",
+                    "children": "none"
+                },
+                {
+                    "name": "z",
+                    "type": "dir",
+                    "ignored": {
+                        "rule": "z/",
+                        "line": 1e+30
+                    },
+                    "hidden": 99999999
+                }
+            ]
+        },
+        "display": {
+            "notes": "no",
+            "ignored": 0
+        }
+    },
+    "spec": null,
+    "image": null
+}

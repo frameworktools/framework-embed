@@ -8,11 +8,11 @@ Stable tag: 0.8.4
 License: MIT
 License URI: https://opensource.org/licenses/MIT
 
-Embeds published Framework models, tables, hypothesis tests, DAGs, figures, and Vega-Lite charts in WordPress posts and pages.
+Embeds published Framework models, tables, hypothesis tests, DAGs, project structures, figures, and Vega-Lite charts in WordPress posts and pages.
 
 == Description ==
 
-Paste the URL of a public or unlisted Framework artifact on its own line, or insert the **Framework artifact** block, to display the result in a post or page. Models, tables, hypothesis tests, DAGs, figures, and Vega-Lite charts render as escaped HTML styled to match your theme.
+Paste the URL of a public or unlisted Framework artifact on its own line, or insert the **Framework artifact** block, to display the result in a post or page. Models, tables, hypothesis tests, DAGs, project structures, figures, and Vega-Lite charts render as escaped HTML styled to match your theme.
 
 Supported URLs:
 

@@ -1,0 +1,127 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "treemyproject001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "tree",
+    "title": "my-project structure",
+    "description": null,
+    "alt": "Folder tree of my-project: 6 folders and 3 files, 2 ignored.",
+    "url": "https://framework.pub/@ada/smoking/structure/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/treemyproject001/versions/1",
+    "published_at": "2026-11-25T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/structure/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "tree",
+        "tree": {
+            "root": "my-project",
+            "base": "",
+            "method": "git",
+            "counts": {
+                "dirs": 6,
+                "files": 3,
+                "hidden": 1539
+            },
+            "children": [
+                {
+                    "name": "data",
+                    "path": "data",
+                    "type": "dir",
+                    "open": true,
+                    "children": [
+                        {
+                            "name": "private",
+                            "path": "data/private",
+                            "type": "dir",
+                            "open": false,
+                            "private": true,
+                            "hidden": 3,
+                            "children": []
+                        },
+                        {
+                            "name": "raw",
+                            "path": "data/raw",
+                            "type": "dir",
+                            "open": false,
+                            "ignored": {
+                                "rule": "data/raw/",
+                                "source": ".gitignore",
+                                "line": 4
+                            },
+                            "hidden": 12,
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "outputs",
+                    "path": "outputs",
+                    "type": "dir",
+                    "open": true,
+                    "children": [
+                        {
+                            "name": "table.csv",
+                            "path": "outputs/table.csv",
+                            "type": "file"
+                        },
+                        {
+                            "name": "*.rds",
+                            "path": "outputs",
+                            "type": "ignored",
+                            "ignored": {
+                                "rule": "*.rds",
+                                "source": ".gitignore",
+                                "line": 7
+                            },
+                            "hidden": 4
+                        }
+                    ]
+                },
+                {
+                    "name": "R",
+                    "path": "R",
+                    "type": "dir",
+                    "note": "Reusable functions",
+                    "open": true,
+                    "children": [
+                        {
+                            "name": "clean.R",
+                            "path": "R/clean.R",
+                            "type": "file"
+                        }
+                    ]
+                },
+                {
+                    "name": "renv",
+                    "path": "renv",
+                    "type": "dir",
+                    "open": false,
+                    "depth": true,
+                    "hidden": 1520,
+                    "children": []
+                },
+                {
+                    "name": "README.md",
+                    "path": "README.md",
+                    "type": "file",
+                    "note": "Start here",
+                    "highlight": true
+                }
+            ]
+        }
+    },
+    "spec": null,
+    "image": null
+}

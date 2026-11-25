@@ -9,7 +9,7 @@ const load = (name) => JSON.parse(readFileSync(join(fixtures, name + '.json'), '
 const dom = (html) => { const host = document.createElement('div'); host.innerHTML = html; return host; };
 
 describe('escaping', () => {
-    for (const name of ['hostile-model', 'hostile-page', 'hostile-image', 'hostile-vega']) {
+    for (const name of ['hostile-model', 'hostile-page', 'hostile-image', 'hostile-vega', 'hostile-tree']) {
         it(`${name} creates no executable or injected markup`, () => {
             const html = render(load(name));
             expect(html).not.toMatch(/<script>|<img src=x|<b>|javascript:|data:text/i);

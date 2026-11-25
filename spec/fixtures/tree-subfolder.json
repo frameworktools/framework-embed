@@ -1,0 +1,111 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "treesubfolder001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "tree",
+    "title": "Model code",
+    "description": "The models folder of the mobility analysis.",
+    "alt": "Folder tree of analysis/models: 4 folders and 2 files, 3 ignored.",
+    "url": "https://framework.pub/@ada/smoking/structure-analysis-models/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/treesubfolder001/versions/1",
+    "published_at": "2026-11-25T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/structure-analysis-models/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "tree",
+        "tree": {
+            "root": "models",
+            "base": "analysis/models",
+            "method": "gitignore",
+            "counts": {
+                "dirs": 4,
+                "files": 4,
+                "hidden": 10012
+            },
+            "children": [
+                {
+                    "name": "bayes",
+                    "path": "bayes",
+                    "type": "dir",
+                    "open": false,
+                    "note": "Stan models, one per outcome",
+                    "children": [
+                        {
+                            "name": "fits",
+                            "path": "bayes/fits",
+                            "type": "dir",
+                            "open": false,
+                            "ignored": {
+                                "rule": "fits/",
+                                "source": "global"
+                            },
+                            "hidden": 10000,
+                            "children": []
+                        },
+                        {
+                            "name": "mobility.stan",
+                            "path": "bayes/mobility.stan",
+                            "type": "file",
+                            "highlight": true
+                        }
+                    ]
+                },
+                {
+                    "name": "empty",
+                    "path": "empty",
+                    "type": "dir",
+                    "open": true,
+                    "children": []
+                },
+                {
+                    "name": "scratch",
+                    "path": "scratch",
+                    "type": "dir",
+                    "open": false,
+                    "ignored": {
+                        "rule": "scratch/",
+                        "source": "info/exclude",
+                        "line": 2
+                    },
+                    "private": true,
+                    "hidden": 1,
+                    "children": []
+                },
+                {
+                    "name": "fit.R",
+                    "path": "fit.R",
+                    "type": "file",
+                    "note": "Fits every model in bayes/ and writes the draws to fits/, which git ignores."
+                },
+                {
+                    "name": "Makefile",
+                    "path": "Makefile",
+                    "type": "file"
+                },
+                {
+                    "name": "*.log",
+                    "path": "",
+                    "type": "ignored",
+                    "ignored": {
+                        "rule": "*.log"
+                    },
+                    "hidden": 11
+                }
+            ]
+        }
+    },
+    "spec": null,
+    "image": null
+}

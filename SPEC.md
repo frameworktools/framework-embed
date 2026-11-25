@@ -45,8 +45,8 @@ Private, password-protected, missing, and deleted artifacts return `404` with `C
 }
 ```
 
-- `kind` is `model`, `table`, `test`, `code_snippet`, `dag`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
-- `data` is set for `code_snippet` with the normalized snippet (see `code_snippet` below), for `dag` with the laid-out graph (see `dag` below), and for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
+- `kind` is `model`, `table`, `test`, `code_snippet`, `dag`, `tree`, `image`, `vega-lite`, or `page`. Renderers treat unknown values as `page`.
+- `data` is set for `code_snippet` with the normalized snippet (see `code_snippet` below), for `dag` with the laid-out graph (see `dag` below), for `tree` with the sorted folder tree (see `tree` below), and for `model`, `table`, and `test` using the normalized representation from `ArtifactRepresentation::parse` (tables capped at 10, rows at 1,000, columns at 50, with `truncated`, `row_count`, `column_count`, and `precision_note`).
 - `spec` is set for `vega-lite` and contains the Vega-Lite specification with inlined data.
 - `image` contains `url`, `content_type`, `width`, and `height`. It is set for `image`. It is optional for `vega-lite`, where it is a static rendering of the same chart, such as the SVG a ggplot was drawn to, shown wherever the chart cannot draw (see `vega-lite` below). It may be set for other kinds in future updates as a fallback. `width` and `height` may be `null`.
 - `page` covers HTML documents, Quarto sites, PDFs, data files, and other outputs. Renderers display a link card with the title, description, author, and attribution link.
@@ -120,12 +120,13 @@ Renderers:
 
 ## Display settings
 
-The artifact's owner decides on Framework Cloud what its embeds show, and the packages can set the same settings when they publish. Cloud leaves out what is turned off: a hidden title, description, or author is `null`; a hidden DAG analysis, DAGitty code, or source code drops `data.analysis`, `data.dagitty`, or `data.code`; hidden variable tips drop `data.variables` and `data.terms`; hidden column summaries drop each column's `summary`; hidden snippet links leave `data.display.links` empty; and a chart shown without interaction arrives as `image`. Renderers need nothing for these.
+The artifact's owner decides on Framework Cloud what its embeds show, and the packages can set the same settings when they publish. Cloud leaves out what is turned off: a hidden title, description, or author is `null`; a hidden DAG analysis, DAGitty code, or source code drops `data.analysis`, `data.dagitty`, or `data.code`; hidden variable tips drop `data.variables` and `data.terms`; hidden column summaries drop each column's `summary`; hidden snippet links leave `data.display.links` empty; hidden tree notes drop each node's `note`, and hidden ignored paths drop ignored stubs and groups (private stubs stay); and a chart shown without interaction arrives as `image`. Renderers need nothing for these.
 
 Two settings are flags, since what they hide also feeds what stays:
 
 - `data.display.details: false` on a `model` or `test`: no `Model details` or `Test details` disclosure. An importance table shows its first 10 rows, with the note a plain data table gets, and no continuation.
 - `data.display.legend: false` on a `dag`: no legend.
+- `data.display.notes: false` on a `tree`: no notes. `data.display.ignored: false`: no ignored groups, no ignored folders unless they are private, and private folders without their rule. Cloud strips these itself; the flags guard a document that still carries them.
 - `display.credit: false`, at the top level of any document: no link back (`fw-embed__credit`). When the title is hidden too, or the document is a `page`, the caption is left out.
 
 Older renderers ignore the flags and show the sections.
@@ -152,6 +153,7 @@ The JavaScript and PHP renderers produce identical HTML for each embed document,
 - `test`: method, test statistic, p-value, estimates, and confidence interval, followed by parameters and additional details in a `Test details` disclosure.
 - `code_snippet`: a bordered panel with a header, the code blocks, and the output blocks between them, then links to the notebook and model.
 - `dag`: an inline SVG of the graph and a legend of its roles, then disclosures for its description, analysis, DAGitty specification, and code.
+- `tree`: a monospace folder tree with box-drawing guides, folders as nested disclosures, and notes in a column.
 - `image`: `<img src alt loading="lazy">`.
 - `vega-lite`: `<div class="fw-embed__chart" data-fw-embed-chart>` containing the specification in `<script type="application/json">` and a fallback: the chart's static image when the document has one, otherwise its alt text and a link to the artifact. The JavaScript bundle renders the chart with `vega-embed`, which replaces the fallback. Without JavaScript, the fallback remains visible.
 - `page`: a link card.
@@ -509,6 +511,60 @@ A causal diagram with the DAGitty code that defines it. Framework Cloud parses t
 - `DAGitty specification` holds a panel for `dagitty` (`DAGitty`), and `{Language} code` (`R code`, `Python code`, or `Stata code`) one for `code` (`R`, `Python`, or `Stata`). Each panel is drawn from its `lines` as code snippet blocks are, with a copy button the JS bundle shows.
 
 Colors follow DAGitty: exposure green (`--fw-embed-dag-exposure`), outcome blue (`--fw-embed-dag-outcome`), adjusted with a heavy border, latent dashed. Edges use `--fw-embed-muted`.
+
+### `tree`
+
+A project structure: a folder tree with notes on its paths and the `.gitignore` rules that hide some of them. Clients build the tree and never publish ignored or private names; Framework Cloud validates it, adds missing parent folders, and sorts each folder's contents: folders, then files, then ignored groups, each by name ignoring case. Renderers keep that order. `data`:
+
+```json
+{
+  "schema": "framework.artifact/v1",
+  "kind": "tree",
+  "tree": {
+    "root": "my-project",
+    "base": "",
+    "method": "git",
+    "counts": {"dirs": 6, "files": 3, "hidden": 1539},
+    "children": [
+      {"name": "R", "path": "R", "type": "dir", "note": "Reusable functions", "open": true, "children": [
+        {"name": "clean.R", "path": "R/clean.R", "type": "file"}
+      ]},
+      {"name": "raw", "path": "data/raw", "type": "dir", "open": false, "ignored": {"rule": "data/raw/", "source": ".gitignore", "line": 4}, "hidden": 12, "children": []},
+      {"name": "*.rds", "path": "outputs", "type": "ignored", "ignored": {"rule": "*.rds", "source": ".gitignore", "line": 7}, "hidden": 4},
+      {"name": "README.md", "path": "README.md", "type": "file", "note": "Start here", "highlight": true}
+    ]
+  }
+}
+```
+
+- `root` is the published folder's name. `base` is its path from the project root, `""` for the root. `method` (`git`, `gitignore`, or `none`) and `counts` are for readers of the document; renderers don't show them.
+- A node's `type` is `dir`, `file`, or `ignored`. Every folder has `open` and `children`. A folder with `hidden`, `ignored`, `private: true`, or `depth: true` is a stub: its contents aren't listed and `hidden` counts its files. An `ignored` node is a group of ignored files in the folder `path`, named by its rule without a trailing `/`.
+- `note` is plain text up to 500 characters. `highlight: true` marks a row. `ignored` holds `rule`, and optionally `source` (a path relative to the root, `global`, or `info/exclude`) and `line`.
+- `hidden` stops at 10,000, which reads `10,000+ files`.
+
+```html
+<div class="fw-embed__tree" style="--fw-embed-tree-names: 15ch">
+<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">my-project/</span></div>
+<details class="fw-embed__tree-dir" open>
+<summary class="fw-embed__tree-row fw-embed__tree-row--dir"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├─  </span>R/</span><span class="fw-embed__tree-note">Reusable functions</span></summary>
+<div class="fw-embed__tree-row fw-embed__tree-row--file"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">│   └── </span>clean.R</span></div>
+</details>
+<div class="fw-embed__tree-row fw-embed__tree-row--dir fw-embed__tree-row--stub"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├── </span>raw/</span><span class="fw-embed__tree-badge" title=".gitignore line 4">ignored · data/raw/ · 12 files</span></div>
+<div class="fw-embed__tree-row fw-embed__tree-row--group fw-embed__tree-row--stub"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">├── </span>*.rds</span><span class="fw-embed__tree-badge" title=".gitignore line 7">ignored · *.rds · 4 files</span></div>
+<div class="fw-embed__tree-row fw-embed__tree-row--file fw-embed__tree-row--highlight"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">└── </span>README.md</span><span class="fw-embed__tree-note">Start here</span></div>
+</div>
+```
+
+- A document without `tree`, or whose `root` isn't a non-empty string, renders as `page`. A node is usable when it is an object with a non-empty string `name` and a known `type`; an ignored group may instead take its name from its rule. Unusable nodes are skipped.
+- The root row reads `root/`. When `base` is set, its folders above `root` (`base` split on `/`, with a last part equal to `root` dropped) lead the name in `fw-embed__tree-crumb`, ending in `/`.
+- Each row's guide is the guides of the folders above, `│   ` for a folder with later siblings and four spaces for a last one, then `├── `, or `└── ` for a last row. A folder with usable children is a `<details class="fw-embed__tree-dir">`, open when `open` is `true`, whose `<summary>` is its row and whose rows follow; its guide ends `├─  ` or `└─  `, leaving a cell for the disclosure marker. Other folders, files, and groups are `<div>` rows.
+- Row classes name the type (`--dir`, `--file`, `--group`), then `--stub` for stub folders and groups, then `--highlight`. Folder names end in `/`.
+- A stub or group carries a badge after its name, joined with ` · `: `private` when private, `ignored` for a group or an ignored folder, the rule, then the file count (`1 file`, `12 files`, `1,520 files`, `10,000+ files`). Its `title` names the rule's source: the source (`global` reads `global excludes file`, `info/exclude` reads `.git/info/exclude`), then `line N` for a positive integer line up to 1,000,000. No title without either.
+- A note follows the name, or the badge, in `fw-embed__tree-note`.
+- `--fw-embed-tree-names` is the widest root, guide, and name in code points, at most 48, in `ch`. Every name cell is at least that wide, so notes and badges line up. Rows inside closed folders count, so opening one never moves the column.
+- Folders deeper than 32 levels show as rows without their contents. Rendering stops after 5,000 rows.
+
+The tree uses `--fw-embed-code`, so the box-drawing guides join. Guides are faint, folder names bold, stubs and groups muted, and a highlighted row is tinted with `--fw-embed-accent`.
 
 ### `image`
 

@@ -20,7 +20,7 @@ final class SecurityTest extends TestCase
 
     public static function hostile(): array
     {
-        return ['model' => ['hostile-model'], 'page' => ['hostile-page'], 'image' => ['hostile-image'], 'vega' => ['hostile-vega']];
+        return ['model' => ['hostile-model'], 'page' => ['hostile-page'], 'image' => ['hostile-image'], 'vega' => ['hostile-vega'], 'tree' => ['hostile-tree']];
     }
 
     #[DataProvider('hostile')]

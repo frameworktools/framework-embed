@@ -7,7 +7,7 @@ export const FEATURE_LIMIT = 10;
 // Text values longer than this many characters take a full row of the statistics grid.
 export const WIDE_TEXT = 24;
 
-const KINDS = new Set(['model', 'table', 'test', 'code_snippet', 'dag', 'image', 'vega-lite', 'page']);
+const KINDS = new Set(['model', 'table', 'test', 'code_snippet', 'dag', 'tree', 'image', 'vega-lite', 'page']);
 
 const COLUMN_LABELS = {
     term: 'Term', estimate: 'Estimate', std_error: 'Std. error', statistic: 'Statistic', p_value: 'p-value',
@@ -80,6 +80,7 @@ export function render(doc) {
     else if (kind === 'test') body = renderTest(doc);
     else if (kind === 'code_snippet') body = renderSnippet(doc);
     else if (kind === 'dag') body = renderDag(doc);
+    else if (kind === 'tree') body = renderTree(doc);
     else if (kind === 'image') body = renderImage(doc);
     else if (kind === 'vega-lite') body = renderChart(doc);
     if (body === null) {
@@ -993,6 +994,127 @@ function renderDag(doc) {
         ...details('DAGitty specification', dagitty === null ? [] : [dagitty]),
         ...details(`${language} code`, code === null ? [] : [code]));
     return parts.join('\n');
+}
+
+// --- project structures -------------------------------------------------------
+// A folder tree, drawn as fw_structure() prints it: box-drawing guides, folders as native
+// disclosures, and notes in a column. Framework Cloud sorts the tree and strips what the
+// owner turned off; renderers draw what they get.
+
+// Deeper folders show as rows without their contents, and rows past the limit are left out.
+const TREE_DEPTH = 32;
+const TREE_ROWS = 5000;
+// The name column, in ch, never starts wider than this; a longer name pushes its note right.
+const TREE_NAMES = 48;
+const TREE_COUNT_CAP = 10000;
+const TREE_SOURCES = { global: 'global excludes file', 'info/exclude': '.git/info/exclude' };
+
+const treeLength = (value) => Array.from(value).length;
+const treeCountValid = (value) => Number.isInteger(value) && value >= 0;
+
+// 1 file, 12 files, 1,520 files; 10,000 or more reads 10,000+ files.
+function treeCount(count) {
+    if (count >= TREE_COUNT_CAP) return '10,000+ files';
+    return `${String(count).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} ${count === 1 ? 'file' : 'files'}`;
+}
+
+// The rule that ignores a path, when it names one.
+const treeIgnored = (value) => (isObject(value) && text(value.rule) !== null ? value : null);
+
+// Where a rule comes from: ".gitignore line 7", or null when the document doesn't say.
+function treeSource(ignored) {
+    const source = text(ignored.source);
+    const parts = source === null ? [] : [known(TREE_SOURCES, source) ? TREE_SOURCES[source] : source];
+    if (Number.isInteger(ignored.line) && ignored.line > 0 && ignored.line <= 1000000) parts.push(`line ${ignored.line}`);
+    return parts.length === 0 ? null : parts.join(' ');
+}
+
+// A list's usable nodes, in document order.
+function treeNodes(children, data) {
+    const showIgnored = !hidden(data, 'ignored');
+    return list(children).flatMap((node) => {
+        if (!isObject(node)) return [];
+        const ignored = showIgnored ? treeIgnored(node.ignored) : null;
+        const hiddenCount = treeCountValid(node.hidden) ? node.hidden : null;
+        const shared = { note: text(node.note), highlight: node.highlight === true, hidden: hiddenCount };
+        if (node.type === 'file') {
+            return text(node.name) === null ? [] : [{ ...shared, type: 'file', name: node.name, ignored: null, private: false }];
+        }
+        if (node.type === 'ignored') {
+            if (!showIgnored) return [];
+            const name = text(node.name) ?? (ignored === null ? null : text(ignored.rule.replace(/\/+$/, '')));
+            return name === null ? [] : [{ ...shared, type: 'group', name, ignored, private: false }];
+        }
+        if (node.type !== 'dir' || text(node.name) === null) return [];
+        const isPrivate = node.private === true;
+        // An ignored folder that isn't private leaves with the other ignored paths
+        if (!showIgnored && treeIgnored(node.ignored) !== null && !isPrivate) return [];
+        const stub = hiddenCount !== null || isPrivate || ignored !== null || node.depth === true;
+        return [{ ...shared, type: 'dir', name: node.name, ignored, private: isPrivate, stub, open: node.open === true, children: stub ? [] : node.children }];
+    });
+}
+
+// The badge on a stub or an ignored group: "ignored · *.rds · 4 files", "private · 3 files", "12 files".
+function treeBadge(node) {
+    const parts = [];
+    if (node.private) parts.push('private');
+    if (node.type === 'group' || node.ignored !== null) parts.push('ignored');
+    if (node.ignored !== null) parts.push(escapeHtml(node.ignored.rule));
+    if (node.hidden !== null) parts.push(treeCount(node.hidden));
+    if (parts.length === 0) return '';
+    const source = node.ignored === null ? null : treeSource(node.ignored);
+    return `<span class="fw-embed__tree-badge"${source === null ? '' : ` title="${escapeHtml(source)}"`}>${parts.join(' · ')}</span>`;
+}
+
+function treeRow(tag, node, guide, data) {
+    const stub = node.type === 'group' || (node.type === 'dir' && node.stub);
+    const classes = ['fw-embed__tree-row', `fw-embed__tree-row--${node.type}`];
+    if (stub) classes.push('fw-embed__tree-row--stub');
+    if (node.highlight) classes.push('fw-embed__tree-row--highlight');
+    const label = node.type === 'dir' ? node.name + '/' : node.name;
+    const note = node.note === null || hidden(data, 'notes') ? '' : `<span class="fw-embed__tree-note">${escapeHtml(node.note)}</span>`;
+    return `<${tag} class="${classes.join(' ')}"><span class="fw-embed__tree-name">`
+        + `<span class="fw-embed__tree-guide" aria-hidden="true">${guide}</span>${escapeHtml(label)}</span>`
+        + `${stub ? treeBadge(node) : ''}${note}</${tag}>`;
+}
+
+// Rows for one folder's contents. `prefix` carries the guides of the folders above.
+function treeRows(nodes, prefix, depth, data, state, out) {
+    nodes.forEach((node, index) => {
+        if (state.rows >= TREE_ROWS) return;
+        state.rows += 1;
+        const last = index === nodes.length - 1;
+        const children = node.type === 'dir' && !node.stub && depth < TREE_DEPTH ? treeNodes(node.children, data) : [];
+        if (children.length === 0) {
+            const guide = prefix + (last ? '└── ' : '├── ');
+            state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + (node.type === 'dir' ? 1 : 0));
+            out.push(treeRow('div', node, guide, data));
+            return;
+        }
+        // A folder's guide leaves a cell for its disclosure marker: "├─  R/"
+        const guide = prefix + (last ? '└─  ' : '├─  ');
+        state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + 1);
+        out.push(`<details class="fw-embed__tree-dir"${node.open ? ' open' : ''}>`, treeRow('summary', node, guide, data));
+        treeRows(children, prefix + (last ? '    ' : '│   '), depth + 1, data, state, out);
+        out.push('</details>');
+    });
+}
+
+function renderTree(doc) {
+    const data = doc.data;
+    if (!isObject(data) || !isObject(data.tree) || text(data.tree.root) === null) return null;
+    const tree = data.tree;
+    // The breadcrumb: the folders above the published one, when it isn't the project root
+    const base = text(tree.base) === null ? [] : tree.base.split('/').filter((part) => part !== '');
+    if (base.length > 0 && base[base.length - 1] === tree.root) base.pop();
+    const crumb = base.length === 0 ? '' : base.join('/') + '/';
+    const state = { rows: 0, width: treeLength(crumb) + treeLength(tree.root) + 1 };
+    const rows = [];
+    treeRows(treeNodes(tree.children, data), '', 1, data, state, rows);
+    return [`<div class="fw-embed__tree" style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
+        `<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">`
+            + `${crumb === '' ? '' : `<span class="fw-embed__tree-crumb">${escapeHtml(crumb)}</span>`}${escapeHtml(tree.root)}/</span></div>`,
+        ...rows, '</div>'].join('\n');
 }
 
 // --- other kinds ------------------------------------------------------------

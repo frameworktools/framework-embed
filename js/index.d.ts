@@ -3,7 +3,7 @@ export interface EmbedDocument {
     key?: string;
     version?: number;
     latest_version?: number;
-    kind: 'model' | 'table' | 'test' | 'code_snippet' | 'image' | 'vega-lite' | 'page' | string;
+    kind: 'model' | 'table' | 'test' | 'code_snippet' | 'dag' | 'tree' | 'image' | 'vega-lite' | 'page' | string;
     title?: string | null;
     description?: string | null;
     alt?: string | null;
