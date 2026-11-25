@@ -50,7 +50,7 @@ Upload the archive under **Plugins → Add New → Upload Plugin** and activate 
 Neither the module nor `framework-cloud/embed` is on Packagist or drupal.org. Clone this repository at a release tag, then register both directories as Composer path repositories in the site's root `composer.json`:
 
 ```sh
-git clone --branch v0.10.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+git clone --branch v0.11.0 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-drupal '{"type":"path","url":"/path/to/framework-embed/drupal","options":{"versions":{"drupal/framework_embed":"0.1.0"}}}'
 composer require drupal/framework_embed:0.1.0 framework-cloud/embed:0.1.0
@@ -66,7 +66,7 @@ Add a **Framework artifact** field to a content type for stored embeds. For live
 The addon and `framework-cloud/embed` are not on Packagist. Clone this repository at a release tag and register both directories as path repositories:
 
 ```sh
-git clone --branch v0.10.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+git clone --branch v0.11.0 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-statamic '{"type":"path","url":"/path/to/framework-embed/statamic","options":{"versions":{"framework-cloud/statamic-embed":"0.1.0"}}}'
 composer require framework-cloud/statamic-embed:0.1.0 framework-cloud/embed:0.1.0
@@ -87,7 +87,7 @@ The JavaScript package is not on npm. Each [release](https://github.com/framewor
 | `framework-embed.iife.js` | Script-tag build. It sets `window.FrameworkEmbed`, applies `window.FrameworkEmbedConfig`, registers `<framework-artifact>`, prepares disclosures for printing, and draws charts and sets up variable tips, copy buttons, and output toggles on load. |
 | `framework-embed.js` | ES module with the same exports. Importing it registers no custom element and adds no event listeners. |
 
-Host the files with your site, or load them from jsDelivr at a pinned tag, such as `https://cdn.jsdelivr.net/gh/frameworktools/framework-embed@v0.10.1/php/assets/framework-embed.iife.js`. GitHub Pages serves the latest release under unversioned names at `https://frameworktools.github.io/framework-embed/`.
+Host the files with your site, or load them from jsDelivr at a pinned tag, such as `https://cdn.jsdelivr.net/gh/frameworktools/framework-embed@v0.11.0/php/assets/framework-embed.iife.js`. GitHub Pages serves the latest release under unversioned names at `https://frameworktools.github.io/framework-embed/`.
 
 Include the stylesheet and script-tag build to use `<framework-artifact>` on any HTML page:
 
@@ -144,13 +144,13 @@ The PHP package is not on Packagist. Install it with Composer from a release arc
             "type": "package",
             "package": {
                 "name": "framework-cloud/embed",
-                "version": "0.10.1",
-                "dist": {"type": "zip", "url": "https://github.com/frameworktools/framework-embed/archive/refs/tags/v0.10.1.zip"},
+                "version": "0.11.0",
+                "dist": {"type": "zip", "url": "https://github.com/frameworktools/framework-embed/archive/refs/tags/v0.11.0.zip"},
                 "autoload": {"psr-4": {"Framework\\Embed\\": "php/src/"}}
             }
         }
     ],
-    "require": {"framework-cloud/embed": "0.10.1"}
+    "require": {"framework-cloud/embed": "0.11.0"}
 }
 ```
 
