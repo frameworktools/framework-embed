@@ -9,7 +9,7 @@ The module fetches embed documents from framework.pub and from self-hosted Frame
 The module and `framework-cloud/embed` are not on Packagist or drupal.org. Clone this repository at a release tag and register both directories as path repositories in the site's root `composer.json`:
 
 ```sh
-git clone --branch v0.11.0 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
+git clone --branch v0.11.1 https://github.com/frameworktools/framework-embed.git /path/to/framework-embed
 composer config repositories.framework-embed-php '{"type":"path","url":"/path/to/framework-embed/php","options":{"versions":{"framework-cloud/embed":"0.1.0"}}}'
 composer config repositories.framework-embed-drupal '{"type":"path","url":"/path/to/framework-embed/drupal","options":{"versions":{"drupal/framework_embed":"0.1.0"}}}'
 composer require drupal/framework_embed:0.1.0 framework-cloud/embed:0.1.0
