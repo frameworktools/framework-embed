@@ -95,6 +95,9 @@ A bare host name such as `framework.example.org` allows HTTPS on the default por
 
 == Changelog ==
 
+= 0.11.2 =
+* The Show less chevron points straight up.
+
 = 0.11.1 =
 * A clipped project structure fades out more clearly, and its Show more button is easier to see, with a chevron.
 
