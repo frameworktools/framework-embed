@@ -115,6 +115,7 @@ describe('long trees', () => {
         const button = host.querySelector('.fw-embed__more');
         expect(tree.classList.contains('fw-embed__tree--clipped')).toBe(true);
         expect(button.hidden).toBe(false);
+        expect(button.parentElement.classList.contains('fw-embed__tree-panel')).toBe(true);
         button.click();
         expect(tree.classList.contains('fw-embed__tree--clipped')).toBe(false);
         expect([button.textContent, button.getAttribute('aria-expanded')]).toEqual(['Show less', 'true']);

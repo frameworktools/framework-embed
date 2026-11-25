@@ -1882,14 +1882,14 @@ final class Renderer
         $state = ['rows' => 0, 'visible' => 1, 'width' => self::treeLength($crumb) + self::treeLength($tree['root']) + 1];
         $rows = [];
         self::treeRows(self::treeNodes($tree['children'] ?? null, $data), '', 1, $data, $state, $rows, true);
-        // A long tree starts clipped, with a button to show the rest; the JS bundle clips it and shows the button
+        // A long tree starts clipped, with a button under it in the panel; the JS bundle clips it and shows the button
         $clip = $state['visible'] > self::TREE_CLIP_ROWS && (self::obj($data['display'] ?? null)['full'] ?? null) !== true;
 
-        return implode("\n", ['<div class="fw-embed__tree"' . ($clip ? ' data-fw-embed-clip' : '') . ' style="--fw-embed-tree-names: ' . min($state['width'], self::TREE_NAMES) . 'ch">',
+        return implode("\n", ['<div class="fw-embed__tree-panel">', '<div class="fw-embed__tree"' . ($clip ? ' data-fw-embed-clip' : '') . ' style="--fw-embed-tree-names: ' . min($state['width'], self::TREE_NAMES) . 'ch">',
             '<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">'
                 . ($crumb === '' ? '' : '<span class="fw-embed__tree-crumb">' . self::e($crumb) . '</span>') . self::e($tree['root']) . '/</span></div>',
             ...$rows, '</div>',
-            ...($clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : [])]);
+            ...($clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : []), '</div>']);
     }
 
     private static function page(array $doc): string

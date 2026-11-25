@@ -95,6 +95,9 @@ A bare host name such as `framework.example.org` allows HTTPS on the default por
 
 == Changelog ==
 
+= 0.11.0 =
+* A long project structure's Show more button sits inside its border, under the rows, and doesn't fade.
+
 = 0.10.1 =
 * A clipped project structure keeps its border; only its contents fade.
 

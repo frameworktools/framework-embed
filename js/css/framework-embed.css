@@ -592,12 +592,11 @@ framework-artifact { display: block; }
  * badges line up in one column. A folder's guide leaves a blank cell before its name for the
  * disclosure marker. Stubs and ignored groups are dimmed; highlighted rows are tinted.
  */
+.fw-embed__tree-panel { min-width: 0; overflow: hidden; border: 1px solid var(--fw-embed-border); border-radius: 0.5em; }
 .fw-embed__tree {
     min-width: 0;
     overflow-x: auto;
     padding: 0.75em 0.875em;
-    border: 1px solid var(--fw-embed-border);
-    border-radius: 0.5em;
     font-family: var(--fw-embed-code);
     font-size: calc(0.8125em / 0.875);
     font-variant-ligatures: none;
@@ -652,39 +651,33 @@ framework-artifact { display: block; }
 .fw-embed__tree-dir[open] > summary .fw-embed__tree-guide::after { transform: translateY(-70%) rotate(45deg); }
 
 /*
- * A long tree starts clipped at 12 rows (the top padding plus 12 line boxes of 1.25em), its contents
- * fading out over the last three through a mask, so it suits light and dark pages. The mask keeps
- * the border solid: a solid layer over the border box, XOR a solid layer over the padding box, is
- * the border ring, and the fade over the padding box is added on top. The JS bundle adds the class
- * and shows the button; without it the whole tree shows.
+ * A long tree starts clipped at 12 rows (the top padding plus 12 line boxes of 1.25em), fading out
+ * over its last three through a mask, so it suits light and dark pages. The border is on the panel,
+ * so it stays solid. The Show more button sits under the rows inside the panel, unfaded, its text in
+ * line with the tree's. The JS bundle adds the class and shows the button; without it the whole tree shows.
  */
 .fw-embed__tree--clipped {
-    --fw-embed-tree-fade: linear-gradient(to bottom, #000 calc(100% - 3.75em), transparent);
-    max-height: calc(0.75em + 12 * 1.25em + 1px);
+    max-height: calc(0.75em + 12 * 1.25em);
     overflow: hidden;
-    -webkit-mask-image: var(--fw-embed-tree-fade), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-    mask-image: var(--fw-embed-tree-fade), linear-gradient(#000 0 0), linear-gradient(#000 0 0);
-    -webkit-mask-clip: padding-box, padding-box, border-box;
-    mask-clip: padding-box, padding-box, border-box;
-    -webkit-mask-composite: source-over, xor;
-    mask-composite: add, exclude;
+    -webkit-mask-image: linear-gradient(to bottom, #000 calc(100% - 3.75em), transparent);
+    mask-image: linear-gradient(to bottom, #000 calc(100% - 3.75em), transparent);
 }
-.fw-embed__tree + .fw-embed__more {
+.fw-embed__tree-panel > .fw-embed__more {
     display: block;
     width: max-content;
-    margin: 0.5em 0 0;
-    padding: 0.125em 0.5em;
-    border: 1px solid var(--fw-embed-border);
-    border-radius: 0.375em;
+    margin: 0;
+    /* Left edge in line with the tree's text: 0.875em of the tree's 0.8125em type, in this 0.75em type */
+    padding: 0.125em calc(0.875em * 0.8125 / 0.75) 0.75em;
+    border: 0;
     background: none;
     color: var(--fw-embed-muted);
     font: inherit;
     font-size: calc(0.75em / 0.875);
     cursor: pointer;
 }
-.fw-embed__tree + .fw-embed__more:hover { color: var(--fw-embed-fg, inherit); border-color: var(--fw-embed-muted); }
-.fw-embed__tree + .fw-embed__more:focus-visible { outline: 2px solid var(--fw-embed-accent); outline-offset: 2px; }
-.fw-embed__tree + .fw-embed__more[hidden] { display: none; }
+.fw-embed__tree-panel > .fw-embed__more:hover { color: var(--fw-embed-fg, inherit); text-decoration: underline; text-underline-offset: 0.15em; }
+.fw-embed__tree-panel > .fw-embed__more:focus-visible { outline: 2px solid var(--fw-embed-accent); outline-offset: -2px; border-radius: 0.375em; }
+.fw-embed__tree-panel > .fw-embed__more[hidden] { display: none; }
 
 @media print {
     .fw-embed { break-inside: avoid; color: #000; }
@@ -709,8 +702,9 @@ framework-artifact { display: block; }
     .fw-embed__output { overflow: visible; white-space: pre-wrap; }
     .fw-embed__dag { overflow: visible; }
     .fw-embed__dag-graph { min-width: 0 !important; }
+    .fw-embed__tree-panel,
     .fw-embed__tree { overflow: visible; }
     .fw-embed__tree--clipped { max-height: none; -webkit-mask-image: none; mask-image: none; }
-    .fw-embed__tree + .fw-embed__more { display: none; }
+    .fw-embed__tree-panel > .fw-embed__more { display: none; }
     .fw-embed__tree-row--highlight { print-color-adjust: exact; -webkit-print-color-adjust: exact; }
 }

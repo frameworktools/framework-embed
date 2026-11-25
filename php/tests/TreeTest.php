@@ -78,12 +78,13 @@ final class TreeTest extends TestCase
     public function test_long_trees_start_clipped(): void
     {
         $html = Renderer::render(self::load('tree-long'));
-        $this->assertStringContainsString('<div class="fw-embed__tree" data-fw-embed-clip style=', $html);
-        $this->assertStringContainsString("</div>\n" . '<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>', $html);
+        $this->assertStringContainsString('<div class="fw-embed__tree-panel">' . "\n" . '<div class="fw-embed__tree" data-fw-embed-clip style=', $html);
+        $this->assertStringContainsString("</div>\n" . '<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>' . "\n</div>\n</div>", $html);
         foreach (['tree-long-full', 'r-tree', 'tree-subfolder'] as $name) {
             $html = Renderer::render(self::load($name));
             $this->assertStringNotContainsString('data-fw-embed-clip', $html, $name);
             $this->assertStringNotContainsString('fw-embed__more', $html, $name);
+            $this->assertStringContainsString('<div class="fw-embed__tree-panel">' . "\n" . '<div class="fw-embed__tree" style=', $html, $name);
         }
         $files = fn (int $count) => array_map(fn (int $i) => ['name' => "f{$i}", 'type' => 'file'], range(1, $count));
         $this->assertStringNotContainsString('data-fw-embed-clip', Renderer::render(self::tree($files(14))));

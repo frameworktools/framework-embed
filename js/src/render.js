@@ -1115,13 +1115,13 @@ function renderTree(doc) {
     const state = { rows: 0, visible: 1, width: treeLength(crumb) + treeLength(tree.root) + 1 };
     const rows = [];
     treeRows(treeNodes(tree.children, data), '', 1, data, state, rows, true);
-    // A long tree starts clipped, with a button to show the rest; the JS bundle clips it and shows the button
+    // A long tree starts clipped, with a button under it in the panel; the JS bundle clips it and shows the button
     const clip = state.visible > TREE_CLIP_ROWS && !(isObject(data.display) && data.display.full === true);
-    return [`<div class="fw-embed__tree"${clip ? ' data-fw-embed-clip' : ''} style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
+    return ['<div class="fw-embed__tree-panel">', `<div class="fw-embed__tree"${clip ? ' data-fw-embed-clip' : ''} style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
         `<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">`
             + `${crumb === '' ? '' : `<span class="fw-embed__tree-crumb">${escapeHtml(crumb)}</span>`}${escapeHtml(tree.root)}/</span></div>`,
         ...rows, '</div>',
-        ...(clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : [])].join('\n');
+        ...(clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : []), '</div>'].join('\n');
 }
 
 // --- other kinds ------------------------------------------------------------

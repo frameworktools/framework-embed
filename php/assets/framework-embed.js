@@ -1170,11 +1170,13 @@ function renderTree(doc) {
   treeRows(treeNodes(tree.children, data), "", 1, data, state, rows, true);
   const clip = state.visible > TREE_CLIP_ROWS && !(isObject(data.display) && data.display.full === true);
   return [
+    '<div class="fw-embed__tree-panel">',
     `<div class="fw-embed__tree"${clip ? " data-fw-embed-clip" : ""} style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
     `<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">${crumb === "" ? "" : `<span class="fw-embed__tree-crumb">${escapeHtml(crumb)}</span>`}${escapeHtml(tree.root)}/</span></div>`,
     ...rows,
     "</div>",
-    ...clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : []
+    ...clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : [],
+    "</div>"
   ].join("\n");
 }
 function renderImage(doc) {

@@ -71,12 +71,15 @@ describe('tree view', () => {
         expect(tree.classList.contains('fw-embed__tree--clipped')).toBe(false);
         const button = tree.nextElementSibling;
         expect(button.outerHTML).toBe('<button type="button" class="fw-embed__more" hidden="" aria-expanded="false">Show more</button>');
-        expect(button.closest('figure')).not.toBeNull();
+        expect(button.parentElement.className).toBe('fw-embed__tree-panel');
+        expect([...button.parentElement.children].map((child) => child.className)).toEqual(['fw-embed__tree', 'fw-embed__more']);
     });
 
     it('shows the whole tree when data.display.full is true, or when 15 rows or fewer start showing', () => {
         for (const doc of [load('tree-long-full'), load('r-tree'), load('tree-subfolder')]) {
             const html = render(doc);
+            // The panel holds the tree alone
+            expect([...dom(doc).querySelector('.fw-embed__tree-panel').children].map((child) => child.className)).toEqual(['fw-embed__tree']);
             expect(html).not.toContain('data-fw-embed-clip');
             expect(html).not.toContain('fw-embed__more');
         }
