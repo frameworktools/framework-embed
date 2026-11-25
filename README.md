@@ -11,7 +11,7 @@ Each public or unlisted artifact on [framework.pub](https://framework.pub) or a 
 - **Hypothesis tests.** Test statistic, p-value, and estimate with its confidence interval, with additional parameters under **Test details**.
 - **Code snippets.** R, Python, or Stata code with highlighting, and the output, messages, warnings, and errors it printed. Long output folds. The JavaScript bundle adds buttons to copy the code and show or hide the output. `?output=none` on the artifact URL starts with the output hidden.
 - **DAGs.** Causal diagrams drawn as SVG, with exposure, outcome, adjusted, and latent variables marked. The description, the adjustment sets and testable implications, the DAGitty specification that defines the graph, and the R, Python, or Stata code that built it each open in a section of their own, with copy buttons on the code.
-- **Project structures.** Folder trees drawn as `fw_structure()` prints them, with folders that open and close, notes in a column, and ignored, private, and deep folders shown as dimmed stubs with their file counts and the `.gitignore` rule that hides them.
+- **Project structures.** Folder trees drawn as `fw_structure()` prints them, with folders that open and close, notes in a column, and ignored, private, and deep folders shown as dimmed stubs with their file counts and the `.gitignore` rule that hides them. A tree with more than 15 rows showing starts clipped, with a **Show more** button, unless its owner turns on **Whole tree** on Framework Cloud.
 - **Figures.** SVG, PNG, JPEG, GIF, and WebP images.
 - **Charts.** Interactive Vega-Lite charts rendered with `vega-embed`. A chart published with a static image, such as a ggplot, shows that image until the chart draws, and wherever it cannot: without JavaScript, in feed readers and email, and in print. On a dark page, a chart without its own palette uses a palette made for dark backgrounds.
 - **Other artifacts.** Link cards for HTML documents, Quarto sites, PDFs, and downloadable files.
@@ -115,7 +115,7 @@ const html = render(doc); // escaped HTML string, for server rendering or a buil
 mount(document.querySelector('#figure'), doc); // insert the HTML into an attached element, then draw charts and set up tips and snippet buttons
 ```
 
-After inserting `render()` output any other way, call `enhanceCharts(root)`, `enhanceTips(root)`, `enhanceCopy(root)`, and `enhanceOutput(root)` on the element that contains it, once that element is in the document. See `js/README.md` for the full JavaScript API.
+After inserting `render()` output any other way, call `enhanceCharts(root)`, `enhanceTips(root)`, `enhanceCopy(root)`, `enhanceOutput(root)`, and `enhanceTrees(root)` on the element that contains it, once that element is in the document. See `js/README.md` for the full JavaScript API.
 
 For the logistic regression in `spec/fixtures/r-glm-logit.json`, the rendered coefficient table opens on the odds ratio scale, with a switch to log odds:
 

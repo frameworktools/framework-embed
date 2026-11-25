@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { chartTheme, configure, defineElement, enhanceCharts, mount, prefersDark, responsiveSpec } from '../src/browser.js';
+import { chartTheme, configure, defineElement, enhanceCharts, enhanceTrees, mount, prefersDark, responsiveSpec } from '../src/browser.js';
 
 const fixtures = join(dirname(fileURLToPath(import.meta.url)), '../../spec/fixtures');
 const load = (name) => JSON.parse(readFileSync(join(fixtures, name + '.json'), 'utf8'));
@@ -103,6 +103,37 @@ describe('<framework-artifact>', () => {
         await vi.waitFor(() => expect(el.getAttribute('data-fw-embed-state')).toBe('error'));
         expect(fetch).not.toHaveBeenCalled();
         expect(el.textContent).toBe('fallback');
+    });
+});
+
+describe('long trees', () => {
+    it('clips a long tree and toggles it with its button', () => {
+        const host = document.createElement('div');
+        document.body.append(host);
+        mount(host, load('tree-long'), { lazy: false });
+        const tree = host.querySelector('.fw-embed__tree');
+        const button = host.querySelector('.fw-embed__more');
+        expect(tree.classList.contains('fw-embed__tree--clipped')).toBe(true);
+        expect(button.hidden).toBe(false);
+        button.click();
+        expect(tree.classList.contains('fw-embed__tree--clipped')).toBe(false);
+        expect([button.textContent, button.getAttribute('aria-expanded')]).toEqual(['Show less', 'true']);
+        button.click();
+        expect(tree.classList.contains('fw-embed__tree--clipped')).toBe(true);
+        expect([button.textContent, button.getAttribute('aria-expanded')]).toEqual(['Show more', 'false']);
+        // Enhancing again wires nothing twice
+        enhanceTrees(host);
+        button.click();
+        expect(button.textContent).toBe('Show less');
+    });
+
+    it('leaves a short tree and a whole tree alone', () => {
+        for (const name of ['r-tree', 'tree-long-full']) {
+            const host = document.createElement('div');
+            mount(host, load(name), { lazy: false });
+            expect(host.querySelector('.fw-embed__tree--clipped')).toBeNull();
+            expect(host.querySelector('.fw-embed__more')).toBeNull();
+        }
     });
 });
 

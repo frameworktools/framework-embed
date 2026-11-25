@@ -125,6 +125,16 @@ final class FrameworkEmbedKernelTest extends KernelTestBase {
     $this->assertSame(2, $this->requests(), 'Later views render from the cache.');
   }
 
+  public function testALongTreeAttachesTheScript(): void {
+    $text = "<p>https://framework.pub/d/tree-long</p>";
+    $this->filtered($text);
+    $this->afterResponse();
+    [$html, $build] = $this->filtered($text);
+
+    $this->assertStringContainsString('data-fw-embed-clip', $html);
+    $this->assertContains('framework_embed/chart', $build['#attached']['library']);
+  }
+
   public function testEveryFixtureMatchesTheSpec(): void {
     $text = '';
     $names = [];

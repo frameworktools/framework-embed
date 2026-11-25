@@ -1007,6 +1007,8 @@ const TREE_ROWS = 5000;
 // The name column, in ch, never starts wider than this; a longer name pushes its note right.
 const TREE_NAMES = 48;
 const TREE_COUNT_CAP = 10000;
+// A tree showing more rows than this at first starts clipped, unless data.display.full is true.
+const TREE_CLIP_ROWS = 15;
 const TREE_SOURCES = { global: 'global excludes file', 'info/exclude': '.git/info/exclude' };
 
 const treeLength = (value) => Array.from(value).length;
@@ -1078,11 +1080,13 @@ function treeRow(tag, node, guide, data) {
         + `${stub ? treeBadge(node) : ''}${note}</${tag}>`;
 }
 
-// Rows for one folder's contents. `prefix` carries the guides of the folders above.
-function treeRows(nodes, prefix, depth, data, state, out) {
+// Rows for one folder's contents. `prefix` carries the guides of the folders above, and
+// `visible` says whether every folder above starts open.
+function treeRows(nodes, prefix, depth, data, state, out, visible) {
     nodes.forEach((node, index) => {
         if (state.rows >= TREE_ROWS) return;
         state.rows += 1;
+        if (visible) state.visible += 1;
         const last = index === nodes.length - 1;
         const children = node.type === 'dir' && !node.stub && depth < TREE_DEPTH ? treeNodes(node.children, data) : [];
         if (children.length === 0) {
@@ -1095,7 +1099,7 @@ function treeRows(nodes, prefix, depth, data, state, out) {
         const guide = prefix + (last ? '└─  ' : '├─  ');
         state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + 1);
         out.push(`<details class="fw-embed__tree-dir"${node.open ? ' open' : ''}>`, treeRow('summary', node, guide, data));
-        treeRows(children, prefix + (last ? '    ' : '│   '), depth + 1, data, state, out);
+        treeRows(children, prefix + (last ? '    ' : '│   '), depth + 1, data, state, out, visible && node.open);
         out.push('</details>');
     });
 }
@@ -1108,13 +1112,16 @@ function renderTree(doc) {
     const base = text(tree.base) === null ? [] : tree.base.split('/').filter((part) => part !== '');
     if (base.length > 0 && base[base.length - 1] === tree.root) base.pop();
     const crumb = base.length === 0 ? '' : base.join('/') + '/';
-    const state = { rows: 0, width: treeLength(crumb) + treeLength(tree.root) + 1 };
+    const state = { rows: 0, visible: 1, width: treeLength(crumb) + treeLength(tree.root) + 1 };
     const rows = [];
-    treeRows(treeNodes(tree.children, data), '', 1, data, state, rows);
-    return [`<div class="fw-embed__tree" style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
+    treeRows(treeNodes(tree.children, data), '', 1, data, state, rows, true);
+    // A long tree starts clipped, with a button to show the rest; the JS bundle clips it and shows the button
+    const clip = state.visible > TREE_CLIP_ROWS && !(isObject(data.display) && data.display.full === true);
+    return [`<div class="fw-embed__tree"${clip ? ' data-fw-embed-clip' : ''} style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
         `<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">`
             + `${crumb === '' ? '' : `<span class="fw-embed__tree-crumb">${escapeHtml(crumb)}</span>`}${escapeHtml(tree.root)}/</span></div>`,
-        ...rows, '</div>'].join('\n');
+        ...rows, '</div>',
+        ...(clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : [])].join('\n');
 }
 
 // --- other kinds ------------------------------------------------------------

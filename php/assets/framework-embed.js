@@ -1082,6 +1082,7 @@ var TREE_DEPTH = 32;
 var TREE_ROWS = 5e3;
 var TREE_NAMES = 48;
 var TREE_COUNT_CAP = 1e4;
+var TREE_CLIP_ROWS = 15;
 var TREE_SOURCES = { global: "global excludes file", "info/exclude": ".git/info/exclude" };
 var treeLength = (value) => Array.from(value).length;
 var treeCountValid = (value) => Number.isInteger(value) && value >= 0;
@@ -1137,10 +1138,11 @@ function treeRow(tag, node, guide, data) {
   const note = node.note === null || hidden(data, "notes") ? "" : `<span class="fw-embed__tree-note">${escapeHtml(node.note)}</span>`;
   return `<${tag} class="${classes.join(" ")}"><span class="fw-embed__tree-name"><span class="fw-embed__tree-guide" aria-hidden="true">${guide}</span>${escapeHtml(label)}</span>${stub ? treeBadge(node) : ""}${note}</${tag}>`;
 }
-function treeRows(nodes, prefix, depth, data, state, out) {
+function treeRows(nodes, prefix, depth, data, state, out, visible) {
   nodes.forEach((node, index) => {
     if (state.rows >= TREE_ROWS) return;
     state.rows += 1;
+    if (visible) state.visible += 1;
     const last = index === nodes.length - 1;
     const children = node.type === "dir" && !node.stub && depth < TREE_DEPTH ? treeNodes(node.children, data) : [];
     if (children.length === 0) {
@@ -1152,7 +1154,7 @@ function treeRows(nodes, prefix, depth, data, state, out) {
     const guide = prefix + (last ? "\u2514\u2500  " : "\u251C\u2500  ");
     state.width = Math.max(state.width, treeLength(guide) + treeLength(node.name) + 1);
     out.push(`<details class="fw-embed__tree-dir"${node.open ? " open" : ""}>`, treeRow("summary", node, guide, data));
-    treeRows(children, prefix + (last ? "    " : "\u2502   "), depth + 1, data, state, out);
+    treeRows(children, prefix + (last ? "    " : "\u2502   "), depth + 1, data, state, out, visible && node.open);
     out.push("</details>");
   });
 }
@@ -1163,14 +1165,16 @@ function renderTree(doc) {
   const base = text(tree.base) === null ? [] : tree.base.split("/").filter((part) => part !== "");
   if (base.length > 0 && base[base.length - 1] === tree.root) base.pop();
   const crumb = base.length === 0 ? "" : base.join("/") + "/";
-  const state = { rows: 0, width: treeLength(crumb) + treeLength(tree.root) + 1 };
+  const state = { rows: 0, visible: 1, width: treeLength(crumb) + treeLength(tree.root) + 1 };
   const rows = [];
-  treeRows(treeNodes(tree.children, data), "", 1, data, state, rows);
+  treeRows(treeNodes(tree.children, data), "", 1, data, state, rows, true);
+  const clip = state.visible > TREE_CLIP_ROWS && !(isObject(data.display) && data.display.full === true);
   return [
-    `<div class="fw-embed__tree" style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
+    `<div class="fw-embed__tree"${clip ? " data-fw-embed-clip" : ""} style="--fw-embed-tree-names: ${Math.min(state.width, TREE_NAMES)}ch">`,
     `<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">${crumb === "" ? "" : `<span class="fw-embed__tree-crumb">${escapeHtml(crumb)}</span>`}${escapeHtml(tree.root)}/</span></div>`,
     ...rows,
-    "</div>"
+    "</div>",
+    ...clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : []
   ].join("\n");
 }
 function renderImage(doc) {
@@ -1356,6 +1360,7 @@ function mount(element, doc, options = {}) {
   enhanceTips(element);
   enhanceCopy(element);
   enhanceOutput(element);
+  enhanceTrees(element);
   return element.firstElementChild;
 }
 function enhanceCopy(root = document) {
@@ -1398,6 +1403,21 @@ function enhanceOutput(root = document) {
       const show2 = blocks.every((block) => block.hidden);
       for (const block of blocks) block.hidden = !show2;
       sync();
+    });
+  }
+}
+function enhanceTrees(root = document) {
+  if (typeof document === "undefined") return;
+  for (const tree of root.querySelectorAll(".fw-embed__tree[data-fw-embed-clip]:not([data-fw-embed-clip-ready])")) {
+    const button = tree.nextElementSibling;
+    if (!button || !button.classList.contains("fw-embed__more")) continue;
+    tree.setAttribute("data-fw-embed-clip-ready", "");
+    tree.classList.add("fw-embed__tree--clipped");
+    button.hidden = false;
+    button.addEventListener("click", () => {
+      const clipped = tree.classList.toggle("fw-embed__tree--clipped");
+      button.textContent = clipped ? "Show more" : "Show less";
+      button.setAttribute("aria-expanded", String(!clipped));
     });
   }
 }
@@ -1874,6 +1894,7 @@ export {
   enhanceCopy,
   enhanceOutput,
   enhanceTips,
+  enhanceTrees,
   escapeHtml,
   expandDetailsForPrint,
   fetchEmbed,

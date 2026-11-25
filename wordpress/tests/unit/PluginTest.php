@@ -99,6 +99,15 @@ final class PluginTest extends TestCase
         $this->assertSame(['style:framework-embed', 'script:framework-embed'], WP::$enqueued);
     }
 
+    public function test_a_long_tree_enqueues_the_script(): void
+    {
+        $url = 'https://framework.pub/d/tree-long';
+
+        $this->assertSame('fresh', Framework_Embed_Live::refresh($url));
+        $this->assertStringContainsString('data-fw-embed-clip', Framework_Embed_Live::render($url));
+        $this->assertSame(['style:framework-embed', 'script:framework-embed'], WP::$enqueued);
+    }
+
     public function test_expired_copy_renders_and_schedules_a_refresh(): void
     {
         $url = 'https://framework.pub/d/minimal-test';

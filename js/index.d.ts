@@ -75,6 +75,8 @@ export function enhanceTips(root?: ParentNode): void;
 /** Shows and wires the copy button on code snippets. */
 export function enhanceCopy(root?: ParentNode): void;
 export function enhanceOutput(root?: ParentNode): void;
+/** Clips long project structures under root and shows their Show more button. */
+export function enhanceTrees(root?: ParentNode): void;
 export function loadVegaEmbed(): Promise<NonNullable<Config['vegaEmbed']>>;
 /** Light or dark from the page: markers, then background luminance, then color-scheme, then the OS. */
 export function prefersDark(element: Element): boolean;

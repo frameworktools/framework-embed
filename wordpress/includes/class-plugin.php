@@ -274,14 +274,14 @@ final class Framework_Embed_Plugin {
 
 	/**
 	 * Enqueues the stylesheet, and the script when the figure holds a chart,
-	 * variable tips, or a code snippet (the script draws charts, opens tips on
-	 * hover beside their term, and shows a snippet's copy and output buttons).
+	 * variable tips, a code snippet, or a long tree (the script draws charts, opens tips on
+	 * hover beside their term, shows a snippet's copy and output buttons, and clips long trees).
 	 *
 	 * @param string $html Rendered figure.
 	 */
 	public function enqueue( string $html ): void {
 		wp_enqueue_style( 'framework-embed' );
-		if ( str_contains( $html, 'data-fw-embed-chart' ) || str_contains( $html, 'fw-embed__term' ) || str_contains( $html, 'fw-embed__snippet' ) ) {
+		if ( str_contains( $html, 'data-fw-embed-chart' ) || str_contains( $html, 'fw-embed__term' ) || str_contains( $html, 'fw-embed__snippet' ) || str_contains( $html, 'data-fw-embed-clip' ) ) {
 			wp_enqueue_script( 'framework-embed' );
 		}
 	}

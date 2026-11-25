@@ -75,6 +75,24 @@ final class TreeTest extends TestCase
         $this->assertStringContainsString('data-fw-embed-kind="page"', Renderer::render([...self::load('r-tree'), 'kind' => 'tree-v2']));
     }
 
+    public function test_long_trees_start_clipped(): void
+    {
+        $html = Renderer::render(self::load('tree-long'));
+        $this->assertStringContainsString('<div class="fw-embed__tree" data-fw-embed-clip style=', $html);
+        $this->assertStringContainsString("</div>\n" . '<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>', $html);
+        foreach (['tree-long-full', 'r-tree', 'tree-subfolder'] as $name) {
+            $html = Renderer::render(self::load($name));
+            $this->assertStringNotContainsString('data-fw-embed-clip', $html, $name);
+            $this->assertStringNotContainsString('fw-embed__more', $html, $name);
+        }
+        $files = fn (int $count) => array_map(fn (int $i) => ['name' => "f{$i}", 'type' => 'file'], range(1, $count));
+        $this->assertStringNotContainsString('data-fw-embed-clip', Renderer::render(self::tree($files(14))));
+        $this->assertStringContainsString('data-fw-embed-clip', Renderer::render(self::tree($files(15))));
+        $folder = fn (bool $open) => [['name' => 'd', 'type' => 'dir', 'open' => $open, 'children' => $files(20)]];
+        $this->assertStringNotContainsString('data-fw-embed-clip', Renderer::render(self::tree($folder(false))));
+        $this->assertStringContainsString('data-fw-embed-clip', Renderer::render(self::tree($folder(true))));
+    }
+
     public function test_depth_and_row_limits(): void
     {
         $node = ['name' => 'f', 'type' => 'file'];

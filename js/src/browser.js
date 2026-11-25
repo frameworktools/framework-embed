@@ -59,6 +59,7 @@ export function mount(element, doc, options = {}) {
     enhanceTips(element);
     enhanceCopy(element);
     enhanceOutput(element);
+    enhanceTrees(element);
     return element.firstElementChild;
 }
 
@@ -108,6 +109,26 @@ export function enhanceOutput(root = document) {
             const show = blocks.every((block) => block.hidden);
             for (const block of blocks) block.hidden = !show;
             sync();
+        });
+    }
+}
+
+// --- long trees ---
+// A project structure with many rows starts clipped, with a button to show the rest. Both ship
+// unclipped and hidden, so without this script the whole tree shows and no dead control appears.
+
+export function enhanceTrees(root = document) {
+    if (typeof document === 'undefined') return;
+    for (const tree of root.querySelectorAll('.fw-embed__tree[data-fw-embed-clip]:not([data-fw-embed-clip-ready])')) {
+        const button = tree.nextElementSibling;
+        if (!button || !button.classList.contains('fw-embed__more')) continue;
+        tree.setAttribute('data-fw-embed-clip-ready', '');
+        tree.classList.add('fw-embed__tree--clipped');
+        button.hidden = false;
+        button.addEventListener('click', () => {
+            const clipped = tree.classList.toggle('fw-embed__tree--clipped');
+            button.textContent = clipped ? 'Show more' : 'Show less';
+            button.setAttribute('aria-expanded', String(!clipped));
         });
     }
 }

@@ -184,7 +184,7 @@
         },
         "display": {
           "type": "object",
-          "properties": { "notes": { "type": "boolean" }, "ignored": { "type": "boolean" } }
+          "properties": { "notes": { "type": "boolean" }, "ignored": { "type": "boolean" }, "full": { "type": "boolean" } }
         }
       }
     },

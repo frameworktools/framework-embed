@@ -35,6 +35,9 @@ final class Renderer
 
     private const TREE_COUNT_CAP = 10000;
 
+    /** A tree showing more rows than this at first starts clipped, unless data.display.full is true. */
+    private const TREE_CLIP_ROWS = 15;
+
     private const TREE_SOURCES = ['global' => 'global excludes file', 'info/exclude' => '.git/info/exclude'];
 
     private const SNIPPET_LANGUAGES = ['r' => 'R', 'python' => 'Python', 'stata' => 'Stata'];
@@ -1832,8 +1835,8 @@ final class Renderer
             . ($stub ? self::treeBadge($node) : '') . $note . '</' . $tag . '>';
     }
 
-    /** Rows for one folder's contents. `$prefix` carries the guides of the folders above. */
-    private static function treeRows(array $nodes, string $prefix, int $depth, array $data, array &$state, array &$out): void
+    /** Rows for one folder's contents. `$prefix` carries the guides of the folders above, and `$visible` says whether every folder above starts open. */
+    private static function treeRows(array $nodes, string $prefix, int $depth, array $data, array &$state, array &$out, bool $visible): void
     {
         $count = count($nodes);
         foreach ($nodes as $index => $node) {
@@ -1841,6 +1844,9 @@ final class Renderer
                 return;
             }
             $state['rows']++;
+            if ($visible) {
+                $state['visible']++;
+            }
             $last = $index === $count - 1;
             $children = $node['type'] === 'dir' && ! $node['stub'] && $depth < self::TREE_DEPTH ? self::treeNodes($node['children'], $data) : [];
             if ($children === []) {
@@ -1855,7 +1861,7 @@ final class Renderer
             $state['width'] = max($state['width'], self::treeLength($guide) + self::treeLength($node['name']) + 1);
             $out[] = '<details class="fw-embed__tree-dir"' . ($node['open'] ? ' open' : '') . '>';
             $out[] = self::treeRow('summary', $node, $guide, $data);
-            self::treeRows($children, $prefix . ($last ? '    ' : '│   '), $depth + 1, $data, $state, $out);
+            self::treeRows($children, $prefix . ($last ? '    ' : '│   '), $depth + 1, $data, $state, $out, $visible && $node['open']);
             $out[] = '</details>';
         }
     }
@@ -1873,14 +1879,17 @@ final class Renderer
             array_pop($base);
         }
         $crumb = $base === [] ? '' : implode('/', $base) . '/';
-        $state = ['rows' => 0, 'width' => self::treeLength($crumb) + self::treeLength($tree['root']) + 1];
+        $state = ['rows' => 0, 'visible' => 1, 'width' => self::treeLength($crumb) + self::treeLength($tree['root']) + 1];
         $rows = [];
-        self::treeRows(self::treeNodes($tree['children'] ?? null, $data), '', 1, $data, $state, $rows);
+        self::treeRows(self::treeNodes($tree['children'] ?? null, $data), '', 1, $data, $state, $rows, true);
+        // A long tree starts clipped, with a button to show the rest; the JS bundle clips it and shows the button
+        $clip = $state['visible'] > self::TREE_CLIP_ROWS && (self::obj($data['display'] ?? null)['full'] ?? null) !== true;
 
-        return implode("\n", ['<div class="fw-embed__tree" style="--fw-embed-tree-names: ' . min($state['width'], self::TREE_NAMES) . 'ch">',
+        return implode("\n", ['<div class="fw-embed__tree"' . ($clip ? ' data-fw-embed-clip' : '') . ' style="--fw-embed-tree-names: ' . min($state['width'], self::TREE_NAMES) . 'ch">',
             '<div class="fw-embed__tree-row fw-embed__tree-row--root"><span class="fw-embed__tree-name">'
                 . ($crumb === '' ? '' : '<span class="fw-embed__tree-crumb">' . self::e($crumb) . '</span>') . self::e($tree['root']) . '/</span></div>',
-            ...$rows, '</div>']);
+            ...$rows, '</div>',
+            ...($clip ? ['<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>'] : [])]);
     }
 
     private static function page(array $doc): string

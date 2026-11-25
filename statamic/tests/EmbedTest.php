@@ -175,6 +175,12 @@ final class EmbedTest extends TestCase
         $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-snippet" }}');
         $this->afterResponse();
         $this->assertStringContainsString('framework-embed.iife.js', $this->antlers('{{ framework:artifact url="https://framework.pub/d/r-snippet" }}{{ framework:scripts only_if_charts="true" }}'));
+
+        // And a long tree's Show more button
+        $this->app->forgetScopedInstances();
+        $this->antlers('{{ framework:artifact url="https://framework.pub/d/tree-long" }}');
+        $this->afterResponse();
+        $this->assertStringContainsString('framework-embed.iife.js', $this->antlers('{{ framework:artifact url="https://framework.pub/d/tree-long" }}{{ framework:scripts only_if_charts="true" }}'));
     }
 
     public function test_assets_are_publishable(): void

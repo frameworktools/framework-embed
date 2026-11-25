@@ -126,6 +126,7 @@ Two settings are flags, since what they hide also feeds what stays:
 
 - `data.display.details: false` on a `model` or `test`: no `Model details` or `Test details` disclosure. An importance table shows its first 10 rows, with the note a plain data table gets, and no continuation.
 - `data.display.legend: false` on a `dag`: no legend.
+- `data.display.full: true` on a `tree`: the whole tree shows, never clipped. Framework Cloud sets it from the **Whole tree** display setting, off by default.
 - `data.display.notes: false` on a `tree`: no notes. `data.display.ignored: false`: no ignored groups, no ignored folders unless they are private, and private folders without their rule. Cloud strips these itself; the flags guard a document that still carries them.
 - `display.credit: false`, at the top level of any document: no link back (`fw-embed__credit`). When the title is hidden too, or the document is a `page`, the caption is left out.
 
@@ -563,6 +564,16 @@ A project structure: a folder tree with notes on its paths and the `.gitignore` 
 - A note follows the name, or the badge, in `fw-embed__tree-note`.
 - `--fw-embed-tree-names` is the widest root, guide, and name in code points, at most 48, in `ch`. Every name cell is at least that wide, so notes and badges line up. Rows inside closed folders count, so opening one never moves the column.
 - Folders deeper than 32 levels show as rows without their contents. Rendering stops after 5,000 rows.
+- A long tree starts clipped. When more than 15 rows show at first (the root row, and every row whose folders all start open; rows inside a closed folder don't count) and `data.display.full` isn't `true`, the tree carries `data-fw-embed-clip` and a button follows it:
+
+```html
+<div class="fw-embed__tree" data-fw-embed-clip style="--fw-embed-tree-names: 22ch">
+…
+</div>
+<button type="button" class="fw-embed__more" hidden aria-expanded="false">Show more</button>
+```
+
+- The JS bundle's `enhanceTrees` adds `fw-embed__tree--clipped`, which shows the top 12 rows fading out over the last three, and shows the button. A click toggles the class, `Show more` and `Show less`, and `aria-expanded`. Without the bundle the whole tree shows and the button stays hidden. Print shows the whole tree.
 
 The tree uses `--fw-embed-code`, so the box-drawing guides join. Guides are faint, folder names bold, stubs and groups muted, and a highlighted row is tinted with `--fw-embed-accent`.
 

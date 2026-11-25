@@ -95,6 +95,9 @@ A bare host name such as `framework.example.org` allows HTTPS on the default por
 
 == Changelog ==
 
+= 0.10.0 =
+* A long project structure starts clipped at its top rows, with a Show more button, unless its owner chooses Whole tree on Framework Cloud.
+
 = 0.9.1 =
 * A project structure's lines join from row to row.
 

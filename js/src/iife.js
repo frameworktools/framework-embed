@@ -7,7 +7,7 @@ if (typeof window !== 'undefined') {
     if (window.FrameworkEmbedConfig) FrameworkEmbed.configure(window.FrameworkEmbedConfig);
     FrameworkEmbed.defineElement();
     FrameworkEmbed.expandDetailsForPrint();
-    const start = () => { FrameworkEmbed.enhanceCharts(document); FrameworkEmbed.enhanceTips(document); FrameworkEmbed.enhanceCopy(document); FrameworkEmbed.enhanceOutput(document); };
+    const start = () => { FrameworkEmbed.enhanceCharts(document); FrameworkEmbed.enhanceTips(document); FrameworkEmbed.enhanceCopy(document); FrameworkEmbed.enhanceOutput(document); FrameworkEmbed.enhanceTrees(document); };
     if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start, { once: true });
     else start();
 }

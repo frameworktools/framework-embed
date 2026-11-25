@@ -1,0 +1,224 @@
+{
+    "schema": "framework.embed/v1",
+    "key": "treelongfull0001",
+    "version": 1,
+    "latest_version": 1,
+    "kind": "tree",
+    "title": "Mobility analysis structure",
+    "description": null,
+    "alt": "Folder tree of mobility: 13 folders and 17 files, 3 ignored.",
+    "url": "https://framework.pub/@ada/smoking/mobility-structure/versions/1",
+    "embed_url": "https://framework.pub/api/embed/v1/artifacts/treelongfull0001/versions/1",
+    "published_at": "2026-11-25T12:00:00Z",
+    "author": {
+        "name": "Ada Example",
+        "url": "https://framework.pub/@ada"
+    },
+    "provider": {
+        "name": "Framework",
+        "url": "https://framework.pub"
+    },
+    "attribution": {
+        "text": "Framework",
+        "url": "https://framework.pub/@ada/smoking/mobility-structure/versions/1"
+    },
+    "data": {
+        "schema": "framework.artifact/v1",
+        "kind": "tree",
+        "tree": {
+            "root": "mobility",
+            "base": "",
+            "method": "git",
+            "counts": {
+                "dirs": 13,
+                "files": 17,
+                "hidden": 1931
+            },
+            "children": [
+                {
+                    "name": "data",
+                    "path": "data",
+                    "type": "dir",
+                    "open": true,
+                    "note": "Survey extracts",
+                    "children": [
+                        {
+                            "name": "private",
+                            "path": "data/private",
+                            "type": "dir",
+                            "open": false,
+                            "private": true,
+                            "hidden": 2,
+                            "children": []
+                        },
+                        {
+                            "name": "raw",
+                            "path": "data/raw",
+                            "type": "dir",
+                            "open": false,
+                            "ignored": {
+                                "rule": "data/raw/",
+                                "source": ".gitignore",
+                                "line": 1
+                            },
+                            "hidden": 48,
+                            "children": []
+                        }
+                    ]
+                },
+                {
+                    "name": "notebooks",
+                    "path": "notebooks",
+                    "type": "dir",
+                    "open": true,
+                    "children": [
+                        {
+                            "name": "01-explore.qmd",
+                            "path": "notebooks/01-explore.qmd",
+                            "type": "file"
+                        },
+                        {
+                            "name": "02-model.qmd",
+                            "path": "notebooks/02-model.qmd",
+                            "type": "file",
+                            "note": "Fits the mobility model"
+                        },
+                        {
+                            "name": "03-checks.qmd",
+                            "path": "notebooks/03-checks.qmd",
+                            "type": "file"
+                        },
+                        {
+                            "name": "04-report.qmd",
+                            "path": "notebooks/04-report.qmd",
+                            "type": "file"
+                        }
+                    ]
+                },
+                {
+                    "name": "outputs",
+                    "path": "outputs",
+                    "type": "dir",
+                    "open": true,
+                    "children": [
+                        {
+                            "name": "figures",
+                            "path": "outputs/figures",
+                            "type": "dir",
+                            "open": false,
+                            "children": [
+                                {
+                                    "name": "trace.svg",
+                                    "path": "outputs/figures/trace.svg",
+                                    "type": "file"
+                                },
+                                {
+                                    "name": "ppc.svg",
+                                    "path": "outputs/figures/ppc.svg",
+                                    "type": "file"
+                                }
+                            ]
+                        },
+                        {
+                            "name": "summary.csv",
+                            "path": "outputs/summary.csv",
+                            "type": "file"
+                        },
+                        {
+                            "name": "*.rds",
+                            "path": "outputs",
+                            "type": "ignored",
+                            "ignored": {
+                                "rule": "*.rds",
+                                "source": ".gitignore",
+                                "line": 2
+                            },
+                            "hidden": 6
+                        }
+                    ]
+                },
+                {
+                    "name": "R",
+                    "path": "R",
+                    "type": "dir",
+                    "open": true,
+                    "note": "Reusable functions",
+                    "children": [
+                        {
+                            "name": "clean.R",
+                            "path": "R/clean.R",
+                            "type": "file"
+                        },
+                        {
+                            "name": "model.R",
+                            "path": "R/model.R",
+                            "type": "file",
+                            "note": "Stan model wrappers"
+                        },
+                        {
+                            "name": "plots.R",
+                            "path": "R/plots.R",
+                            "type": "file"
+                        }
+                    ]
+                },
+                {
+                    "name": "renv",
+                    "path": "renv",
+                    "type": "dir",
+                    "open": false,
+                    "depth": true,
+                    "hidden": 1874,
+                    "children": []
+                },
+                {
+                    "name": "stan",
+                    "path": "stan",
+                    "type": "dir",
+                    "open": true,
+                    "note": "Stan programs",
+                    "children": [
+                        {
+                            "name": "mobility.stan",
+                            "path": "stan/mobility.stan",
+                            "type": "file",
+                            "highlight": true
+                        }
+                    ]
+                },
+                {
+                    "name": ".gitignore",
+                    "path": ".gitignore",
+                    "type": "file"
+                },
+                {
+                    "name": "_quarto.yml",
+                    "path": "_quarto.yml",
+                    "type": "file"
+                },
+                {
+                    "name": "README.md",
+                    "path": "README.md",
+                    "type": "file",
+                    "note": "Start here"
+                },
+                {
+                    "name": ".env",
+                    "path": "",
+                    "type": "ignored",
+                    "ignored": {
+                        "rule": ".env",
+                        "source": ".gitignore",
+                        "line": 3
+                    },
+                    "hidden": 1
+                }
+            ]
+        },
+        "display": {
+            "full": true
+        }
+    },
+    "spec": null,
+    "image": null
+}

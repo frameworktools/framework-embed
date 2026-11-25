@@ -16,7 +16,7 @@ describe('fixtures', () => {
             'python-altair', 'page', 'truncated-table', 'minimal-model', 'minimal-test', 'hostile-model', 'hostile-vega', 'hostile-page', 'hostile-image',
             'r-snippet', 'stata-snippet', 'python-snippet', 'snippet-truncated', 'snippet-output-hidden', 'hostile-snippet', 'r-ggplot-vega', 'hostile-vega-image',
             'r-dag', 'dagitty-dag', 'dag-no-adjustment', 'dag-unidentified', 'hostile-dag',
-            'r-tree', 'tree-subfolder', 'tree-display-hidden', 'hostile-tree',
+            'r-tree', 'tree-subfolder', 'tree-display-hidden', 'hostile-tree', 'tree-long', 'tree-long-full',
             'model-details-hidden', 'test-details-hidden', 'dag-display-hidden',
             'credit-hidden', 'credit-and-title-hidden', 'page-credit-hidden']) {
             expect(names).toContain(name);

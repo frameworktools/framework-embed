@@ -64,6 +64,32 @@ describe('tree view', () => {
         expect(dom(tree(many)).querySelectorAll('.fw-embed__tree-row--file')).toHaveLength(5000);
     });
 
+    it('clips a tree that starts with more than 15 rows showing, with a hidden Show more button after it', () => {
+        const host = dom(load('tree-long'));
+        const tree = host.querySelector('.fw-embed__tree');
+        expect(tree.hasAttribute('data-fw-embed-clip')).toBe(true);
+        expect(tree.classList.contains('fw-embed__tree--clipped')).toBe(false);
+        const button = tree.nextElementSibling;
+        expect(button.outerHTML).toBe('<button type="button" class="fw-embed__more" hidden="" aria-expanded="false">Show more</button>');
+        expect(button.closest('figure')).not.toBeNull();
+    });
+
+    it('shows the whole tree when data.display.full is true, or when 15 rows or fewer start showing', () => {
+        for (const doc of [load('tree-long-full'), load('r-tree'), load('tree-subfolder')]) {
+            const html = render(doc);
+            expect(html).not.toContain('data-fw-embed-clip');
+            expect(html).not.toContain('fw-embed__more');
+        }
+        const files = (count) => Array.from({ length: count }, (_, i) => ({ name: `f${i}`, type: 'file' }));
+        // The root row counts: 14 files make 15 rows, 15 make 16
+        expect(render(tree(files(14)))).not.toContain('data-fw-embed-clip');
+        expect(render(tree(files(15)))).toContain('data-fw-embed-clip');
+        // Rows inside a closed folder don't count until it opens
+        const folder = (open) => [{ name: 'd', type: 'dir', open, children: files(20) }];
+        expect(render(tree(folder(false)))).not.toContain('data-fw-embed-clip');
+        expect(render(tree(folder(true)))).toContain('data-fw-embed-clip');
+    });
+
     it('shows the link card for a kind this renderer does not know', () => {
         const doc = { ...load('r-tree'), kind: 'tree-v2' };
         expect(render(doc)).toContain('data-fw-embed-kind="page"');
